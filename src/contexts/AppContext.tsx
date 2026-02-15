@@ -7,7 +7,10 @@ interface CurrentUser {
   company: string;
   userType: 'dispatcher' | 'carrier' | 'broker';
   image?: string;
+  coverImage?: string;
   bio?: string;
+  location?: string;
+  website?: string;
   verified: boolean;
 }
 

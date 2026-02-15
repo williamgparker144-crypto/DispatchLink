@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
-import { Camera, Edit3, MapPin, Briefcase, Shield, Users, MessageSquare, Eye, X, Check, ImageIcon } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import {
+  Camera, Edit3, MapPin, Briefcase, Shield, Users, MessageSquare, Eye, X, Check,
+  ImageIcon, Globe, Link2, Palette, Upload, FileText, Heart, Share2, Bookmark,
+  Award, Star, Calendar, Mail
+} from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
 import PostCard from './PostCard';
 import type { Post } from '@/types';
@@ -8,20 +12,48 @@ interface UserProfileProps {
   onNavigate: (view: string) => void;
 }
 
+const COVER_THEMES = [
+  { id: 'navy-blue', gradient: 'linear-gradient(135deg, #1E3A5F 0%, #2c5282 50%, #3B82F6 100%)' },
+  { id: 'ocean', gradient: 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)' },
+  { id: 'sunset', gradient: 'linear-gradient(135deg, #1E3A5F 0%, #4a2c6b 50%, #8B5CF6 100%)' },
+  { id: 'emerald', gradient: 'linear-gradient(135deg, #064e3b 0%, #065f46 50%, #10B981 100%)' },
+  { id: 'midnight', gradient: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)' },
+  { id: 'royal', gradient: 'linear-gradient(135deg, #312e81 0%, #3730a3 50%, #4f46e5 100%)' },
+];
+
 const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
   const { currentUser, updateProfile } = useAppContext();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
-  const [photoUrl, setPhotoUrl] = useState('');
+  const [coverModalOpen, setCoverModalOpen] = useState(false);
+  const [themeModalOpen, setThemeModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'activity'>('posts');
+
+  // File upload refs
+  const profilePhotoRef = useRef<HTMLInputElement>(null);
+  const coverPhotoRef = useRef<HTMLInputElement>(null);
+  const postImageRef = useRef<HTMLInputElement>(null);
+  const postDocRef = useRef<HTMLInputElement>(null);
 
   // Edit form state
   const [editName, setEditName] = useState(currentUser?.name || '');
   const [editCompany, setEditCompany] = useState(currentUser?.company || '');
   const [editBio, setEditBio] = useState(currentUser?.bio || '');
+  const [editLocation, setEditLocation] = useState(currentUser?.location || '');
+  const [editWebsite, setEditWebsite] = useState(currentUser?.website || '');
+
+  // Photo preview
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+
+  // Cover theme
+  const [selectedTheme, setSelectedTheme] = useState(COVER_THEMES[0].gradient);
 
   // Personal feed
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState('');
+  const [postImage, setPostImage] = useState<string | null>(null);
+  const [postDoc, setPostDoc] = useState<{ name: string; url: string } | null>(null);
 
   if (!currentUser) {
     return (
@@ -43,31 +75,90 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
     );
   }
 
-  const handleSaveProfile = () => {
-    updateProfile({
-      name: editName,
-      company: editCompany,
-      bio: editBio,
-    });
-    setEditModalOpen(false);
+  // File upload handlers
+  const handleProfilePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      setPhotoPreview(result);
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleSavePhoto = () => {
-    if (photoUrl.trim()) {
-      updateProfile({ image: photoUrl.trim() });
+  const handleSaveProfilePhoto = () => {
+    if (photoPreview) {
+      updateProfile({ image: photoPreview });
     }
     setPhotoModalOpen(false);
-    setPhotoUrl('');
+    setPhotoPreview(null);
   };
 
   const handleRemovePhoto = () => {
     updateProfile({ image: undefined });
     setPhotoModalOpen(false);
-    setPhotoUrl('');
+    setPhotoPreview(null);
+  };
+
+  const handleCoverPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      setCoverPreview(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveCoverPhoto = () => {
+    if (coverPreview) {
+      updateProfile({ coverImage: coverPreview });
+    }
+    setCoverModalOpen(false);
+    setCoverPreview(null);
+  };
+
+  const handleSaveTheme = () => {
+    // Remove cover image and use gradient theme
+    updateProfile({ coverImage: selectedTheme });
+    setThemeModalOpen(false);
+  };
+
+  const handlePostImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPostImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handlePostDocSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPostDoc({ name: file.name, url: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveProfile = () => {
+    updateProfile({
+      name: editName,
+      company: editCompany,
+      bio: editBio,
+      location: editLocation,
+      website: editWebsite,
+    });
+    setEditModalOpen(false);
   };
 
   const handleCreatePost = () => {
-    if (!newPostContent.trim()) return;
+    if (!newPostContent.trim() && !postImage && !postDoc) return;
     const newPost: Post = {
       id: `post-${Date.now()}`,
       author_id: currentUser.id,
@@ -82,9 +173,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
       comments_count: 0,
       liked_by_current_user: false,
       created_at: new Date().toISOString(),
+      image_url: postImage || undefined,
     };
     setPosts(prev => [newPost, ...prev]);
     setNewPostContent('');
+    setPostImage(null);
+    setPostDoc(null);
   };
 
   const handleDeletePost = (postId: string) => {
@@ -102,18 +196,58 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
     }
   };
 
+  const getTypeBadgeColor = () => {
+    switch (currentUser.userType) {
+      case 'dispatcher': return 'bg-blue-100 text-blue-700';
+      case 'carrier': return 'bg-orange-100 text-orange-700';
+      case 'broker': return 'bg-purple-100 text-purple-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  // Determine cover background
+  const coverStyle: React.CSSProperties = currentUser.coverImage?.startsWith('data:')
+    ? { backgroundImage: `url(${currentUser.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : currentUser.coverImage?.startsWith('linear-gradient')
+      ? { background: currentUser.coverImage }
+      : { background: 'linear-gradient(135deg, #1E3A5F 0%, #2c5282 50%, #3B82F6 100%)' };
+
   return (
-    <section className="page-bg min-h-screen">
+    <section className="page-bg min-h-screen pb-12">
+      {/* Hidden file inputs */}
+      <input ref={profilePhotoRef} type="file" accept="image/*" className="hidden" onChange={handleProfilePhotoSelect} />
+      <input ref={coverPhotoRef} type="file" accept="image/*" className="hidden" onChange={handleCoverPhotoSelect} />
+      <input ref={postImageRef} type="file" accept="image/*" className="hidden" onChange={handlePostImageSelect} />
+      <input ref={postDocRef} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" className="hidden" onChange={handlePostDocSelect} />
+
       {/* Cover Photo */}
-      <div className="h-48 sm:h-56 bg-gradient-to-r from-[#1E3A5F] via-[#2c5282] to-[#3B82F6] relative">
+      <div className="h-52 sm:h-64 relative group" style={coverStyle}>
         <div className="absolute inset-0 opacity-20" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }} />
-        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/30 to-transparent" />
+
+        {/* Cover photo actions */}
+        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={() => setCoverModalOpen(true)}
+            className="flex items-center gap-2 px-3 py-2 bg-black/50 backdrop-blur-sm text-white rounded-lg text-sm font-medium hover:bg-black/70 transition-colors"
+          >
+            <Camera className="w-4 h-4" />
+            Edit Cover Photo
+          </button>
+          <button
+            onClick={() => setThemeModalOpen(true)}
+            className="flex items-center gap-2 px-3 py-2 bg-black/50 backdrop-blur-sm text-white rounded-lg text-sm font-medium hover:bg-black/70 transition-colors"
+          >
+            <Palette className="w-4 h-4" />
+            Theme
+          </button>
+        </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        {/* Profile Header */}
+        {/* Profile Header Card */}
         <div className="relative -mt-16 mb-6">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-visible">
             <div className="px-6 pb-6 pt-2">
@@ -121,20 +255,21 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                 {/* Avatar */}
                 <div className="relative -mt-16 flex-shrink-0">
                   <div
-                    className="w-28 h-28 rounded-full border-4 border-white shadow-lg bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center overflow-hidden cursor-pointer group"
+                    className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center overflow-hidden cursor-pointer group/avatar"
                     onClick={() => setPhotoModalOpen(true)}
                   >
                     {currentUser.image ? (
                       <img src={currentUser.image} alt={currentUser.name} className="w-full h-full rounded-full object-cover" />
                     ) : (
-                      <span className="text-white font-bold text-4xl">{userInitial}</span>
+                      <span className="text-white font-bold text-5xl">{userInitial}</span>
                     )}
                     {/* Camera overlay */}
-                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Camera className="w-7 h-7 text-white" />
+                    <div className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                      <Camera className="w-6 h-6 text-white mb-1" />
+                      <span className="text-white text-xs font-medium">Change Photo</span>
                     </div>
                   </div>
-                  <div className="absolute bottom-1 right-1 w-5 h-5 bg-[#10B981] border-[3px] border-white rounded-full"></div>
+                  <div className="absolute bottom-2 right-2 w-5 h-5 bg-[#10B981] border-[3px] border-white rounded-full"></div>
                 </div>
 
                 {/* Name & Info */}
@@ -142,15 +277,29 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                   <div className="flex items-center gap-2 flex-wrap">
                     <h1 className="text-2xl font-bold text-[#1E3A5F]">{currentUser.name}</h1>
                     {currentUser.verified && <Shield className="w-5 h-5 text-[#3B82F6]" />}
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${getTypeBadgeColor()}`}>
+                      {getTypeBadge()}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-500 mt-1 flex-wrap">
+                  <div className="flex items-center gap-3 text-sm text-gray-500 mt-1.5 flex-wrap">
                     {currentUser.company && (
                       <span className="flex items-center gap-1">
                         <Briefcase className="w-3.5 h-3.5" />
                         {currentUser.company}
                       </span>
                     )}
-                    <span className="px-2 py-0.5 bg-[#3B82F6]/10 text-[#3B82F6] rounded-full text-xs font-semibold">{getTypeBadge()}</span>
+                    {currentUser.location && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5" />
+                        {currentUser.location}
+                      </span>
+                    )}
+                    {currentUser.website && (
+                      <span className="flex items-center gap-1 text-[#3B82F6]">
+                        <Globe className="w-3.5 h-3.5" />
+                        {currentUser.website}
+                      </span>
+                    )}
                   </div>
                   {currentUser.bio && (
                     <p className="text-sm text-gray-600 mt-2 leading-relaxed">{currentUser.bio}</p>
@@ -163,6 +312,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                     setEditName(currentUser.name);
                     setEditCompany(currentUser.company);
                     setEditBio(currentUser.bio || '');
+                    setEditLocation(currentUser.location || '');
+                    setEditWebsite(currentUser.website || '');
                     setEditModalOpen(true);
                   }}
                   className="flex items-center gap-2 px-5 py-2.5 border-2 border-[#3B82F6] text-[#3B82F6] rounded-xl font-semibold text-sm hover:bg-[#3B82F6]/5 transition-colors flex-shrink-0"
@@ -193,75 +344,248 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          <button onClick={() => onNavigate('feed')} className="bg-white rounded-xl border border-gray-200 p-4 text-center hover:shadow-md transition-all">
-            <Eye className="w-5 h-5 text-[#3B82F6] mx-auto mb-1.5" />
+          <button onClick={() => onNavigate('feed')} className="bg-white rounded-xl border border-gray-200 p-4 text-center hover:shadow-md transition-all group">
+            <Eye className="w-5 h-5 text-[#3B82F6] mx-auto mb-1.5 group-hover:scale-110 transition-transform" />
             <span className="text-xs font-semibold text-gray-700">View Feed</span>
           </button>
-          <button onClick={() => onNavigate('connections')} className="bg-white rounded-xl border border-gray-200 p-4 text-center hover:shadow-md transition-all">
-            <Users className="w-5 h-5 text-[#10B981] mx-auto mb-1.5" />
+          <button onClick={() => onNavigate('connections')} className="bg-white rounded-xl border border-gray-200 p-4 text-center hover:shadow-md transition-all group">
+            <Users className="w-5 h-5 text-[#10B981] mx-auto mb-1.5 group-hover:scale-110 transition-transform" />
             <span className="text-xs font-semibold text-gray-700">Connections</span>
           </button>
-          <button onClick={() => onNavigate('messages')} className="bg-white rounded-xl border border-gray-200 p-4 text-center hover:shadow-md transition-all">
-            <MessageSquare className="w-5 h-5 text-[#F59E0B] mx-auto mb-1.5" />
+          <button onClick={() => onNavigate('messages')} className="bg-white rounded-xl border border-gray-200 p-4 text-center hover:shadow-md transition-all group">
+            <MessageSquare className="w-5 h-5 text-[#F59E0B] mx-auto mb-1.5 group-hover:scale-110 transition-transform" />
             <span className="text-xs font-semibold text-gray-700">Messages</span>
           </button>
-          <button onClick={() => setPhotoModalOpen(true)} className="bg-white rounded-xl border border-gray-200 p-4 text-center hover:shadow-md transition-all">
-            <Camera className="w-5 h-5 text-[#8B5CF6] mx-auto mb-1.5" />
+          <button onClick={() => setPhotoModalOpen(true)} className="bg-white rounded-xl border border-gray-200 p-4 text-center hover:shadow-md transition-all group">
+            <Camera className="w-5 h-5 text-[#8B5CF6] mx-auto mb-1.5 group-hover:scale-110 transition-transform" />
             <span className="text-xs font-semibold text-gray-700">Change Photo</span>
           </button>
         </div>
 
-        {/* Post Composer */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-5 overflow-hidden">
-          <div className="p-4">
-            <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center overflow-hidden flex-shrink-0">
-                {currentUser.image ? (
-                  <img src={currentUser.image} alt={currentUser.name} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <span className="text-white font-bold">{userInitial}</span>
-                )}
-              </div>
-              <textarea
-                value={newPostContent}
-                onChange={(e) => setNewPostContent(e.target.value)}
-                placeholder="What's on your mind?"
-                className="w-full border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none text-gray-800 placeholder-gray-400 text-sm p-3 min-h-[50px]"
-                rows={2}
-              />
-            </div>
+        {/* Profile Tabs */}
+        <div className="bg-white rounded-xl border border-gray-200 mb-5 overflow-hidden">
+          <div className="flex border-b border-gray-100">
+            {[
+              { id: 'posts' as const, label: 'Posts', icon: <Edit3 className="w-4 h-4" /> },
+              { id: 'about' as const, label: 'About', icon: <Users className="w-4 h-4" /> },
+              { id: 'activity' as const, label: 'Activity', icon: <Star className="w-4 h-4" /> },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === tab.id
+                    ? 'text-[#3B82F6] border-[#3B82F6]'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
           </div>
-          <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/30 flex items-center justify-end">
-            <button
-              onClick={handleCreatePost}
-              disabled={!newPostContent.trim()}
-              className="px-5 py-2 bg-gradient-to-r from-[#1E3A5F] to-[#3B82F6] text-white rounded-full text-sm font-bold hover:shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-            >
-              Post
-            </button>
-          </div>
-        </div>
 
-        {/* Personal Feed */}
-        <div className="space-y-4 pb-12">
-          {posts.map(post => (
-            <PostCard key={post.id} post={post} onDelete={handleDeletePost} />
-          ))}
-          {posts.length === 0 && (
-            <div className="text-center py-16 bg-white rounded-xl border border-gray-200 shadow-sm">
-              <Edit3 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-1">No posts yet</h3>
-              <p className="text-sm text-gray-400">Share your first update with the network above.</p>
+          {/* About Tab */}
+          {activeTab === 'about' && (
+            <div className="p-6 space-y-6">
+              <div>
+                <h3 className="font-semibold text-[#1E3A5F] mb-3 flex items-center gap-2">
+                  <Briefcase className="w-4 h-4" />
+                  Professional Info
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="text-gray-500 w-24">Role</span>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${getTypeBadgeColor()}`}>
+                      {getTypeBadge()}
+                    </span>
+                  </div>
+                  {currentUser.company && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <span className="text-gray-500 w-24">Company</span>
+                      <span className="text-gray-800 font-medium">{currentUser.company}</span>
+                    </div>
+                  )}
+                  {currentUser.location && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <span className="text-gray-500 w-24">Location</span>
+                      <span className="text-gray-800">{currentUser.location}</span>
+                    </div>
+                  )}
+                  {currentUser.website && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <span className="text-gray-500 w-24">Website</span>
+                      <span className="text-[#3B82F6]">{currentUser.website}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="text-gray-500 w-24">Email</span>
+                    <span className="text-gray-800">{currentUser.email}</span>
+                  </div>
+                </div>
+              </div>
+
+              {currentUser.bio && (
+                <div>
+                  <h3 className="font-semibold text-[#1E3A5F] mb-3 flex items-center gap-2">
+                    <Edit3 className="w-4 h-4" />
+                    Bio
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">{currentUser.bio}</p>
+                </div>
+              )}
+
+              <div>
+                <h3 className="font-semibold text-[#1E3A5F] mb-3 flex items-center gap-2">
+                  <Award className="w-4 h-4" />
+                  Badges
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {currentUser.verified && (
+                    <span className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold flex items-center gap-1.5 border border-blue-100">
+                      <Shield className="w-3.5 h-3.5" />
+                      Verified Member
+                    </span>
+                  )}
+                  <span className="px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1.5 border border-green-100">
+                    <Calendar className="w-3.5 h-3.5" />
+                    New Member
+                  </span>
+                </div>
+              </div>
+
+              {(!currentUser.bio && !currentUser.location && !currentUser.website) && (
+                <div className="text-center py-6 bg-gray-50 rounded-xl">
+                  <Edit3 className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500 mb-3">Complete your profile to stand out</p>
+                  <button
+                    onClick={() => {
+                      setEditName(currentUser.name);
+                      setEditCompany(currentUser.company);
+                      setEditBio(currentUser.bio || '');
+                      setEditLocation(currentUser.location || '');
+                      setEditWebsite(currentUser.website || '');
+                      setEditModalOpen(true);
+                    }}
+                    className="px-4 py-2 bg-[#3B82F6] text-white rounded-lg text-sm font-semibold hover:bg-[#2563EB] transition-colors"
+                  >
+                    Add Details
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Activity Tab */}
+          {activeTab === 'activity' && (
+            <div className="p-6">
+              <div className="text-center py-12">
+                <Star className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <h3 className="text-lg font-semibold text-gray-700 mb-1">Activity will appear here</h3>
+                <p className="text-sm text-gray-400">Your likes, comments, and shares will be tracked here.</p>
+              </div>
             </div>
           )}
         </div>
+
+        {/* Post Composer - only visible on Posts tab */}
+        {activeTab === 'posts' && (
+          <>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-5 overflow-hidden">
+              <div className="p-4">
+                <div className="flex gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {currentUser.image ? (
+                      <img src={currentUser.image} alt={currentUser.name} className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      <span className="text-white font-bold">{userInitial}</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <textarea
+                      value={newPostContent}
+                      onChange={(e) => setNewPostContent(e.target.value)}
+                      placeholder="What's on your mind?"
+                      className="w-full border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none text-gray-800 placeholder-gray-400 text-sm p-3 min-h-[60px] bg-gray-50/50 hover:bg-white transition-colors"
+                      rows={2}
+                    />
+
+                    {/* Image preview */}
+                    {postImage && (
+                      <div className="mt-2 relative inline-block">
+                        <img src={postImage} alt="Upload" className="h-24 w-auto rounded-xl object-cover border border-gray-200" />
+                        <button
+                          onClick={() => setPostImage(null)}
+                          className="absolute -top-2 -right-2 w-5 h-5 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-red-500 transition-colors shadow-lg"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Document preview */}
+                    {postDoc && (
+                      <div className="mt-2 inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+                        <FileText className="w-4 h-4 text-[#3B82F6]" />
+                        <span className="text-sm text-gray-700 font-medium truncate max-w-[200px]">{postDoc.name}</span>
+                        <button
+                          onClick={() => setPostDoc(null)}
+                          className="w-5 h-5 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-red-500 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/30 flex items-center gap-2">
+                <button
+                  onClick={() => postImageRef.current?.click()}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-white transition-all"
+                >
+                  <ImageIcon className="w-4 h-4 text-[#10B981]" />
+                  <span className="hidden sm:inline text-xs">Photo</span>
+                </button>
+                <button
+                  onClick={() => postDocRef.current?.click()}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-white transition-all"
+                >
+                  <FileText className="w-4 h-4 text-[#F59E0B]" />
+                  <span className="hidden sm:inline text-xs">Document</span>
+                </button>
+                <button
+                  onClick={handleCreatePost}
+                  disabled={!newPostContent.trim() && !postImage && !postDoc}
+                  className="ml-auto px-5 py-2 bg-gradient-to-r from-[#1E3A5F] to-[#3B82F6] text-white rounded-full text-sm font-bold hover:shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                >
+                  Post
+                </button>
+              </div>
+            </div>
+
+            {/* Personal Feed */}
+            <div className="space-y-4">
+              {posts.map(post => (
+                <PostCard key={post.id} post={post} onDelete={handleDeletePost} />
+              ))}
+              {posts.length === 0 && (
+                <div className="text-center py-16 bg-white rounded-xl border border-gray-200 shadow-sm">
+                  <Edit3 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <h3 className="text-lg font-semibold text-gray-700 mb-1">No posts yet</h3>
+                  <p className="text-sm text-gray-400">Share your first update with the network above.</p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Edit Profile Modal */}
       {editModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setEditModalOpen(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-[#1E3A5F]">Edit Profile</h2>
@@ -286,6 +610,32 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                     type="text"
                     value={editCompany}
                     onChange={(e) => setEditCompany(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    <MapPin className="w-3.5 h-3.5 inline mr-1" />
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    value={editLocation}
+                    onChange={(e) => setEditLocation(e.target.value)}
+                    placeholder="City, State"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    <Globe className="w-3.5 h-3.5 inline mr-1" />
+                    Website
+                  </label>
+                  <input
+                    type="text"
+                    value={editWebsite}
+                    onChange={(e) => setEditWebsite(e.target.value)}
+                    placeholder="www.yourcompany.com"
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none"
                   />
                 </div>
@@ -321,66 +671,160 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
         </div>
       )}
 
-      {/* Photo Upload Modal */}
+      {/* Profile Photo Modal */}
       {photoModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setPhotoModalOpen(false)} />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => { setPhotoModalOpen(false); setPhotoPreview(null); }} />
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-[#1E3A5F]">Profile Picture</h2>
-                <button onClick={() => setPhotoModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                <button onClick={() => { setPhotoModalOpen(false); setPhotoPreview(null); }} className="p-2 hover:bg-gray-100 rounded-full">
                   <X className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
 
               {/* Current photo preview */}
               <div className="flex justify-center mb-6">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center overflow-hidden border-4 border-gray-100">
-                  {(photoUrl || currentUser.image) ? (
-                    <img src={photoUrl || currentUser.image} alt="Preview" className="w-full h-full rounded-full object-cover" />
+                <div className="w-36 h-36 rounded-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center overflow-hidden border-4 border-gray-100 shadow-lg">
+                  {(photoPreview || currentUser.image) ? (
+                    <img src={photoPreview || currentUser.image} alt="Preview" className="w-full h-full rounded-full object-cover" />
                   ) : (
                     <span className="text-white font-bold text-5xl">{userInitial}</span>
                   )}
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  <ImageIcon className="w-4 h-4 inline mr-1" />
-                  Paste an image URL
-                </label>
-                <input
-                  type="url"
-                  value={photoUrl}
-                  onChange={(e) => setPhotoUrl(e.target.value)}
-                  placeholder="https://example.com/your-photo.jpg"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none text-sm"
-                />
-                <p className="text-xs text-gray-400 mt-2">Use a direct link to a JPG, PNG, or WebP image. Works with any publicly accessible URL.</p>
-              </div>
+              <div className="space-y-3">
+                <button
+                  onClick={() => profilePhotoRef.current?.click()}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors"
+                >
+                  <Upload className="w-5 h-5" />
+                  Upload from Computer
+                </button>
 
-              <div className="flex gap-3 mt-6">
-                {currentUser.image && (
+                {photoPreview && (
                   <button
-                    onClick={handleRemovePhoto}
-                    className="px-4 py-3 border border-red-200 text-red-600 rounded-xl font-semibold hover:bg-red-50 transition-colors text-sm"
+                    onClick={handleSaveProfilePhoto}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-[#10B981] text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
                   >
-                    Remove
+                    <Check className="w-5 h-5" />
+                    Save Photo
                   </button>
                 )}
+
+                {currentUser.image && !photoPreview && (
+                  <button
+                    onClick={handleRemovePhoto}
+                    className="w-full py-3 border border-red-200 text-red-600 rounded-xl font-semibold hover:bg-red-50 transition-colors text-sm"
+                  >
+                    Remove Current Photo
+                  </button>
+                )}
+              </div>
+
+              <p className="text-xs text-gray-400 mt-4 text-center">
+                Supports JPG, PNG, GIF, and WebP. Select any photo from your computer.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cover Photo Modal */}
+      {coverModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => { setCoverModalOpen(false); setCoverPreview(null); }} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-[#1E3A5F]">Cover Photo</h2>
+                <button onClick={() => { setCoverModalOpen(false); setCoverPreview(null); }} className="p-2 hover:bg-gray-100 rounded-full">
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Cover preview */}
+              <div className="w-full h-32 rounded-xl mb-4 overflow-hidden border border-gray-200">
+                {coverPreview ? (
+                  <img src={coverPreview} alt="Cover preview" className="w-full h-full object-cover" />
+                ) : currentUser.coverImage?.startsWith('data:') ? (
+                  <img src={currentUser.coverImage} alt="Current cover" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full" style={{ background: currentUser.coverImage || COVER_THEMES[0].gradient }} />
+                )}
+              </div>
+
+              <div className="space-y-3">
                 <button
-                  onClick={() => setPhotoModalOpen(false)}
+                  onClick={() => coverPhotoRef.current?.click()}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors"
+                >
+                  <Upload className="w-5 h-5" />
+                  Upload from Computer
+                </button>
+
+                {coverPreview && (
+                  <button
+                    onClick={handleSaveCoverPhoto}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-[#10B981] text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                  >
+                    <Check className="w-5 h-5" />
+                    Save Cover Photo
+                  </button>
+                )}
+              </div>
+
+              <p className="text-xs text-gray-400 mt-4 text-center">
+                Recommended size: 1200 x 400 pixels. Supports JPG, PNG, and WebP.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Theme Picker Modal */}
+      {themeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setThemeModalOpen(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-[#1E3A5F]">Profile Theme</h2>
+                <button onClick={() => setThemeModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-500 mb-4">Choose a cover gradient theme for your profile</p>
+
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                {COVER_THEMES.map(theme => (
+                  <button
+                    key={theme.id}
+                    onClick={() => setSelectedTheme(theme.gradient)}
+                    className={`h-20 rounded-xl border-2 transition-all ${
+                      selectedTheme === theme.gradient ? 'border-[#3B82F6] ring-2 ring-[#3B82F6]/30 scale-105' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    style={{ background: theme.gradient }}
+                  />
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setThemeModalOpen(false)}
                   className="flex-1 py-3 border border-gray-200 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleSavePhoto}
+                  onClick={handleSaveTheme}
                   className="flex-1 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors flex items-center justify-center gap-2"
                 >
                   <Check className="w-4 h-4" />
-                  Save Photo
+                  Apply Theme
                 </button>
               </div>
             </div>

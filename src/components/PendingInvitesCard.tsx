@@ -12,33 +12,7 @@ interface InviteItem {
 }
 
 const PendingInvitesCard: React.FC = () => {
-  // Sample data following the same pattern as rest of app
-  const [invites] = useState<InviteItem[]>([
-    {
-      id: '1',
-      carrierName: 'Thompson Trucking LLC',
-      mcNumber: 'MC-987654',
-      email: 'robert@thompsontrucking.com',
-      status: 'sent',
-      invitedAt: '2026-02-10T14:30:00Z',
-    },
-    {
-      id: '2',
-      carrierName: 'Garcia Freight Services',
-      mcNumber: 'MC-876543',
-      email: 'maria@garciafreight.com',
-      status: 'pending',
-      invitedAt: '2026-02-12T09:15:00Z',
-    },
-    {
-      id: '3',
-      carrierName: 'Wilson Heavy Hauling',
-      mcNumber: 'MC-543210',
-      email: 'mike@wilsonhh.com',
-      status: 'accepted',
-      invitedAt: '2026-01-28T11:00:00Z',
-    },
-  ]);
+  const [invites] = useState<InviteItem[]>([]);
 
   const [resending, setResending] = useState<string | null>(null);
 

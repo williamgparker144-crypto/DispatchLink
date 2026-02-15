@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { PenSquare, ImageIcon, Video, Link2, X, Play } from 'lucide-react';
+import React, { useState, useCallback, useRef } from 'react';
+import { PenSquare, ImageIcon, Video, Link2, X, Play, FileText, Upload } from 'lucide-react';
 import PostCard from './PostCard';
 import { useAppContext } from '@/contexts/AppContext';
 import type { Post } from '@/types';
@@ -33,25 +33,48 @@ const SocialFeed: React.FC = () => {
   const [selectedPostType, setSelectedPostType] = useState('update');
   const [filterType, setFilterType] = useState<string>('all');
 
+  // File upload refs
+  const imageUploadRef = useRef<HTMLInputElement>(null);
+  const docUploadRef = useRef<HTMLInputElement>(null);
+
   // Rich media state
   const [attachedImage, setAttachedImage] = useState('');
   const [attachedVideo, setAttachedVideo] = useState('');
   const [attachedLink, setAttachedLink] = useState('');
   const [attachedLinkTitle, setAttachedLinkTitle] = useState('');
   const [attachedLinkDesc, setAttachedLinkDesc] = useState('');
+  const [attachedDoc, setAttachedDoc] = useState<{ name: string; url: string } | null>(null);
 
   // UI state for media input panels
-  const [showImageInput, setShowImageInput] = useState(false);
   const [showVideoInput, setShowVideoInput] = useState(false);
   const [showLinkInput, setShowLinkInput] = useState(false);
-  const [imageInputValue, setImageInputValue] = useState('');
   const [videoInputValue, setVideoInputValue] = useState('');
   const [linkInputValue, setLinkInputValue] = useState('');
   const [linkTitleValue, setLinkTitleValue] = useState('');
   const [linkDescValue, setLinkDescValue] = useState('');
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAttachedImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDocUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAttachedDoc({ name: file.name, url: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleCreatePost = () => {
-    if (!newPostContent.trim() && !attachedImage && !attachedVideo && !attachedLink) return;
+    if (!newPostContent.trim() && !attachedImage && !attachedVideo && !attachedLink && !attachedDoc) return;
 
     const newPost: Post = {
       id: `post-${Date.now()}`,
@@ -90,21 +113,13 @@ const SocialFeed: React.FC = () => {
     setAttachedLink('');
     setAttachedLinkTitle('');
     setAttachedLinkDesc('');
-    setShowImageInput(false);
+    setAttachedDoc(null);
     setShowVideoInput(false);
     setShowLinkInput(false);
-    setImageInputValue('');
     setVideoInputValue('');
     setLinkInputValue('');
     setLinkTitleValue('');
     setLinkDescValue('');
-  };
-
-  const handleAddImage = () => {
-    if (imageInputValue.trim()) {
-      setAttachedImage(imageInputValue.trim());
-      setShowImageInput(false);
-    }
   };
 
   const handleAddVideo = () => {
@@ -144,6 +159,7 @@ const SocialFeed: React.FC = () => {
     }
   }, [attachedVideo]);
 
+  const hasContent = newPostContent.trim() || attachedImage || attachedVideo || attachedLink || attachedDoc;
   const filteredPosts = filterType === 'all' ? posts : posts.filter(p => p.post_type === filterType);
   const videoId = attachedVideo ? extractYouTubeId(attachedVideo) : null;
 
@@ -182,8 +198,12 @@ const SocialFeed: React.FC = () => {
               </div>
             </div>
 
+            {/* Hidden file inputs */}
+            <input ref={imageUploadRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+            <input ref={docUploadRef} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" className="hidden" onChange={handleDocUpload} />
+
             {/* Preview Strip */}
-            {(attachedImage || attachedVideo || attachedLink) && (
+            {(attachedImage || attachedVideo || attachedLink || attachedDoc) && (
               <div className="mt-3 space-y-2">
                 {attachedImage && (
                   <div className="relative inline-block">
@@ -221,29 +241,22 @@ const SocialFeed: React.FC = () => {
                     </button>
                   </div>
                 )}
+                {attachedDoc && (
+                  <div className="relative inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200/60 rounded-xl px-3 py-2">
+                    <FileText className="w-4 h-4 text-amber-600" />
+                    <span className="text-sm text-gray-700 max-w-[200px] truncate font-medium">{attachedDoc.name}</span>
+                    <button
+                      onClick={() => setAttachedDoc(null)}
+                      className="ml-1 w-5 h-5 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-red-500 transition-colors shadow-lg"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Media Input Panels */}
-            {showImageInput && (
-              <div className="mt-3 p-3 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-xl border border-blue-200/40">
-                <p className="text-xs font-semibold text-gray-600 mb-2">Add image URL</p>
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={imageInputValue}
-                    onChange={(e) => setImageInputValue(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddImage()}
-                    placeholder="https://example.com/image.jpg"
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3B82F6]/30 outline-none"
-                    autoFocus
-                  />
-                  <button onClick={handleAddImage} className="px-4 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-sm rounded-lg font-medium hover:shadow-md transition-shadow">Add</button>
-                  <button onClick={() => setShowImageInput(false)} className="px-3 py-2 text-gray-500 text-sm hover:bg-white rounded-lg">Cancel</button>
-                </div>
-              </div>
-            )}
-
             {showVideoInput && (
               <div className="mt-3 p-3 bg-gradient-to-r from-red-50/50 to-pink-50/50 rounded-xl border border-red-200/40">
                 <p className="text-xs font-semibold text-gray-600 mb-2">Add YouTube URL</p>
@@ -302,21 +315,28 @@ const SocialFeed: React.FC = () => {
           <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/30">
             <div className="flex items-center gap-2">
               <button
-                onClick={() => { setShowImageInput(!showImageInput); setShowVideoInput(false); setShowLinkInput(false); }}
-                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all flex-shrink-0 ${showImageInput ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-white'}`}
+                onClick={() => imageUploadRef.current?.click()}
+                className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all flex-shrink-0 text-gray-600 hover:bg-white"
               >
-                <ImageIcon className="w-4 h-4 text-blue-500" />
-                <span className="hidden sm:inline text-xs">Image</span>
+                <ImageIcon className="w-4 h-4 text-[#10B981]" />
+                <span className="hidden sm:inline text-xs">Photo</span>
               </button>
               <button
-                onClick={() => { setShowVideoInput(!showVideoInput); setShowImageInput(false); setShowLinkInput(false); }}
+                onClick={() => docUploadRef.current?.click()}
+                className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all flex-shrink-0 text-gray-600 hover:bg-white"
+              >
+                <FileText className="w-4 h-4 text-[#F59E0B]" />
+                <span className="hidden sm:inline text-xs">Document</span>
+              </button>
+              <button
+                onClick={() => { setShowVideoInput(!showVideoInput); setShowLinkInput(false); }}
                 className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all flex-shrink-0 ${showVideoInput ? 'bg-red-100 text-red-600' : 'text-gray-600 hover:bg-white'}`}
               >
                 <Video className="w-4 h-4 text-red-500" />
                 <span className="hidden sm:inline text-xs">Video</span>
               </button>
               <button
-                onClick={() => { setShowLinkInput(!showLinkInput); setShowImageInput(false); setShowVideoInput(false); }}
+                onClick={() => { setShowLinkInput(!showLinkInput); setShowVideoInput(false); }}
                 className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all flex-shrink-0 ${showLinkInput ? 'bg-orange-100 text-orange-600' : 'text-gray-600 hover:bg-white'}`}
               >
                 <Link2 className="w-4 h-4 text-orange-500" />
@@ -341,7 +361,7 @@ const SocialFeed: React.FC = () => {
 
               <button
                 onClick={handleCreatePost}
-                disabled={!newPostContent.trim() && !attachedImage && !attachedVideo && !attachedLink}
+                disabled={!hasContent}
                 className="ml-auto md:ml-0 px-5 py-2 bg-gradient-to-r from-[#1E3A5F] to-[#3B82F6] text-white rounded-full text-sm font-bold hover:shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
               >
                 Post
