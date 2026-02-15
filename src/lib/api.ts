@@ -104,17 +104,13 @@ export async function createUser(userData: {
 export async function createDispatcherProfile(userId: string, profileData: {
   yearsExperience?: number;
   specialties?: string[];
-  bio?: string;
 }) {
   const { data, error } = await supabase
     .from('dispatcher_profiles')
     .insert({
       user_id: userId,
-      years_experience: profileData.yearsExperience,
-      specialties: profileData.specialties,
-      bio: profileData.bio,
-      subscription_tier: 'basic',
-      subscription_status: 'inactive',
+      years_experience: profileData.yearsExperience ?? 0,
+      specialties: profileData.specialties ?? [],
     })
     .select()
     .single();
@@ -618,4 +614,172 @@ export async function joinCarrierScoutWaitlist(email: string, feature: string) {
 
   if (error) throw error;
   return data;
+}
+
+// ========================
+// User Persistence API
+// ========================
+
+// Lookup user by email with joined profile tables
+export async function getUserByEmail(email: string) {
+  const { data, error } = await supabase
+    .from('users')
+    .select(`
+      *,
+      dispatcher_profiles(*),
+      carrier_profiles(*),
+      broker_profiles(*)
+    `)
+    .eq('email', email)
+    .single();
+
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
+}
+
+// Lookup user by ID with joined profile tables
+export async function getUserById(userId: string) {
+  const { data, error } = await supabase
+    .from('users')
+    .select(`
+      *,
+      dispatcher_profiles(*),
+      carrier_profiles(*),
+      broker_profiles(*)
+    `)
+    .eq('id', userId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
+}
+
+// Update core user fields
+export async function updateUser(userId: string, updates: Record<string, unknown>) {
+  if (Object.keys(updates).length === 0) return null;
+  const { data, error } = await supabase
+    .from('users')
+    .update(updates)
+    .eq('id', userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Update dispatcher-specific fields
+export async function updateDispatcherProfile(userId: string, updates: Record<string, unknown>) {
+  if (Object.keys(updates).length === 0) return null;
+  const { data, error } = await supabase
+    .from('dispatcher_profiles')
+    .update(updates)
+    .eq('user_id', userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Get carrier references for a dispatcher
+export async function getCarrierReferences(dispatcherUserId: string) {
+  const { data, error } = await supabase
+    .from('carrier_references')
+    .select('*')
+    .eq('dispatcher_user_id', dispatcherUserId)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
+// Sync carrier references (delete + re-insert)
+export async function syncCarrierReferences(
+  dispatcherUserId: string,
+  refs: { carrierName: string; mcNumber: string; verified: boolean; agreementFileName?: string; agreementUploadedAt?: string; agreementFileUrl?: string }[]
+) {
+  // Delete existing
+  const { error: delError } = await supabase
+    .from('carrier_references')
+    .delete()
+    .eq('dispatcher_user_id', dispatcherUserId);
+
+  if (delError) throw delError;
+
+  if (refs.length === 0) return [];
+
+  // Insert new
+  const rows = refs.map(r => ({
+    dispatcher_user_id: dispatcherUserId,
+    carrier_name: r.carrierName,
+    mc_number: r.mcNumber,
+    verified: r.verified,
+    agreement_file_url: r.agreementFileUrl || null,
+    agreement_file_name: r.agreementFileName || null,
+    agreement_uploaded_at: r.agreementUploadedAt || null,
+  }));
+
+  const { data, error } = await supabase
+    .from('carrier_references')
+    .insert(rows)
+    .select();
+
+  if (error) throw error;
+  return data;
+}
+
+// Upload profile image to avatars bucket
+export async function uploadProfileImage(userId: string, file: File) {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `${userId}/profile.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(path, file, { upsert: true });
+
+  if (uploadError) throw uploadError;
+
+  const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+  // Append cache-buster so browsers pick up new uploads
+  const publicUrl = `${data.publicUrl}?v=${Date.now()}`;
+
+  // Update user row with new URL
+  await updateUser(userId, { profile_image_url: publicUrl });
+
+  return publicUrl;
+}
+
+// Upload cover image to avatars bucket
+export async function uploadCoverImage(userId: string, file: File) {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `${userId}/cover.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(path, file, { upsert: true });
+
+  if (uploadError) throw uploadError;
+
+  const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+  const publicUrl = `${data.publicUrl}?v=${Date.now()}`;
+
+  await updateUser(userId, { cover_image_url: publicUrl });
+
+  return publicUrl;
+}
+
+// Upload agreement file to agreements bucket
+export async function uploadAgreementFile(userId: string, carrierMC: string, file: File) {
+  const ext = file.name.split('.').pop() || 'pdf';
+  const safeMC = carrierMC.replace(/[^a-zA-Z0-9]/g, '');
+  const path = `${userId}/${safeMC}/agreement.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('agreements')
+    .upload(path, file, { upsert: true });
+
+  if (uploadError) throw uploadError;
+
+  return path;
 }

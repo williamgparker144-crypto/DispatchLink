@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, SlidersHorizontal, Grid, List, X } from 'lucide-react';
 import DispatcherCard from './DispatcherCard';
 import { useAppContext } from '@/contexts/AppContext';
@@ -9,11 +9,13 @@ const specialtyOptions = ['Flatbed', 'Reefer', 'Dry Van', 'Hazmat', 'Tanker', 'H
 interface DispatcherDirectoryProps {
   onViewProfile: (id: string) => void;
   onContact: (id: string) => void;
+  initialSearchQuery?: string;
 }
 
-const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile, onContact }) => {
+const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile, onContact, initialSearchQuery = '' }) => {
   const { registeredUsers } = useAppContext();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  useEffect(() => { setSearchQuery(initialSearchQuery); }, [initialSearchQuery]);
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'rating' | 'experience' | 'reviews'>('rating');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -61,11 +63,19 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      results = results.filter(d =>
-        d.name.toLowerCase().includes(query) ||
-        d.company.toLowerCase().includes(query) ||
-        d.specialties.some((s: string) => s.toLowerCase().includes(query))
-      );
+      results = results.filter(d => {
+        // Also search the raw dispatcher's carriersWorkedWith MC#s
+        const raw = dispatchers.find(u => u.id === d.id);
+        const mcMatch = raw?.carriersWorkedWith?.some(
+          c => c.mcNumber.toLowerCase().includes(query)
+        ) ?? false;
+        return (
+          d.name.toLowerCase().includes(query) ||
+          d.company.toLowerCase().includes(query) ||
+          d.specialties.some((s: string) => s.toLowerCase().includes(query)) ||
+          mcMatch
+        );
+      });
     }
 
     // Specialty filter

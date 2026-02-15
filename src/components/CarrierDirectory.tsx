@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, SlidersHorizontal, Grid, List, X, MapPin } from 'lucide-react';
 import CarrierCard from './CarrierCard';
 import CarrierScoutUpgradeCTA from './CarrierScoutUpgradeCTA';
@@ -11,10 +11,12 @@ const regionOptions = ['Nationwide', 'Northeast', 'Southeast', 'Midwest', 'South
 interface CarrierDirectoryProps {
   onViewProfile: (id: string) => void;
   onRequestPermission: (id: string) => void;
+  initialSearchQuery?: string;
 }
 
-const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRequestPermission }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRequestPermission, initialSearchQuery = '' }) => {
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  useEffect(() => { setSearchQuery(initialSearchQuery); }, [initialSearchQuery]);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'rating' | 'fleetSize' | 'reviews'>('rating');

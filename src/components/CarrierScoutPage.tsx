@@ -136,13 +136,17 @@ const CarrierScoutPage: React.FC = () => {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDE4YzEuNjU2IDAgMyAxLjM0NCAzIDNzLTEuMzQ0IDMtMyAzLTMtMS4zNDQtMy0zIDEuMzQ0LTMgMy0zeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 relative">
           <div className="text-center max-w-3xl mx-auto">
+            <div className="flex justify-center mb-6">
+              <img
+                src="/carrierscout-logo-eagleeye-dark.svg"
+                alt="CarrierScout"
+                className="h-16 md:h-20 w-auto"
+              />
+            </div>
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-white/20 animate-glow">
               <Rocket className="w-4 h-4 text-[#3B82F6]" />
               <span className="text-sm font-medium">Coming Soon</span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              CarrierScout
-            </h1>
             <p className="text-xl md:text-2xl text-blue-200 font-medium mb-4">
               The Complete Freight Workflow Platform
             </p>
@@ -201,6 +205,13 @@ const CarrierScoutPage: React.FC = () => {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
+            <div className="flex justify-center mb-4">
+              <img
+                src="/carrierscout-logo-network-light.svg"
+                alt="CarrierScout"
+                className="h-12 w-auto"
+              />
+            </div>
             <h2 className="text-3xl font-extrabold text-[#1E3A5F] mb-3">
               Everything you need. One platform.
             </h2>
@@ -279,7 +290,13 @@ const CarrierScoutPage: React.FC = () => {
       <section className="py-20">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-gradient-to-br from-[#1E3A5F] via-[#1E3A5F] to-emerald-700 rounded-2xl p-10 text-white glass-dark">
-            <Rocket className="w-12 h-12 mx-auto mb-4 text-[#3B82F6]" />
+            <div className="flex justify-center mb-4">
+              <img
+                src="/carrierscout-logo-network-dark.svg"
+                alt="CarrierScout"
+                className="h-14 w-auto"
+              />
+            </div>
             <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Get early access</h2>
             <p className="text-blue-100/80 mb-8 max-w-md mx-auto">
               Join the waitlist to be among the first to experience CarrierScout.

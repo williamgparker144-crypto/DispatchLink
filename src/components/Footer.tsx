@@ -1,5 +1,5 @@
 import React from 'react';
-import { Truck, Mail, MapPin, Facebook, Linkedin, ExternalLink } from 'lucide-react';
+import { Mail, MapPin, Facebook, Linkedin, ExternalLink } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (view: string) => void;
@@ -39,14 +39,12 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-8">
           {/* Brand Column */}
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="bg-[#3B82F6] p-2 rounded-lg">
-                <Truck className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <span className="text-xl font-bold">DispatchLink</span>
-                <span className="text-xs block text-gray-400">CarrierScout Logistics</span>
-              </div>
+            <div className="mb-4">
+              <img
+                src="/dispatchlink-logo-dark.svg"
+                alt="DispatchLink"
+                className="h-12 w-auto"
+              />
             </div>
             <p className="text-gray-400 text-sm mb-6 max-w-xs">
               The premier platform connecting dispatchers and carriers. 
@@ -186,14 +184,29 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <p className="text-gray-400 text-sm">
               © {currentYear} DispatchLink. All rights reserved.
             </p>
-            <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-500">
-              <span>FMCSA Compliant Platform</span>
-              <span>•</span>
-              <span>GDPR Ready</span>
-              <span>•</span>
-              <span>CCPA Compliant</span>
-              <span>•</span>
-              <span>SOC 2 Type II</span>
+            <div className="flex items-center gap-4">
+              {/* FMCSA Logo */}
+              <a href="https://www.fmcsa.dot.gov" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group" title="Federal Motor Carrier Safety Administration">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-60 group-hover:opacity-100 transition-opacity">
+                  <circle cx="14" cy="14" r="13" stroke="#60A5FA" strokeWidth="1.5" fill="rgba(59,130,246,0.08)" />
+                  <circle cx="14" cy="14" r="10" stroke="#3B82F6" strokeWidth="0.5" opacity="0.4" />
+                  <path d="M9 11H19V12H9Z" fill="#60A5FA" />
+                  <path d="M10 13H18V14H10Z" fill="#3B82F6" opacity="0.7" />
+                  <path d="M11 15H17V16H11Z" fill="#60A5FA" opacity="0.5" />
+                  <text x="14" y="21" fontFamily="sans-serif" fontSize="3.5" fill="#94A3B8" textAnchor="middle" fontWeight="bold">FMCSA</text>
+                  <path d="M10 8L14 5L18 8" stroke="#3B82F6" strokeWidth="1" fill="none" strokeLinecap="round" />
+                </svg>
+                <span className="text-xs text-gray-500 group-hover:text-gray-300 transition-colors hidden sm:inline">FMCSA</span>
+              </a>
+              <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-500">
+                <span>FMCSA Compliant Platform</span>
+                <span>•</span>
+                <span>GDPR Ready</span>
+                <span>•</span>
+                <span>CCPA Compliant</span>
+                <span>•</span>
+                <span>SOC 2 Type II</span>
+              </div>
             </div>
           </div>
         </div>

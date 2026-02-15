@@ -2,11 +2,14 @@ import React, { useState, useRef } from 'react';
 import {
   Camera, Edit3, MapPin, Briefcase, Shield, Users, MessageSquare, Eye, X, Check,
   ImageIcon, Globe, Link2, Palette, Upload, FileText, Heart, Share2, Bookmark,
-  Award, Star, Calendar, Mail, Sparkles, Clock, Plus, Trash2
+  Award, Star, Calendar, Mail, Sparkles, Clock, Plus, Trash2, Loader2, AlertCircle, CheckCircle
 } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
 import type { CarrierReference } from '@/contexts/AppContext';
 import { computeVerificationTier, getVerificationBadgeInfo } from '@/lib/verification';
+import { verifyCarrierMC } from '@/lib/fmcsa';
+import { compressImage } from '@/lib/imageCompress';
+import { uploadProfileImage, uploadCoverImage, uploadAgreementFile } from '@/lib/api';
 import PostCard from './PostCard';
 import type { Post, ViewableUser } from '@/types';
 
@@ -67,10 +70,19 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
   const [editCarrierScout, setEditCarrierScout] = useState(currentUser?.carrierScoutSubscribed ?? false);
   const [newCarrierName, setNewCarrierName] = useState('');
   const [newCarrierMC, setNewCarrierMC] = useState('');
+  const [carrierVerifying, setCarrierVerifying] = useState(false);
+  const [carrierVerifyError, setCarrierVerifyError] = useState('');
+  const [carrierVerifySuccess, setCarrierVerifySuccess] = useState('');
+  const agreementFileRef = useRef<HTMLInputElement>(null);
+  const [uploadingAgreementFor, setUploadingAgreementFor] = useState<number | null>(null);
 
   // Photo preview
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+
+  // Raw file objects for Supabase Storage upload
+  const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
+  const [coverPhotoFile, setCoverPhotoFile] = useState<File | null>(null);
 
   // Cover theme
   const [selectedTheme, setSelectedTheme] = useState(COVER_THEMES[0].gradient);
@@ -105,20 +117,33 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
   const handleProfilePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setProfilePhotoFile(file);
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      setPhotoPreview(result);
+    reader.onloadend = async () => {
+      const raw = reader.result as string;
+      const compressed = await compressImage(raw);
+      setPhotoPreview(compressed);
     };
     reader.readAsDataURL(file);
   };
 
-  const handleSaveProfilePhoto = () => {
-    if (photoPreview) {
+  const handleSaveProfilePhoto = async () => {
+    if (!photoPreview) return;
+    const isSupabaseUser = currentUser && !currentUser.id.startsWith('user-') && !currentUser.id.startsWith('seed-');
+    if (isSupabaseUser && profilePhotoFile) {
+      try {
+        const publicUrl = await uploadProfileImage(currentUser!.id, profilePhotoFile);
+        updateProfile({ image: publicUrl });
+      } catch (err) {
+        console.warn('Storage upload failed, falling back to base64:', err);
+        updateProfile({ image: photoPreview });
+      }
+    } else {
       updateProfile({ image: photoPreview });
     }
     setPhotoModalOpen(false);
     setPhotoPreview(null);
+    setProfilePhotoFile(null);
   };
 
   const handleRemovePhoto = () => {
@@ -130,20 +155,33 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
   const handleCoverPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setCoverPhotoFile(file);
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      setCoverPreview(result);
+    reader.onloadend = async () => {
+      const raw = reader.result as string;
+      const compressed = await compressImage(raw);
+      setCoverPreview(compressed);
     };
     reader.readAsDataURL(file);
   };
 
-  const handleSaveCoverPhoto = () => {
-    if (coverPreview) {
+  const handleSaveCoverPhoto = async () => {
+    if (!coverPreview) return;
+    const isSupabaseUser = currentUser && !currentUser.id.startsWith('user-') && !currentUser.id.startsWith('seed-');
+    if (isSupabaseUser && coverPhotoFile) {
+      try {
+        const publicUrl = await uploadCoverImage(currentUser!.id, coverPhotoFile);
+        updateProfile({ coverImage: publicUrl });
+      } catch (err) {
+        console.warn('Cover upload failed, falling back to base64:', err);
+        updateProfile({ coverImage: coverPreview });
+      }
+    } else {
       updateProfile({ coverImage: coverPreview });
     }
     setCoverModalOpen(false);
     setCoverPreview(null);
+    setCoverPhotoFile(null);
   };
 
   const handleSaveTheme = () => {
@@ -190,15 +228,98 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
     setEditModalOpen(false);
   };
 
-  const handleAddCarrier = () => {
-    if (!newCarrierName.trim() || !newCarrierMC.trim()) return;
-    setEditCarriers(prev => [...prev, { carrierName: newCarrierName.trim(), mcNumber: newCarrierMC.trim().toUpperCase(), verified: false }]);
-    setNewCarrierName('');
-    setNewCarrierMC('');
+  const handleAddCarrier = async () => {
+    if (!newCarrierMC.trim()) {
+      setCarrierVerifyError('Please enter an MC number.');
+      return;
+    }
+    const mc = newCarrierMC.trim().toUpperCase();
+    const normalizedMC = mc.replace(/[^0-9]/g, '');
+
+    // Check for duplicates
+    if (editCarriers.some(c => c.mcNumber.replace(/[^0-9]/g, '') === normalizedMC)) {
+      setCarrierVerifyError('This carrier is already in your list.');
+      return;
+    }
+
+    setCarrierVerifying(true);
+    setCarrierVerifyError('');
+    setCarrierVerifySuccess('');
+
+    try {
+      const result = await verifyCarrierMC(mc);
+
+      if (result.found && result.active) {
+        // FMCSA confirmed active — auto-verified
+        const carrierName = result.legalName || newCarrierName.trim() || 'Unknown';
+        setEditCarriers(prev => [...prev, {
+          carrierName,
+          mcNumber: result.mcNumber,
+          verified: true,
+        }]);
+        setCarrierVerifySuccess(`FMCSA Verified: ${carrierName} (${result.mcNumber}) — Active authority confirmed.`);
+        setNewCarrierName('');
+        setNewCarrierMC('');
+      } else if (result.found && !result.active) {
+        // Found but authority is not active — reject
+        setCarrierVerifyError(
+          `MC# ${result.mcNumber} (${result.legalName}) was found in FMCSA but does not have active operating authority. Only carriers with active authority can be added.`
+        );
+      } else {
+        // Not found or verification unavailable — allow but require document upload
+        const carrierName = newCarrierName.trim();
+        if (!carrierName) {
+          setCarrierVerifyError('FMCSA could not verify this MC#. Please enter the carrier name manually and upload your dispatch agreement as proof.');
+          setCarrierVerifying(false);
+          return;
+        }
+        setEditCarriers(prev => [...prev, {
+          carrierName,
+          mcNumber: normalizedMC ? `MC${normalizedMC}` : mc,
+          verified: false,
+        }]);
+        setCarrierVerifySuccess(
+          `${carrierName} added — pending document verification. Please upload your dispatch agreement below to verify this carrier relationship.`
+        );
+        setNewCarrierName('');
+        setNewCarrierMC('');
+      }
+    } catch {
+      setCarrierVerifyError('Verification service error. Please try again.');
+    } finally {
+      setCarrierVerifying(false);
+    }
   };
 
   const handleRemoveCarrier = (index: number) => {
     setEditCarriers(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAgreementUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || uploadingAgreementFor === null) return;
+    const idx = uploadingAgreementFor;
+    const carrier = editCarriers[idx];
+    const isSupabaseUser = currentUser && !currentUser.id.startsWith('user-') && !currentUser.id.startsWith('seed-');
+
+    let storagePath: string | undefined;
+    if (isSupabaseUser) {
+      try {
+        storagePath = await uploadAgreementFile(currentUser!.id, carrier.mcNumber, file);
+      } catch (err) {
+        console.warn('Agreement upload to storage failed:', err);
+      }
+    }
+
+    setEditCarriers(prev =>
+      prev.map((c, i) =>
+        i === idx
+          ? { ...c, agreementFileName: file.name, agreementUploadedAt: new Date().toISOString() }
+          : c
+      )
+    );
+    setUploadingAgreementFor(null);
+    if (agreementFileRef.current) agreementFileRef.current.value = '';
   };
 
   const toggleEditSpecialty = (specialty: string) => {
@@ -256,11 +377,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
   };
 
   // Determine cover background
-  const coverStyle: React.CSSProperties = currentUser.coverImage?.startsWith('data:')
-    ? { backgroundImage: `url(${currentUser.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : currentUser.coverImage?.startsWith('linear-gradient')
-      ? { background: currentUser.coverImage }
-      : { background: 'linear-gradient(135deg, #1E3A5F 0%, #2c5282 50%, #3B82F6 100%)' };
+  const coverStyle: React.CSSProperties =
+    currentUser.coverImage?.startsWith('data:') || currentUser.coverImage?.startsWith('http')
+      ? { backgroundImage: `url(${currentUser.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+      : currentUser.coverImage?.startsWith('linear-gradient')
+        ? { background: currentUser.coverImage }
+        : { background: 'linear-gradient(135deg, #1E3A5F 0%, #2c5282 50%, #3B82F6 100%)' };
 
   return (
     <section className="page-bg min-h-screen pb-12">
@@ -843,42 +965,131 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Carriers Worked With</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Carriers Worked With</label>
+                      <p className="text-xs text-gray-400 mb-2">Each carrier is verified against FMCSA. Upload your dispatch agreement to confirm the relationship.</p>
+
+                      {/* Hidden file input for agreement uploads */}
+                      <input
+                        ref={agreementFileRef}
+                        type="file"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        className="hidden"
+                        onChange={handleAgreementUpload}
+                      />
+
                       {editCarriers.length > 0 && (
                         <div className="space-y-2 mb-3">
                           {editCarriers.map((c, i) => (
-                            <div key={i} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
-                              <span className="text-sm text-gray-800 flex-1">{c.carrierName}</span>
-                              <span className="text-xs text-gray-500">{c.mcNumber}</span>
-                              <button type="button" onClick={() => handleRemoveCarrier(i)} className="text-red-400 hover:text-red-600">
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                            <div key={i} className={`rounded-lg px-3 py-2 ${c.verified ? 'bg-green-50 border border-green-100' : 'bg-amber-50 border border-amber-100'}`}>
+                              <div className="flex items-center gap-2">
+                                {c.verified ? (
+                                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                ) : (
+                                  <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                                )}
+                                <span className="text-sm text-gray-800 flex-1">{c.carrierName}</span>
+                                <span className={`text-xs px-2 py-0.5 rounded ${c.verified ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                  {c.verified ? 'FMCSA Verified' : 'Pending'}
+                                </span>
+                                <span className="text-xs text-gray-500">{c.mcNumber}</span>
+                                <button type="button" onClick={() => handleRemoveCarrier(i)} className="text-red-400 hover:text-red-600">
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                              {/* Agreement upload row */}
+                              <div className="mt-1.5 ml-6 flex items-center gap-2">
+                                {c.agreementFileName ? (
+                                  <div className="flex items-center gap-1.5 text-xs text-green-700">
+                                    <FileText className="w-3.5 h-3.5" />
+                                    <span>{c.agreementFileName}</span>
+                                    <span className="text-gray-400">uploaded</span>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setUploadingAgreementFor(i);
+                                      agreementFileRef.current?.click();
+                                    }}
+                                    className="flex items-center gap-1 text-xs text-[#3B82F6] hover:text-[#2563EB] font-medium"
+                                  >
+                                    <Upload className="w-3 h-3" />
+                                    Upload Dispatch Agreement
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>
                       )}
+
+                      {/* Add carrier form */}
                       <div className="flex gap-2">
                         <input
                           type="text"
                           value={newCarrierName}
-                          onChange={(e) => setNewCarrierName(e.target.value)}
-                          placeholder="Carrier name"
+                          onChange={(e) => { setNewCarrierName(e.target.value); setCarrierVerifyError(''); setCarrierVerifySuccess(''); }}
+                          placeholder="Carrier name (optional)"
                           className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none"
                         />
                         <input
                           type="text"
                           value={newCarrierMC}
-                          onChange={(e) => setNewCarrierMC(e.target.value)}
+                          onChange={(e) => { setNewCarrierMC(e.target.value); setCarrierVerifyError(''); setCarrierVerifySuccess(''); }}
                           placeholder="MC#"
-                          className="w-28 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none"
+                          className="w-32 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none"
                         />
                         <button
                           type="button"
                           onClick={handleAddCarrier}
-                          className="px-3 py-2 bg-[#1E3A5F] text-white rounded-lg hover:bg-[#1E3A5F]/80 transition-colors"
+                          disabled={carrierVerifying}
+                          className="px-3 py-2 bg-[#1E3A5F] text-white rounded-lg hover:bg-[#1E3A5F]/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                         >
-                          <Plus className="w-4 h-4" />
+                          {carrierVerifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                         </button>
+                      </div>
+
+                      {/* Status messages */}
+                      {carrierVerifying && (
+                        <div className="mt-2 flex items-center gap-2 text-xs text-blue-600">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Verifying MC# with FMCSA SAFER database...
+                        </div>
+                      )}
+                      {carrierVerifyError && (
+                        <div className="mt-2 flex items-start gap-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                          <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                          <span>{carrierVerifyError}</span>
+                        </div>
+                      )}
+                      {carrierVerifySuccess && (
+                        <div className="mt-2 flex items-start gap-2 text-xs text-green-600 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                          <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                          <span>{carrierVerifySuccess}</span>
+                        </div>
+                      )}
+
+                      {/* Legal disclaimer */}
+                      <div className="mt-3 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+                        <div className="flex items-start gap-2">
+                          <Shield className="w-4 h-4 text-[#1E3A5F] mt-0.5 flex-shrink-0" />
+                          <div className="text-[10px] leading-relaxed text-gray-500">
+                            <p className="font-semibold text-gray-700 text-xs mb-1">Document Verification Notice</p>
+                            <p>
+                              Uploading falsified, forged, or fraudulent dispatch agreements or carrier
+                              documents is a violation of federal law and may result in criminal prosecution
+                              under 18 U.S.C. {'\u00A7'} 1001 and related statutes. DispatchLink and CarrierScout
+                              Logistics reserve the right to report suspected fraud to the appropriate
+                              authorities.
+                            </p>
+                            <p className="mt-1">
+                              <strong>Disclaimer:</strong> DispatchLink, CarrierScout Logistics, and their affiliates
+                              are not responsible for the authenticity of uploaded documents. Users are solely
+                              responsible for ensuring all documents are legitimate and accurate. By uploading
+                              a document, you certify that it is genuine and that you have authorization to share it.
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -997,7 +1208,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
               <div className="w-full h-32 rounded-xl mb-4 overflow-hidden border border-gray-200">
                 {coverPreview ? (
                   <img src={coverPreview} alt="Cover preview" className="w-full h-full object-cover" />
-                ) : currentUser.coverImage?.startsWith('data:') ? (
+                ) : currentUser.coverImage?.startsWith('data:') || currentUser.coverImage?.startsWith('http') ? (
                   <img src={currentUser.coverImage} alt="Current cover" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full" style={{ background: currentUser.coverImage || COVER_THEMES[0].gradient }} />

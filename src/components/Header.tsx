@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Truck, Menu, X, User, LogIn, Settings, LayoutDashboard, Bell, MessageSquare, Users, UserPlus } from 'lucide-react';
+import { Menu, X, User, LogIn, Settings, LayoutDashboard, Bell, MessageSquare, Users, UserPlus } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
 
 interface HeaderProps {
@@ -15,7 +15,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
-  const { currentUser, setCurrentUser, unreadMessages, pendingConnections } = useAppContext();
+  const { currentUser, logout, unreadMessages, pendingConnections } = useAppContext();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -53,17 +53,15 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => setCurrentView('home')}
           >
-            <div className="bg-[#3B82F6] p-2 rounded-lg">
-              <Truck className="w-6 h-6 text-white" />
-            </div>
+            <img
+              src="/dispatchlink-logo-dark.svg"
+              alt="DispatchLink"
+              className="h-10 sm:h-12 w-auto"
+            />
             <span className="relative flex h-2 w-2">
               <span className="animate-live-dot absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
             </span>
-            <div>
-              <span className="text-xl font-bold">DispatchLink</span>
-              <span className="text-xs block text-gray-300">CarrierScout Logistics</span>
-            </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -254,7 +252,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                       <div className="border-t border-gray-100 mt-1 pt-1">
                         <button
                           onClick={() => {
-                            setCurrentUser(null);
+                            logout();
                             setCurrentView('home');
                             setUserMenuOpen(false);
                           }}
@@ -394,7 +392,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                   </div>
                   <button
                     onClick={() => {
-                      setCurrentUser(null);
+                      logout();
                       setCurrentView('home');
                       setMobileMenuOpen(false);
                     }}

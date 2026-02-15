@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Mail, Lock, User, Building, Phone, Truck, Users, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { subscribeToMailchimp } from '@/lib/mailchimp';
 import { useAppContext } from '@/contexts/AppContext';
+import { getUserByEmail, createUser, createDispatcherProfile, createCarrierProfile, createBrokerProfile, getCarrierReferences } from '@/lib/api';
+import { dbUserToCurrentUser } from '@/lib/mappers';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -31,6 +33,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
     agreePrivacy: false,
   });
 
+  // Reset modal state when it opens
+  useEffect(() => {
+    if (isOpen) {
+      setSuccess(false);
+      setError('');
+      setLoading(false);
+      setMode(initialMode);
+    }
+  }, [isOpen, initialMode]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -58,22 +70,57 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
           throw new Error('DOT and MC numbers are required for carriers');
         }
 
-        // Demo mode: simulate account creation
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        let newUser;
+        try {
+          // Check if email already exists
+          const existing = await getUserByEmail(formData.email);
+          if (existing) {
+            throw new Error('An account with this email already exists. Please sign in.');
+          }
 
-        const newUser = {
-          id: `user-${Date.now()}`,
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          company: formData.companyName,
-          userType,
-          verified: false,
-          yearsExperience: undefined as number | undefined,
-          specialties: [] as string[],
-          carriersWorkedWith: [] as { carrierName: string; mcNumber: string; verified: boolean }[],
-          carrierScoutSubscribed: false,
-          ...(userType === 'carrier' ? { mcNumber: formData.mcNumber, dotNumber: formData.dotNumber } : {}),
-        };
+          // Create user in Supabase
+          const dbUser = await createUser({
+            email: formData.email,
+            userType,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone,
+            companyName: formData.companyName,
+          });
+
+          // Create type-specific profile
+          if (userType === 'dispatcher') {
+            await createDispatcherProfile(dbUser.id, { specialties: [] });
+          } else if (userType === 'carrier') {
+            await createCarrierProfile(dbUser.id, {
+              dotNumber: formData.dotNumber,
+              mcNumber: formData.mcNumber,
+            });
+          } else {
+            await createBrokerProfile(dbUser.id, { mcNumber: '', specialties: [] });
+          }
+
+          // Re-fetch with joined profiles for the mapper
+          const fullUser = await getUserByEmail(formData.email);
+          newUser = dbUserToCurrentUser(fullUser!);
+        } catch (supaErr: any) {
+          // If Supabase is unreachable, fall back to local-only user
+          if (supaErr?.message?.includes('already exists')) throw supaErr;
+          console.warn('Supabase unavailable, creating local-only user:', supaErr);
+          newUser = {
+            id: `user-${Date.now()}`,
+            name: `${formData.firstName} ${formData.lastName}`,
+            email: formData.email,
+            company: formData.companyName,
+            userType,
+            verified: false,
+            yearsExperience: undefined as number | undefined,
+            specialties: [] as string[],
+            carriersWorkedWith: [] as { carrierName: string; mcNumber: string; verified: boolean }[],
+            carrierScoutSubscribed: false,
+            ...(userType === 'carrier' ? { mcNumber: formData.mcNumber, dotNumber: formData.dotNumber } : {}),
+          };
+        }
         setCurrentUser(newUser);
         registerUser(newUser);
         setSuccess(true);
@@ -90,19 +137,39 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
           source: 'signup',
         });
       } else {
-        // Login - validate and show success
+        // Login
         if (!formData.email || !formData.password) {
           throw new Error('Please enter your email and password');
         }
-        await new Promise(resolve => setTimeout(resolve, 800));
-        setCurrentUser({
-          id: `user-${Date.now()}`,
-          name: formData.email.split('@')[0],
-          email: formData.email,
-          company: '',
-          userType: 'dispatcher',
-          verified: true,
-        });
+
+        let loginUser;
+        try {
+          const dbUser = await getUserByEmail(formData.email);
+          if (!dbUser) {
+            throw new Error('No account found with this email. Please sign up first.');
+          }
+
+          // Load carrier references if dispatcher
+          let carrierRefs;
+          if (dbUser.user_type === 'dispatcher') {
+            carrierRefs = await getCarrierReferences(dbUser.id);
+          }
+          loginUser = dbUserToCurrentUser(dbUser, carrierRefs);
+        } catch (supaErr: any) {
+          if (supaErr?.message?.includes('No account found')) throw supaErr;
+          // Supabase down — try cached session
+          console.warn('Supabase unavailable during login, using fallback:', supaErr);
+          loginUser = {
+            id: `user-${Date.now()}`,
+            name: formData.email.split('@')[0],
+            email: formData.email,
+            company: '',
+            userType: 'dispatcher' as const,
+            verified: false,
+          };
+        }
+        setCurrentUser(loginUser);
+        registerUser(loginUser);
         setSuccess(true);
       }
     } catch (err: any) {

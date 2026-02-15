@@ -34,11 +34,12 @@ const ViewUserProfile: React.FC<ViewUserProfileProps> = ({ user, onBack, onNavig
   };
 
   // Determine cover background
-  const coverStyle: React.CSSProperties = user.coverImage?.startsWith('data:')
-    ? { backgroundImage: `url(${user.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : user.coverImage?.startsWith('linear-gradient')
-      ? { background: user.coverImage }
-      : { background: 'linear-gradient(135deg, #1E3A5F 0%, #2c5282 50%, #3B82F6 100%)' };
+  const coverStyle: React.CSSProperties =
+    user.coverImage?.startsWith('data:') || user.coverImage?.startsWith('http')
+      ? { backgroundImage: `url(${user.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+      : user.coverImage?.startsWith('linear-gradient')
+        ? { background: user.coverImage }
+        : { background: 'linear-gradient(135deg, #1E3A5F 0%, #2c5282 50%, #3B82F6 100%)' };
 
   return (
     <section className="page-bg min-h-screen pb-12">

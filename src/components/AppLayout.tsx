@@ -80,12 +80,18 @@ const AppLayout: React.FC = () => {
     carrierName: string;
     mcNumber: string;
   }>({ isOpen: false, carrierName: '', mcNumber: '' });
+  const [initialSearchQuery, setInitialSearchQuery] = useState('');
+  const [searchKey, setSearchKey] = useState(0);
 
   const handleNavigate = (view: string) => {
     if (PREMIUM_VIEWS.has(view)) {
       setCarrierScoutFeature(PREMIUM_FEATURE_NAMES[view] || 'This Feature');
       setCarrierScoutModalOpen(true);
       return;
+    }
+    // Clear search query when navigating away from search results
+    if (view !== 'dispatchers' && view !== 'carriers' && view !== 'brokers') {
+      setInitialSearchQuery('');
     }
     setCurrentView(view);
   };
@@ -98,6 +104,18 @@ const AppLayout: React.FC = () => {
   const handleSignup = () => {
     setAuthMode('signup');
     setAuthModalOpen(true);
+  };
+
+  const handleHeroSearch = (query: string, role: string, _region: string) => {
+    setInitialSearchQuery(query);
+    setSearchKey(k => k + 1);
+    if (role === 'carrier') {
+      setCurrentView('carriers');
+    } else if (role === 'broker') {
+      setCurrentView('brokers');
+    } else {
+      setCurrentView('dispatchers');
+    }
   };
 
   const handleViewDispatcherProfile = (id: string) => {
@@ -300,19 +318,23 @@ const AppLayout: React.FC = () => {
       case 'messages':
         return <MessagesView />;
       case 'brokers':
-        return <BrokerDirectory />;
+        return <BrokerDirectory key={searchKey} initialSearchQuery={initialSearchQuery} />;
       case 'dispatchers':
         return (
           <DispatcherDirectory
+            key={searchKey}
             onViewProfile={handleViewDispatcherProfile}
             onContact={handleContactDispatcher}
+            initialSearchQuery={initialSearchQuery}
           />
         );
       case 'carriers':
         return (
           <CarrierDirectory
+            key={searchKey}
             onViewProfile={handleViewCarrierProfile}
             onRequestPermission={handleRequestMCPermission}
+            initialSearchQuery={initialSearchQuery}
           />
         );
       case 'carrier-profile':
@@ -338,6 +360,8 @@ const AppLayout: React.FC = () => {
             <Hero
               onGetStarted={handleSignup}
               onLearnMore={() => setCurrentView('dispatchers')}
+              onSearch={handleHeroSearch}
+              onViewProfile={handleViewDispatcherProfile}
             />
             <FeaturesSection />
             <TestimonialsSection />
@@ -366,7 +390,12 @@ const AppLayout: React.FC = () => {
 
       <AuthModal
         isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
+        onClose={() => {
+          setAuthModalOpen(false);
+          if (currentUser) {
+            setCurrentView('dashboard');
+          }
+        }}
         initialMode={authMode}
       />
 

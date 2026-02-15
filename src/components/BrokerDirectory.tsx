@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, SlidersHorizontal, Grid, List, X, MapPin } from 'lucide-react';
 import BrokerCard from './BrokerCard';
 
@@ -7,8 +7,13 @@ const sampleBrokers: any[] = [];
 const specialtyOptions = ['Heavy Haul', 'Reefer', 'Dry Van', 'Flatbed', 'Hazmat', 'Intermodal', 'Auto Transport', 'LTL'];
 const regionOptions = ['Nationwide', 'Northeast', 'Southeast', 'Midwest', 'Southwest', 'West Coast'];
 
-const BrokerDirectory: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+interface BrokerDirectoryProps {
+  initialSearchQuery?: string;
+}
+
+const BrokerDirectory: React.FC<BrokerDirectoryProps> = ({ initialSearchQuery = '' }) => {
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  useEffect(() => { setSearchQuery(initialSearchQuery); }, [initialSearchQuery]);
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'rating' | 'yearsInBusiness' | 'reviews'>('rating');

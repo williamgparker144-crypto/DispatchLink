@@ -1,0 +1,51 @@
+<svg width="260" height="80" viewBox="0 0 260 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Magnifying glass / scope -->
+  <circle cx="36" cy="36" r="28" fill="none" stroke="#10B981" stroke-width="2" opacity="0.4"/>
+  <circle cx="36" cy="36" r="24" fill="rgba(16,185,129,0.03)"/>
+  <!-- Handle -->
+  <path d="M56 56L68 68" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Scout figure inside scope -->
+  <g transform="translate(24, 12)">
+    <circle cx="12" cy="10" r="8" fill="#1E3A5F"/>
+    <line x1="12" y1="2" x2="12" y2="18" stroke="#10B981" stroke-width="0.4" opacity="0.5"/>
+    <circle cx="9" cy="9" r="1.5" fill="#60A5FA"/>
+    <circle cx="15" cy="9" r="2.5" fill="none" stroke="#10B981" stroke-width="0.6"/>
+    <circle cx="15" cy="9" r="0.8" fill="#10B981"/>
+    <path d="M15 6V7M15 11V12M12 9H13M17 9H18" stroke="#10B981" stroke-width="0.3" opacity="0.6"/>
+    <path d="M4 8C4 4 8 2 12 2C16 2 20 4 20 8" fill="none" stroke="#3B82F6" stroke-width="1" stroke-linecap="round"/>
+    <path d="M18 3L22 0" stroke="#3B82F6" stroke-width="0.8" stroke-linecap="round"/>
+    <circle cx="22.5" cy="-0.5" r="1.2" fill="#3B82F6" opacity="0.7"/>
+    <path d="M6 18V30H18V18" fill="none" stroke="#1E3A5F" stroke-width="1.2"/>
+    <rect x="8" y="20" width="8" height="5" rx="1" fill="rgba(59,130,246,0.08)" stroke="#3B82F6" stroke-width="0.5"/>
+    <path d="M9 23L10 21L11 24L12 22L13 23L14 21L15 23" stroke="#10B981" stroke-width="0.5"/>
+    <path d="M6 22L-2 18" stroke="#1E3A5F" stroke-width="1" stroke-linecap="round"/>
+    <path d="M18 22L26 18" stroke="#3B82F6" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="2 1"/>
+  </g>
+  
+  <!-- Trucks being discovered -->
+  <g opacity="0.7">
+    <rect x="8" y="52" width="7" height="3.5" rx="0.8" fill="none" stroke="#3B82F6" stroke-width="0.5"/>
+    <circle cx="10" cy="56.5" r="1" fill="none" stroke="#3B82F6" stroke-width="0.4"/>
+    <circle cx="14" cy="56.5" r="1" fill="none" stroke="#3B82F6" stroke-width="0.4"/>
+  </g>
+  <g opacity="0.5">
+    <rect x="52" y="20" width="6" height="3" rx="0.6" fill="none" stroke="#10B981" stroke-width="0.4"/>
+    <circle cx="54" cy="24" r="0.8" fill="none" stroke="#10B981" stroke-width="0.3"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="82" y="28" font-family="Audiowide, sans-serif" font-size="14" fill="#94A3B8" letter-spacing="2">CARRIER</text>
+  <text x="82" y="54" font-family="Audiowide, sans-serif" font-size="24" letter-spacing="2">
+    <tspan fill="#10B981">SCOUT</tspan>
+  </text>
+  <line x1="82" y1="59" x2="200" y2="59" stroke="url(#csAccent2)" stroke-width="1.5"/>
+  <text x="82" y="72" font-family="sans-serif" font-size="7" fill="#475569" letter-spacing="3">DISCOVER · VERIFY · DISPATCH</text>
+  
+  <defs>
+    <linearGradient id="csAccent2" x1="82" y1="0" x2="200" y2="0">
+      <stop stop-color="#10B981"/>
+      <stop offset="1" stop-color="transparent"/>
+    </linearGradient>
+  </defs>
+</svg>
