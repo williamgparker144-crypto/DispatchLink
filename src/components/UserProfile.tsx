@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   Camera, Edit3, MapPin, Briefcase, Shield, Users, MessageSquare, Eye, X, Check,
   ImageIcon, Globe, Link2, Palette, Upload, FileText, Heart, Share2, Bookmark,
-  Award, Star, Calendar, Mail
+  Award, Star, Calendar, Mail, Sparkles
 } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
 import PostCard from './PostCard';
@@ -27,6 +27,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [coverModalOpen, setCoverModalOpen] = useState(false);
   const [themeModalOpen, setThemeModalOpen] = useState(false);
+  const [frameModalOpen, setFrameModalOpen] = useState(false);
+  const [avatarFrame, setAvatarFrame] = useState<string>('none');
   const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'activity'>('posts');
 
   // File upload refs
@@ -65,7 +67,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
             <p className="text-gray-500 mb-6">Create an account or sign in to access your dashboard.</p>
             <button
               onClick={() => onNavigate('home')}
-              className="px-6 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors"
+              className="px-6 py-3 btn-glossy-primary rounded-xl transition-all"
             >
               Go to Home
             </button>
@@ -249,29 +251,39 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         {/* Profile Header Card */}
         <div className="relative -mt-16 mb-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-visible">
-            <div className="px-6 pb-6 pt-2">
-              <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-                {/* Avatar */}
-                <div className="relative -mt-16 flex-shrink-0">
-                  <div
-                    className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center overflow-hidden cursor-pointer group/avatar"
-                    onClick={() => setPhotoModalOpen(true)}
-                  >
-                    {currentUser.image ? (
-                      <img src={currentUser.image} alt={currentUser.name} className="w-full h-full rounded-full object-cover" />
-                    ) : (
-                      <span className="text-white font-bold text-5xl">{userInitial}</span>
-                    )}
-                    {/* Camera overlay */}
-                    <div className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity">
-                      <Camera className="w-6 h-6 text-white mb-1" />
-                      <span className="text-white text-xs font-medium">Change Photo</span>
-                    </div>
-                  </div>
-                  <div className="absolute bottom-2 right-2 w-5 h-5 bg-[#10B981] border-[3px] border-white rounded-full"></div>
+          {/* Avatar - positioned above card to prevent overflow issues */}
+          <div className="relative z-10 pl-6 group/avatar" style={{ marginBottom: '-64px' }}>
+            <div className="relative inline-block">
+              <div
+                className={`w-32 h-32 rounded-full shadow-lg bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center overflow-hidden cursor-pointer avatar-frame-${avatarFrame}`}
+                onClick={() => setPhotoModalOpen(true)}
+              >
+                {currentUser.image ? (
+                  <img src={currentUser.image} alt={currentUser.name} className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  <span className="text-white font-bold text-5xl">{userInitial}</span>
+                )}
+                {/* Camera overlay */}
+                <div className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                  <Camera className="w-6 h-6 text-white mb-1" />
+                  <span className="text-white text-xs font-medium">Change Photo</span>
                 </div>
+              </div>
+              <div className="absolute bottom-2 right-2 w-5 h-5 bg-[#10B981] border-[3px] border-white rounded-full z-10"></div>
+              {/* Frame customization button */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setFrameModalOpen(true); }}
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-white border border-gray-200 rounded-full text-[10px] font-bold text-gray-500 hover:text-[#8B5CF6] hover:border-[#8B5CF6] transition-colors shadow-sm opacity-0 group-hover/avatar:opacity-100 z-10 flex items-center gap-1"
+              >
+                <Sparkles className="w-3 h-3" />
+                Frame
+              </button>
+            </div>
+          </div>
 
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-6 pb-6 pt-[72px]">
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                 {/* Name & Info */}
                 <div className="flex-1 min-w-0 pb-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -306,7 +318,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                   )}
                 </div>
 
-                {/* Edit Button */}
+                {/* Edit Button - glossy */}
                 <button
                   onClick={() => {
                     setEditName(currentUser.name);
@@ -316,7 +328,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                     setEditWebsite(currentUser.website || '');
                     setEditModalOpen(true);
                   }}
-                  className="flex items-center gap-2 px-5 py-2.5 border-2 border-[#3B82F6] text-[#3B82F6] rounded-xl font-semibold text-sm hover:bg-[#3B82F6]/5 transition-colors flex-shrink-0"
+                  className="flex items-center gap-2 px-5 py-2.5 btn-glossy-outline rounded-xl text-sm transition-all flex-shrink-0"
                 >
                   <Edit3 className="w-4 h-4" />
                   Edit Profile
@@ -467,7 +479,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                       setEditWebsite(currentUser.website || '');
                       setEditModalOpen(true);
                     }}
-                    className="px-4 py-2 bg-[#3B82F6] text-white rounded-lg text-sm font-semibold hover:bg-[#2563EB] transition-colors"
+                    className="px-4 py-2 btn-glossy-primary rounded-lg text-sm transition-all"
                   >
                     Add Details
                   </button>
@@ -557,7 +569,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                 <button
                   onClick={handleCreatePost}
                   disabled={!newPostContent.trim() && !postImage && !postDoc}
-                  className="ml-auto px-5 py-2 bg-gradient-to-r from-[#1E3A5F] to-[#3B82F6] text-white rounded-full text-sm font-bold hover:shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                  className="ml-auto px-5 py-2 btn-glossy-navy rounded-full text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
                 >
                   Post
                 </button>
@@ -654,13 +666,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setEditModalOpen(false)}
-                  className="flex-1 py-3 border border-gray-200 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-3 btn-glossy-outline rounded-xl transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveProfile}
-                  className="flex-1 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3 btn-glossy-primary rounded-xl transition-all flex items-center justify-center gap-2"
                 >
                   <Check className="w-4 h-4" />
                   Save
@@ -698,7 +710,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               <div className="space-y-3">
                 <button
                   onClick={() => profilePhotoRef.current?.click()}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-3 btn-glossy-primary rounded-xl transition-all"
                 >
                   <Upload className="w-5 h-5" />
                   Upload from Computer
@@ -707,7 +719,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                 {photoPreview && (
                   <button
                     onClick={handleSaveProfilePhoto}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-[#10B981] text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 py-3 btn-glossy-emerald rounded-xl transition-all"
                   >
                     <Check className="w-5 h-5" />
                     Save Photo
@@ -759,7 +771,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               <div className="space-y-3">
                 <button
                   onClick={() => coverPhotoRef.current?.click()}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-3 btn-glossy-primary rounded-xl transition-all"
                 >
                   <Upload className="w-5 h-5" />
                   Upload from Computer
@@ -768,7 +780,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                 {coverPreview && (
                   <button
                     onClick={handleSaveCoverPhoto}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-[#10B981] text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 py-3 btn-glossy-emerald rounded-xl transition-all"
                   >
                     <Check className="w-5 h-5" />
                     Save Cover Photo
@@ -779,6 +791,69 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               <p className="text-xs text-gray-400 mt-4 text-center">
                 Recommended size: 1200 x 400 pixels. Supports JPG, PNG, and WebP.
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Avatar Frame Picker Modal */}
+      {frameModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setFrameModalOpen(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-[#1E3A5F]">Choose Avatar Frame</h2>
+                <button onClick={() => setFrameModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-500 mb-4">Customize your profile picture with a decorative frame</p>
+
+              {/* Frame preview */}
+              <div className="flex justify-center mb-6">
+                <div className={`w-28 h-28 rounded-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center overflow-hidden avatar-frame-${avatarFrame}`}>
+                  {currentUser.image ? (
+                    <img src={currentUser.image} alt={currentUser.name} className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <span className="text-white font-bold text-4xl">{userInitial}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Frame options */}
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                {[
+                  { id: 'none', label: 'None', preview: 'border-4 border-white' },
+                  { id: 'gold', label: 'Gold', preview: 'avatar-frame-gold' },
+                  { id: 'rainbow', label: 'Rainbow', preview: 'avatar-frame-rainbow' },
+                  { id: 'emerald', label: 'Emerald', preview: 'avatar-frame-emerald' },
+                  { id: 'blue', label: 'Blue', preview: 'avatar-frame-blue' },
+                  { id: 'purple', label: 'Purple', preview: 'avatar-frame-purple' },
+                ].map(frame => (
+                  <button
+                    key={frame.id}
+                    onClick={() => setAvatarFrame(frame.id)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                      avatarFrame === frame.id ? 'border-[#3B82F6] bg-blue-50 ring-2 ring-[#3B82F6]/20' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className={`w-14 h-14 rounded-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center overflow-hidden ${frame.preview}`}>
+                      <span className="text-white font-bold text-lg">{userInitial}</span>
+                    </div>
+                    <span className="text-xs font-semibold text-gray-600">{frame.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setFrameModalOpen(false)}
+                className="w-full py-3 btn-glossy-primary rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                <Check className="w-4 h-4" />
+                Apply Frame
+              </button>
             </div>
           </div>
         </div>
@@ -815,13 +890,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               <div className="flex gap-3">
                 <button
                   onClick={() => setThemeModalOpen(false)}
-                  className="flex-1 py-3 border border-gray-200 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-3 btn-glossy-outline rounded-xl transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveTheme}
-                  className="flex-1 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3 btn-glossy-primary rounded-xl transition-all flex items-center justify-center gap-2"
                 >
                   <Check className="w-4 h-4" />
                   Apply Theme

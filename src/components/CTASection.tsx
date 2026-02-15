@@ -47,7 +47,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onDispatcherSignup, onCarrierSi
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={onDispatcherSignup}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors"
+                  className="flex items-center justify-center gap-2 px-6 py-3 btn-glossy-primary rounded-xl transition-all"
                 >
                   Join Free
                   <ArrowRight className="w-4 h-4" />
@@ -93,12 +93,15 @@ const CTASection: React.FC<CTASectionProps> = ({ onDispatcherSignup, onCarrierSi
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={onCarrierSignup}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#3B82F6] rounded-xl font-semibold hover:bg-gray-100 transition-colors"
+                  className="flex items-center justify-center gap-2 px-6 py-3 btn-glossy-outline rounded-xl transition-all"
                 >
                   Join Free Today
                   <ArrowRight className="w-4 h-4" />
                 </button>
-                <button className="px-6 py-3 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-colors">
+                <button
+                  onClick={onCarrierSignup}
+                  className="px-6 py-3 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-colors"
+                >
                   Learn More
                 </button>
               </div>

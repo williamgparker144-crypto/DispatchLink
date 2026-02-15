@@ -86,9 +86,12 @@ const FAQSection: React.FC = () => {
         {/* Contact CTA */}
         <div className="mt-12 text-center">
           <p className="text-gray-600 mb-4">Still have questions?</p>
-          <button className="px-6 py-3 bg-[#1E3A5F] text-white rounded-xl font-semibold hover:bg-[#1E3A5F]/80 transition-colors">
+          <a
+            href="mailto:support@dispatchlinkpro.vip"
+            className="inline-block px-6 py-3 btn-glossy-navy rounded-xl transition-all"
+          >
             Contact Support
-          </button>
+          </a>
         </div>
       </div>
     </section>

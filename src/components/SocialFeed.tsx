@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { PenSquare, ImageIcon, Video, Link2, X, Play, FileText, Upload } from 'lucide-react';
+import { PenSquare, ImageIcon, Video, Link2, X, Play, FileText, Upload, Megaphone, TrendingUp, Truck, Star } from 'lucide-react';
 import PostCard from './PostCard';
 import { useAppContext } from '@/contexts/AppContext';
 import type { Post } from '@/types';
@@ -362,7 +362,7 @@ const SocialFeed: React.FC = () => {
               <button
                 onClick={handleCreatePost}
                 disabled={!hasContent}
-                className="ml-auto md:ml-0 px-5 py-2 bg-gradient-to-r from-[#1E3A5F] to-[#3B82F6] text-white rounded-full text-sm font-bold hover:shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                className="ml-auto md:ml-0 px-5 py-2 btn-glossy-navy rounded-full text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
               >
                 Post
               </button>
@@ -391,6 +391,59 @@ const SocialFeed: React.FC = () => {
               {filter.label}
             </button>
           ))}
+        </div>
+
+        {/* Promoted Ad Card */}
+        <div className="promoted-post bg-white rounded-xl shadow-sm border border-gray-200/80 overflow-hidden mb-4">
+          <div className="px-4 py-2 flex items-center justify-between bg-amber-50/50 border-b border-amber-100/50">
+            <span className="text-xs font-semibold text-amber-600 flex items-center gap-1.5">
+              <Megaphone className="w-3.5 h-3.5" />
+              Sponsored
+            </span>
+            <span className="text-[10px] text-gray-400 font-medium">Ad</span>
+          </div>
+          <div className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#F59E0B] to-[#D97706] rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                <Megaphone className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-gray-900 text-sm">Advertise on DispatchLink</h4>
+                <p className="text-sm text-gray-600 mt-1 leading-relaxed">Reach dispatchers, carriers, and brokers across the nation. Promote your services to the trucking community with targeted ads.</p>
+                <div className="flex items-center gap-4 mt-3">
+                  <button className="px-4 py-2 btn-glossy-primary rounded-lg text-xs transition-all">
+                    Learn More
+                  </button>
+                  <div className="flex items-center gap-1 text-xs text-gray-400">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span>Grow your business</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Industry Spotlight Card */}
+        <div className="bg-gradient-to-r from-[#1E3A5F] to-[#2c5282] rounded-xl shadow-sm overflow-hidden mb-4">
+          <div className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Star className="w-4 h-4 text-[#F59E0B]" />
+              <span className="text-xs font-bold text-white/80 uppercase tracking-wider">Trending in Trucking</span>
+            </div>
+            <div className="space-y-2">
+              {[
+                'FMCSA updates for 2026 compliance',
+                'ELD mandate enforcement changes',
+                'Best practices for carrier onboarding',
+              ].map((topic, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm text-white/90 hover:text-white cursor-pointer transition-colors">
+                  <span className="text-[#3B82F6] font-bold text-xs">#{i + 1}</span>
+                  <span>{topic}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Posts */}

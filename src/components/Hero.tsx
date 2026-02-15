@@ -58,7 +58,7 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
             <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
               <button
                 onClick={onGetStarted}
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white rounded-xl font-bold text-lg hover:from-[#2563EB] hover:to-[#1d4ed8] transition-all transform hover:scale-105 shadow-xl shadow-blue-500/30"
+                className="flex items-center justify-center gap-2 px-8 py-4 btn-glossy-primary rounded-xl text-lg transition-all transform hover:scale-105"
               >
                 Join Free
                 <ChevronRight className="w-5 h-5" />
@@ -156,7 +156,7 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
 
                 <button
                   onClick={onGetStarted}
-                  className="w-full py-4 bg-gradient-to-r from-[#1E3A5F] to-[#3B82F6] text-white rounded-xl font-bold hover:shadow-lg hover:shadow-blue-500/25 transition-all flex items-center justify-center gap-2 text-base"
+                  className="w-full py-4 btn-glossy-navy rounded-xl text-base transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
                 >
                   <Search className="w-5 h-5" />
                   Search Network

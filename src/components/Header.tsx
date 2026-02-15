@@ -275,7 +275,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                 </button>
                 <button
                   onClick={onSignupClick}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#3B82F6] text-white rounded-lg text-sm font-medium hover:bg-[#2563EB] transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 btn-glossy-primary rounded-lg text-sm transition-all"
                 >
                   <User className="w-4 h-4" />
                   Get Started
@@ -416,7 +416,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                       onSignupClick();
                       setMobileMenuOpen(false);
                     }}
-                    className="block w-full text-center px-4 py-2.5 bg-[#3B82F6] text-white rounded-lg text-sm font-medium"
+                    className="block w-full text-center px-4 py-2.5 btn-glossy-primary rounded-lg text-sm transition-all"
                   >
                     Get Started
                   </button>

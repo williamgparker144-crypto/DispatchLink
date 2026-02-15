@@ -73,7 +73,7 @@ const CarrierScoutComingSoon: React.FC<CarrierScoutComingSoonProps> = ({ isOpen,
               </p>
               <button
                 onClick={onClose}
-                className="w-full py-3 bg-[#1E3A5F] text-white rounded-xl font-semibold hover:bg-[#1E3A5F]/80 transition-colors"
+                className="w-full py-3 btn-glossy-navy rounded-xl transition-all"
               >
                 Back to DispatchLink
               </button>
@@ -127,7 +127,7 @@ const CarrierScoutComingSoon: React.FC<CarrierScoutComingSoonProps> = ({ isOpen,
 
                   <button
                     type="submit"
-                    className="w-full py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 btn-glossy-primary rounded-xl transition-all flex items-center justify-center gap-2"
                   >
                     <Rocket className="w-4 h-4" />
                     Join the Waitlist

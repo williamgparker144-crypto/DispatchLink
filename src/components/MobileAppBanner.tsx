@@ -19,17 +19,23 @@ const MobileAppBanner: React.FC = () => {
               Access your dashboard, receive notifications, and connect with carriers/dispatchers anywhere.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <button className="flex items-center justify-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-colors">
+              <button
+                onClick={() => alert('App Store version coming soon! Sign up on the web to get notified.')}
+                className="flex items-center justify-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-colors btn-glossy"
+              >
                 <Apple className="w-6 h-6" />
                 <div className="text-left">
-                  <p className="text-xs text-gray-400">Download on the</p>
+                  <p className="text-xs text-gray-400">Coming Soon</p>
                   <p className="font-semibold">App Store</p>
                 </div>
               </button>
-              <button className="flex items-center justify-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-colors">
+              <button
+                onClick={() => alert('Google Play version coming soon! Sign up on the web to get notified.')}
+                className="flex items-center justify-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-colors btn-glossy"
+              >
                 <Play className="w-6 h-6" />
                 <div className="text-left">
-                  <p className="text-xs text-gray-400">Get it on</p>
+                  <p className="text-xs text-gray-400">Coming Soon</p>
                   <p className="font-semibold">Google Play</p>
                 </div>
               </button>
