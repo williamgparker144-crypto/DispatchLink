@@ -26,7 +26,10 @@ import CarrierScoutComingSoon from './CarrierScoutComingSoon';
 import CarrierScoutPage from './CarrierScoutPage';
 import InviteToCarrierScout from './InviteToCarrierScout';
 import UserProfile from './UserProfile';
+import ViewUserProfile from './ViewUserProfile';
 import AdvertisingPage from './AdvertisingPage';
+import { useAppContext } from '@/contexts/AppContext';
+import type { ViewableUser } from '@/types';
 import { ArrowLeft, Shield, Search, Rocket } from 'lucide-react';
 
 
@@ -56,6 +59,7 @@ const PREMIUM_FEATURE_NAMES: Record<string, string> = {
 };
 
 const AppLayout: React.FC = () => {
+  const { currentUser } = useAppContext();
   const [currentView, setCurrentView] = useState('home');
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
@@ -63,6 +67,8 @@ const AppLayout: React.FC = () => {
   const [selectedCarrier, setSelectedCarrier] = useState<CarrierProfileData | null>(null);
   const [carrierScoutModalOpen, setCarrierScoutModalOpen] = useState(false);
   const [carrierScoutFeature, setCarrierScoutFeature] = useState('');
+  const [viewingUser, setViewingUser] = useState<ViewableUser | null>(null);
+  const [previousView, setPreviousView] = useState('home');
   const [mcPermissionModal, setMcPermissionModal] = useState<{
     isOpen: boolean;
     carrierName: string;
@@ -123,6 +129,16 @@ const AppLayout: React.FC = () => {
 
   const handleInviteToCarrierScout = (carrierName: string, mcNumber: string) => {
     setInviteModal({ isOpen: true, carrierName, mcNumber });
+  };
+
+  const handleViewUserProfile = (user: ViewableUser) => {
+    if (currentUser && user.id === currentUser.id) {
+      setCurrentView('profile');
+      return;
+    }
+    setViewingUser(user);
+    setPreviousView(currentView);
+    setCurrentView('view-user');
   };
 
   const handleVerified = (data: { dotNumber: string; mcNumber: string; companyName: string }) => {
@@ -227,13 +243,24 @@ const AppLayout: React.FC = () => {
           />
         );
       case 'profile':
-        return <UserProfile onNavigate={handleNavigate} />;
+        return <UserProfile onNavigate={handleNavigate} onViewProfile={handleViewUserProfile} />;
+      case 'view-user':
+        return viewingUser ? (
+          <ViewUserProfile
+            user={viewingUser}
+            onBack={() => {
+              setCurrentView(previousView);
+              setViewingUser(null);
+            }}
+            onNavigate={handleNavigate}
+          />
+        ) : null;
       case 'feed':
-        return <SocialFeed onNavigate={handleNavigate} />;
+        return <SocialFeed onNavigate={handleNavigate} onViewProfile={handleViewUserProfile} />;
       case 'advertising':
         return <AdvertisingPage onNavigate={handleNavigate} />;
       case 'connections':
-        return <ConnectionsList />;
+        return <ConnectionsList onViewProfile={handleViewUserProfile} />;
       case 'messages':
         return <MessagesView />;
       case 'brokers':

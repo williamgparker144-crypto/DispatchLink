@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { PenSquare, ImageIcon, Video, Link2, X, Play, FileText, Upload, Megaphone, Star, ArrowRight } from 'lucide-react';
 import PostCard from './PostCard';
 import { useAppContext } from '@/contexts/AppContext';
-import type { Post } from '@/types';
+import type { Post, ViewableUser } from '@/types';
 
 const postTypes = [
   { id: 'update', label: 'Update' },
@@ -28,9 +28,10 @@ const extractYouTubeId = (url: string): string | null => {
 
 interface SocialFeedProps {
   onNavigate?: (view: string) => void;
+  onViewProfile?: (user: ViewableUser) => void;
 }
 
-const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate }) => {
+const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate, onViewProfile }) => {
   const { currentUser } = useAppContext();
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState('');
@@ -460,7 +461,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate }) => {
         {/* Posts */}
         <div className="space-y-4">
           {filteredPosts.map(post => (
-            <PostCard key={post.id} post={post} onDelete={handleDeletePost} />
+            <PostCard key={post.id} post={post} onDelete={handleDeletePost} onViewProfile={onViewProfile} />
           ))}
         </div>
 

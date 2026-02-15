@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Share2, Shield, Send, MoreHorizontal, ExternalLink, ThumbsUp, Trash2, Flag, Bookmark } from 'lucide-react';
-import type { Post, PostComment } from '@/types';
+import type { Post, PostComment, ViewableUser } from '@/types';
 
 interface PostCardProps {
   post: Post;
   onDelete?: (postId: string) => void;
+  onViewProfile?: (user: ViewableUser) => void;
 }
 
 const extractYouTubeId = (url: string): string | null => {
@@ -32,7 +33,7 @@ const getDomain = (url: string): string => {
   }
 };
 
-const PostCard: React.FC<PostCardProps> = ({ post, onDelete }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onViewProfile }) => {
   const [liked, setLiked] = useState(post.liked_by_current_user);
   const [likesCount, setLikesCount] = useState(post.likes_count);
   const [showComments, setShowComments] = useState(false);
@@ -120,6 +121,17 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete }) => {
     return `${diffWeeks}w`;
   };
 
+  const handleAuthorClick = () => {
+    onViewProfile?.({
+      id: post.author_id,
+      name: post.author_name,
+      company: post.author_company,
+      userType: post.author_type,
+      image: post.author_image,
+      verified: post.author_verified,
+    });
+  };
+
   const contentTruncated = post.content.length > 280 && !expanded;
   const totalComments = post.comments_count + comments.length;
   const videoId = post.video_url ? extractYouTubeId(post.video_url) : null;
@@ -131,7 +143,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete }) => {
         <div className="p-4 pb-0">
           <div className="flex items-start gap-3">
             {/* Avatar - LinkedIn/Facebook style with online indicator */}
-            <div className="relative flex-shrink-0">
+            <div className="relative flex-shrink-0 cursor-pointer" onClick={handleAuthorClick}>
               <div className="avatar-ring w-12 h-12">
                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
                   {post.author_image ? (
@@ -147,7 +159,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete }) => {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-gray-900 text-[15px] hover:text-[#3B82F6] hover:underline cursor-pointer">{post.author_name}</span>
+                <span className="font-semibold text-gray-900 text-[15px] hover:text-[#3B82F6] hover:underline cursor-pointer" onClick={handleAuthorClick}>{post.author_name}</span>
                 {post.author_verified && (
                   <Shield className="w-4 h-4 text-[#3B82F6] fill-[#3B82F6]/20" />
                 )}

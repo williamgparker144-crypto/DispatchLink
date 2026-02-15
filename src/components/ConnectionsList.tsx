@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Users, Clock, Send, UserCheck, Shield, Search } from 'lucide-react';
 import ConnectionButton from './ConnectionButton';
+import type { ViewableUser } from '@/types';
 
 interface ConnectionEntry {
   id: string;
@@ -12,13 +13,17 @@ interface ConnectionEntry {
   connectedAt?: string;
 }
 
+interface ConnectionsListProps {
+  onViewProfile?: (user: ViewableUser) => void;
+}
+
 const sampleConnections: ConnectionEntry[] = [];
 
 const samplePending: ConnectionEntry[] = [];
 
 const sampleSent: ConnectionEntry[] = [];
 
-const ConnectionsList: React.FC = () => {
+const ConnectionsList: React.FC<ConnectionsListProps> = ({ onViewProfile }) => {
   const [activeTab, setActiveTab] = useState<'connections' | 'pending' | 'sent'>('connections');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -44,9 +49,20 @@ const ConnectionsList: React.FC = () => {
     );
   };
 
+  const handleEntryClick = (entry: ConnectionEntry) => {
+    onViewProfile?.({
+      id: entry.id,
+      name: entry.name,
+      company: entry.company,
+      userType: entry.userType,
+      image: entry.image,
+      verified: entry.verified,
+    });
+  };
+
   const renderConnectionCard = (entry: ConnectionEntry, variant: 'connection' | 'pending' | 'sent') => (
     <div key={entry.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
-      <div className="relative flex-shrink-0">
+      <div className="relative flex-shrink-0 cursor-pointer" onClick={() => handleEntryClick(entry)}>
         <div className="avatar-ring w-14 h-14">
           <div className="w-full h-full rounded-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center text-white font-bold text-xl overflow-hidden">
             {entry.image ? (
@@ -60,7 +76,7 @@ const ConnectionsList: React.FC = () => {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-[#1E3A5F]">{entry.name}</span>
+          <span className="font-semibold text-[#1E3A5F] cursor-pointer hover:underline" onClick={() => handleEntryClick(entry)}>{entry.name}</span>
           {entry.verified && <Shield className="w-4 h-4 text-green-500" />}
           {getTypeBadge(entry.userType)}
         </div>

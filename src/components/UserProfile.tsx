@@ -6,10 +6,13 @@ import {
 } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
 import PostCard from './PostCard';
-import type { Post } from '@/types';
+import type { Post, ViewableUser } from '@/types';
+
+const normalizeUrl = (url: string) => url.match(/^https?:\/\//) ? url : `https://${url}`;
 
 interface UserProfileProps {
   onNavigate: (view: string) => void;
+  onViewProfile?: (user: ViewableUser) => void;
 }
 
 const COVER_THEMES = [
@@ -21,7 +24,7 @@ const COVER_THEMES = [
   { id: 'royal', gradient: 'linear-gradient(135deg, #312e81 0%, #3730a3 50%, #4f46e5 100%)' },
 ];
 
-const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
+const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) => {
   const { currentUser, updateProfile } = useAppContext();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
@@ -229,7 +232,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
         }} />
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/30 to-transparent" />
 
-        {/* Cover photo actions */}
+        {/* Cover photo actions - visible on hover */}
         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => setCoverModalOpen(true)}
@@ -246,6 +249,15 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
             Theme
           </button>
         </div>
+
+        {/* Always-visible camera icon for mobile - hides when full buttons appear */}
+        <button
+          onClick={() => setCoverModalOpen(true)}
+          className="absolute bottom-3 right-3 w-9 h-9 bg-black/50 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-all group-hover:opacity-0"
+          title="Edit Cover Photo"
+        >
+          <Camera className="w-4 h-4" />
+        </button>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
@@ -307,10 +319,15 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                       </span>
                     )}
                     {currentUser.website && (
-                      <span className="flex items-center gap-1 text-[#3B82F6]">
+                      <a
+                        href={normalizeUrl(currentUser.website)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-[#3B82F6] hover:underline"
+                      >
                         <Globe className="w-3.5 h-3.5" />
                         {currentUser.website}
-                      </span>
+                      </a>
                     )}
                   </div>
                   {currentUser.bio && (
@@ -427,7 +444,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                   {currentUser.website && (
                     <div className="flex items-center gap-3 text-sm">
                       <span className="text-gray-500 w-24">Website</span>
-                      <span className="text-[#3B82F6]">{currentUser.website}</span>
+                      <a
+                        href={normalizeUrl(currentUser.website)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#3B82F6] hover:underline"
+                      >
+                        {currentUser.website}
+                      </a>
                     </div>
                   )}
                   <div className="flex items-center gap-3 text-sm">
@@ -579,7 +603,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
             {/* Personal Feed */}
             <div className="space-y-4">
               {posts.map(post => (
-                <PostCard key={post.id} post={post} onDelete={handleDeletePost} />
+                <PostCard key={post.id} post={post} onDelete={handleDeletePost} onViewProfile={onViewProfile} />
               ))}
               {posts.length === 0 && (
                 <div className="text-center py-16 bg-white rounded-xl border border-gray-200 shadow-sm">

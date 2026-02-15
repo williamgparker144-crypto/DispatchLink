@@ -196,6 +196,20 @@ export interface Conversation {
   unread_count: number;
 }
 
+// Public Profile Viewing
+export interface ViewableUser {
+  id: string;
+  name: string;
+  company: string;
+  userType: 'dispatcher' | 'carrier' | 'broker';
+  image?: string;
+  verified: boolean;
+  bio?: string;
+  location?: string;
+  website?: string;
+  coverImage?: string;
+}
+
 // CarrierScout Invitation
 export interface CarrierScoutInvite {
   id: string;
