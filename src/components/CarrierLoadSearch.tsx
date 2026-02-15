@@ -432,7 +432,7 @@ export default function CarrierLoadSearch() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen page-bg">
       {/* Header */}
       <div className="bg-[#1E3A5F] text-white py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

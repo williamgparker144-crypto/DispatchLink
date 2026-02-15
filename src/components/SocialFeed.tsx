@@ -150,10 +150,10 @@ const SocialFeed: React.FC = () => {
   const userInitial = currentUser?.name?.charAt(0) || 'Y';
 
   return (
-    <section className="py-6 min-h-screen" style={{ background: 'linear-gradient(180deg, #f0f4ff 0%, #f8fafc 40%, #f0f4ff 100%)' }}>
+    <section className="py-6 min-h-screen page-bg">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
         {/* Post Composer */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 mb-5">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 mb-5 overflow-hidden">
           <div className="p-4">
             <div className="flex gap-3">
               {/* User Avatar - LinkedIn/Facebook style */}
@@ -299,40 +299,38 @@ const SocialFeed: React.FC = () => {
           </div>
 
           {/* Bottom toolbar */}
-          <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between bg-gray-50/30 rounded-b-xl">
-            <div className="flex items-center gap-1">
+          <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/30">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => { setShowImageInput(!showImageInput); setShowVideoInput(false); setShowLinkInput(false); }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${showImageInput ? 'bg-blue-100 text-blue-600 shadow-sm' : 'text-gray-600 hover:bg-white hover:shadow-sm'}`}
+                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all flex-shrink-0 ${showImageInput ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-white'}`}
               >
-                <ImageIcon className="w-5 h-5 text-blue-500" />
-                <span className="hidden sm:inline">Image</span>
+                <ImageIcon className="w-4 h-4 text-blue-500" />
+                <span className="hidden sm:inline text-xs">Image</span>
               </button>
               <button
                 onClick={() => { setShowVideoInput(!showVideoInput); setShowImageInput(false); setShowLinkInput(false); }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${showVideoInput ? 'bg-red-100 text-red-600 shadow-sm' : 'text-gray-600 hover:bg-white hover:shadow-sm'}`}
+                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all flex-shrink-0 ${showVideoInput ? 'bg-red-100 text-red-600' : 'text-gray-600 hover:bg-white'}`}
               >
-                <Video className="w-5 h-5 text-red-500" />
-                <span className="hidden sm:inline">Video</span>
+                <Video className="w-4 h-4 text-red-500" />
+                <span className="hidden sm:inline text-xs">Video</span>
               </button>
               <button
                 onClick={() => { setShowLinkInput(!showLinkInput); setShowImageInput(false); setShowVideoInput(false); }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${showLinkInput ? 'bg-orange-100 text-orange-600 shadow-sm' : 'text-gray-600 hover:bg-white hover:shadow-sm'}`}
+                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all flex-shrink-0 ${showLinkInput ? 'bg-orange-100 text-orange-600' : 'text-gray-600 hover:bg-white'}`}
               >
-                <Link2 className="w-5 h-5 text-orange-500" />
-                <span className="hidden sm:inline">Link</span>
+                <Link2 className="w-4 h-4 text-orange-500" />
+                <span className="hidden sm:inline text-xs">Link</span>
               </button>
 
-              <div className="w-px h-6 bg-gray-200 mx-1 hidden sm:block" />
-
-              <div className="hidden sm:flex gap-1 ml-1">
+              <div className="hidden md:flex gap-1 ml-auto mr-2">
                 {postTypes.map(type => (
                   <button
                     key={type.id}
                     onClick={() => setSelectedPostType(type.id)}
                     className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
                       selectedPostType === type.id
-                        ? 'bg-gradient-to-r from-[#1E3A5F] to-[#2d5a8e] text-white shadow-sm'
+                        ? 'bg-[#1E3A5F] text-white'
                         : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                     }`}
                   >
@@ -340,15 +338,15 @@ const SocialFeed: React.FC = () => {
                   </button>
                 ))}
               </div>
-            </div>
 
-            <button
-              onClick={handleCreatePost}
-              disabled={!newPostContent.trim() && !attachedImage && !attachedVideo && !attachedLink}
-              className="px-6 py-2 bg-gradient-to-r from-[#1E3A5F] to-[#3B82F6] text-white rounded-full text-sm font-bold hover:shadow-lg hover:shadow-blue-500/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none"
-            >
-              Post
-            </button>
+              <button
+                onClick={handleCreatePost}
+                disabled={!newPostContent.trim() && !attachedImage && !attachedVideo && !attachedLink}
+                className="ml-auto md:ml-0 px-5 py-2 bg-gradient-to-r from-[#1E3A5F] to-[#3B82F6] text-white rounded-full text-sm font-bold hover:shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+              >
+                Post
+              </button>
+            </div>
           </div>
         </div>
 

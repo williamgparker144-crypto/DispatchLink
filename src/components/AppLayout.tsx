@@ -25,6 +25,7 @@ import BrokerDirectory from './BrokerDirectory';
 import CarrierScoutComingSoon from './CarrierScoutComingSoon';
 import CarrierScoutPage from './CarrierScoutPage';
 import InviteToCarrierScout from './InviteToCarrierScout';
+import UserProfile from './UserProfile';
 import { ArrowLeft, Shield, Search, Rocket } from 'lucide-react';
 
 
@@ -148,7 +149,7 @@ const AppLayout: React.FC = () => {
     }
 
     return (
-      <div className="py-12 bg-gray-50 min-h-screen">
+      <div className="py-12 page-bg min-h-screen">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <button
             onClick={() => setCurrentView('carriers')}
@@ -224,6 +225,8 @@ const AppLayout: React.FC = () => {
             onNavigate={handleNavigate}
           />
         );
+      case 'profile':
+        return <UserProfile onNavigate={handleNavigate} />;
       case 'feed':
         return <SocialFeed />;
       case 'connections':

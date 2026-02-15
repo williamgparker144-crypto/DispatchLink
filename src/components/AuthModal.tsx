@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, Building, Phone, Truck, Users, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { subscribeToMailchimp } from '@/lib/mailchimp';
+import { useAppContext } from '@/contexts/AppContext';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) => {
+  const { setCurrentUser } = useAppContext();
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [userType, setUserType] = useState<'dispatcher' | 'carrier' | 'broker'>('dispatcher');
   const [showPassword, setShowPassword] = useState(false);
@@ -58,6 +60,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
 
         // Demo mode: simulate account creation
         await new Promise(resolve => setTimeout(resolve, 1000));
+
+        setCurrentUser({
+          id: `user-${Date.now()}`,
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          company: formData.companyName,
+          userType,
+          verified: true,
+        });
         setSuccess(true);
 
         subscribeToMailchimp({
@@ -77,6 +88,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
           throw new Error('Please enter your email and password');
         }
         await new Promise(resolve => setTimeout(resolve, 800));
+        setCurrentUser({
+          id: `user-${Date.now()}`,
+          name: formData.email.split('@')[0],
+          email: formData.email,
+          company: '',
+          userType: 'dispatcher',
+          verified: true,
+        });
         setSuccess(true);
       }
     } catch (err: any) {

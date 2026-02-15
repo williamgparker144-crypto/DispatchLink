@@ -261,9 +261,9 @@
   animation: routeDash 3s linear infinite;
 }
 
-/* Page background gradient - subtle version of home page */
+/* Page background gradient - tinted version of home page */
 .page-bg {
-  background: linear-gradient(180deg, #f0f4ff 0%, #f5f7fa 30%, #f8fafc 60%, #f0f4ff 100%);
+  background: linear-gradient(180deg, #e0eafc 0%, #e8f0fe 30%, #eef2ff 60%, #e0eafc 100%);
 }
 
 /* LinkedIn/Facebook style avatar */

@@ -7,6 +7,7 @@ interface CurrentUser {
   company: string;
   userType: 'dispatcher' | 'carrier' | 'broker';
   image?: string;
+  bio?: string;
   verified: boolean;
 }
 
@@ -15,6 +16,7 @@ interface AppContextType {
   toggleSidebar: () => void;
   currentUser: CurrentUser | null;
   setCurrentUser: (user: CurrentUser | null) => void;
+  updateProfile: (updates: Partial<CurrentUser>) => void;
   unreadMessages: number;
   setUnreadMessages: (count: number) => void;
   pendingConnections: number;
@@ -26,6 +28,7 @@ const defaultAppContext: AppContextType = {
   toggleSidebar: () => {},
   currentUser: null,
   setCurrentUser: () => {},
+  updateProfile: () => {},
   unreadMessages: 0,
   setUnreadMessages: () => {},
   pendingConnections: 0,
@@ -46,6 +49,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSidebarOpen(prev => !prev);
   };
 
+  const updateProfile = (updates: Partial<CurrentUser>) => {
+    setCurrentUser(prev => prev ? { ...prev, ...updates } : null);
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -53,6 +60,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleSidebar,
         currentUser,
         setCurrentUser,
+        updateProfile,
         unreadMessages,
         setUnreadMessages,
         pendingConnections,

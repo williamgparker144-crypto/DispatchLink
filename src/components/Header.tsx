@@ -15,7 +15,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
-  const { currentUser, unreadMessages, pendingConnections } = useAppContext();
+  const { currentUser, setCurrentUser, unreadMessages, pendingConnections } = useAppContext();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -195,6 +195,16 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                         <p className="text-xs text-gray-500 capitalize">{userType} Account</p>
                       </div>
 
+                      <button
+                        onClick={() => {
+                          setCurrentView('profile');
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      >
+                        <User className="w-4 h-4" />
+                        My Profile
+                      </button>
                       {userType === 'dispatcher' && (
                         <button
                           onClick={() => {
@@ -240,7 +250,11 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
 
                       <div className="border-t border-gray-100 mt-1 pt-1">
                         <button
-                          onClick={() => setUserMenuOpen(false)}
+                          onClick={() => {
+                            setCurrentUser(null);
+                            setCurrentView('home');
+                            setUserMenuOpen(false);
+                          }}
                           className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-gray-50"
                         >
                           Sign Out
@@ -303,6 +317,20 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
 
             {isLoggedIn && (
               <>
+                <button
+                  onClick={() => {
+                    setCurrentView('profile');
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                    currentView === 'profile'
+                      ? 'bg-[#3B82F6] text-white'
+                      : 'text-gray-200 hover:bg-white/10'
+                  }`}
+                >
+                  <User className="w-4 h-4" />
+                  My Profile
+                </button>
                 {userType === 'dispatcher' && (
                   <button
                     onClick={() => {
@@ -362,7 +390,11 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                     <span className="font-medium text-white">{userName}</span>
                   </div>
                   <button
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={() => {
+                      setCurrentUser(null);
+                      setCurrentView('home');
+                      setMobileMenuOpen(false);
+                    }}
                     className="block w-full text-center px-4 py-2.5 bg-red-500/20 text-red-300 rounded-lg text-sm font-medium hover:bg-red-500/30"
                   >
                     Sign Out

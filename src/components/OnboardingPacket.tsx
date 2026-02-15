@@ -48,7 +48,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
   const allDocsComplete = Object.values(documents).every(Boolean);
 
   return (
-    <section className="py-12 bg-gray-50 min-h-screen">
+    <section className="py-12 page-bg min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">

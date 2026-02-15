@@ -184,7 +184,7 @@ const CarrierScoutPage: React.FC = () => {
       </section>
 
       {/* Problem Statement */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 page-bg">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-extrabold text-[#1E3A5F] mb-4">
             The freight industry is fragmented. It doesn't have to be.
@@ -227,7 +227,7 @@ const CarrierScoutPage: React.FC = () => {
       </section>
 
       {/* How It Works — 3 Perspectives */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 page-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <h2 className="text-3xl font-extrabold text-[#1E3A5F] mb-3">
@@ -317,7 +317,7 @@ const CarrierScoutPage: React.FC = () => {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 page-bg">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-extrabold text-[#1E3A5F] text-center mb-12">
             Frequently Asked Questions
