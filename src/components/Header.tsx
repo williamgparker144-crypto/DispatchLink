@@ -14,18 +14,21 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const { currentUser, unreadMessages, pendingConnections } = useAppContext();
 
-  // Close notifications when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setNotificationsOpen(false);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
     };
-    if (notificationsOpen) document.addEventListener('mousedown', handleClickOutside);
+    if (notificationsOpen || userMenuOpen) document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [notificationsOpen]);
+  }, [notificationsOpen, userMenuOpen]);
 
   const isLoggedIn = !!currentUser;
   const userType = currentUser?.userType || null;
@@ -42,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
   ];
 
   return (
-    <header className="bg-[#1E3A5F] text-white sticky top-0 z-50 shadow-lg">
+    <header className="bg-[#1E3A5F] text-white sticky top-0 z-50 shadow-lg border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -64,40 +67,51 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setCurrentView(item.id)}
-                className={`text-sm font-medium transition-colors hover:text-[#3B82F6] ${
-                  currentView === item.id ? 'text-[#3B82F6]' : 'text-gray-200'
+                className={`relative px-3 py-2 text-sm font-medium transition-colors rounded-md ${
+                  currentView === item.id
+                    ? 'text-white'
+                    : 'text-gray-300 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {item.label}
+                {/* Active underline indicator */}
+                {currentView === item.id && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 h-0.5 bg-[#3B82F6] rounded-full" />
+                )}
               </button>
             ))}
 
             {isLoggedIn && userType === 'dispatcher' && (
               <button
                 onClick={() => setCurrentView('dashboard')}
-                className={`text-sm font-medium transition-colors hover:text-[#3B82F6] flex items-center gap-1 ${
-                  currentView === 'dashboard' ? 'text-[#3B82F6]' : 'text-gray-200'
+                className={`relative px-3 py-2 text-sm font-medium transition-colors rounded-md flex items-center gap-1 ${
+                  currentView === 'dashboard'
+                    ? 'text-white'
+                    : 'text-gray-300 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <LayoutDashboard className="w-4 h-4" />
                 Dashboard
+                {currentView === 'dashboard' && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 h-0.5 bg-[#3B82F6] rounded-full" />
+                )}
               </button>
             )}
           </nav>
 
           {/* Auth Buttons / User Menu */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
             {isLoggedIn ? (
-              <div className="relative flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 {/* Messages */}
                 <button
                   onClick={() => setCurrentView('messages')}
-                  className="p-2 rounded-lg hover:bg-[#1E3A5F]/80 transition-colors relative"
+                  className="p-2 rounded-lg hover:bg-white/10 transition-colors relative"
                 >
                   <MessageSquare className="w-5 h-5" />
                   {unreadMessages > 0 && (
@@ -114,7 +128,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                       setNotificationsOpen(!notificationsOpen);
                       setUserMenuOpen(false);
                     }}
-                    className="p-2 rounded-lg hover:bg-[#1E3A5F]/80 transition-colors relative"
+                    className="p-2 rounded-lg hover:bg-white/10 transition-colors relative"
                   >
                     <Bell className="w-5 h-5" />
                     {pendingConnections > 0 && (
@@ -125,7 +139,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                   </button>
 
                   {notificationsOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
+                    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden animate-fade-in">
                       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                         <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
                         <span className="text-xs text-[#3B82F6] font-medium cursor-pointer hover:underline">Mark all read</span>
@@ -149,76 +163,87 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                   )}
                 </div>
 
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#1E3A5F]/80 transition-colors"
-                >
-                  <div className="w-8 h-8 bg-[#3B82F6] rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-sm font-medium">{userName}</span>
-                </button>
-
-                {userMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50">
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-800">{userName}</p>
-                      <p className="text-xs text-gray-500 capitalize">{userType} Account</p>
+                {/* User Menu */}
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(!userMenuOpen);
+                      setNotificationsOpen(false);
+                    }}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/10 transition-colors ml-1"
+                  >
+                    {/* Avatar with image support */}
+                    <div className="w-8 h-8 rounded-full bg-[#3B82F6] flex items-center justify-center overflow-hidden">
+                      {currentUser?.image ? (
+                        <img src={currentUser.image} alt={userName} className="w-8 h-8 rounded-full object-cover" />
+                      ) : (
+                        <span className="text-white text-sm font-bold">{userName.charAt(0)}</span>
+                      )}
                     </div>
+                    <span className="text-sm font-medium max-w-[100px] truncate">{userName}</span>
+                  </button>
 
-                    {userType === 'dispatcher' && (
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-50 overflow-hidden animate-fade-in">
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="text-sm font-semibold text-gray-900">{userName}</p>
+                        <p className="text-xs text-gray-500 capitalize">{userType} Account</p>
+                      </div>
+
+                      {userType === 'dispatcher' && (
+                        <button
+                          onClick={() => {
+                            setCurrentView('dashboard');
+                            setUserMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <LayoutDashboard className="w-4 h-4" />
+                          Dashboard
+                        </button>
+                      )}
                       <button
                         onClick={() => {
-                          setCurrentView('dashboard');
+                          setCurrentView('connections');
                           setUserMenuOpen(false);
                         }}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                       >
-                        <LayoutDashboard className="w-4 h-4" />
-                        Dashboard
+                        <UserPlus className="w-4 h-4" />
+                        My Connections
                       </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        setCurrentView('connections');
-                        setUserMenuOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                    >
-                      <UserPlus className="w-4 h-4" />
-                      My Connections
-                    </button>
-                    <button
-                      onClick={() => {
-                        setCurrentView('messages');
-                        setUserMenuOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      Messages
-                      {unreadMessages > 0 && (
-                        <span className="ml-auto px-2 py-0.5 bg-[#3B82F6] text-white text-xs rounded-full">{unreadMessages}</span>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => setUserMenuOpen(false)}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                    >
-                      <Settings className="w-4 h-4" />
-                      Settings
-                    </button>
-
-                    <div className="border-t border-gray-100 mt-2 pt-2">
+                      <button
+                        onClick={() => {
+                          setCurrentView('messages');
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        Messages
+                        {unreadMessages > 0 && (
+                          <span className="ml-auto px-2 py-0.5 bg-[#3B82F6] text-white text-xs rounded-full">{unreadMessages}</span>
+                        )}
+                      </button>
                       <button
                         onClick={() => setUserMenuOpen(false)}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                       >
-                        Sign Out
+                        <Settings className="w-4 h-4" />
+                        Settings
                       </button>
+
+                      <div className="border-t border-gray-100 mt-1 pt-1">
+                        <button
+                          onClick={() => setUserMenuOpen(false)}
+                          className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-gray-50"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ) : (
               <>
@@ -243,7 +268,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-[#1E3A5F]/80 transition-colors"
+            className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -252,8 +277,8 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#1E3A5F] border-t border-[#1E3A5F]">
-          <div className="px-4 py-4 space-y-2">
+        <div className="md:hidden bg-[#1E3A5F] border-t border-white/10 animate-fade-in">
+          <div className="px-4 py-4 space-y-1">
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -261,10 +286,10 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                   setCurrentView(item.id);
                   setMobileMenuOpen(false);
                 }}
-                className={`block w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   currentView === item.id
                     ? 'bg-[#3B82F6] text-white'
-                    : 'text-gray-200 hover:bg-[#1E3A5F]/80'
+                    : 'text-gray-200 hover:bg-white/10'
                 }`}
               >
                 {item.label}
@@ -279,10 +304,10 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                       setCurrentView('dashboard');
                       setMobileMenuOpen(false);
                     }}
-                    className={`block w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                    className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                       currentView === 'dashboard'
                         ? 'bg-[#3B82F6] text-white'
-                        : 'text-gray-200 hover:bg-[#1E3A5F]/80'
+                        : 'text-gray-200 hover:bg-white/10'
                     }`}
                   >
                     <LayoutDashboard className="w-4 h-4" />
@@ -294,7 +319,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                     setCurrentView('connections');
                     setMobileMenuOpen(false);
                   }}
-                  className="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium text-gray-200 hover:bg-[#1E3A5F]/80 flex items-center gap-2"
+                  className="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-gray-200 hover:bg-white/10 flex items-center gap-2"
                 >
                   <Users className="w-4 h-4" />
                   Connections
@@ -304,7 +329,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                     setCurrentView('messages');
                     setMobileMenuOpen(false);
                   }}
-                  className="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium text-gray-200 hover:bg-[#1E3A5F]/80 flex items-center gap-2"
+                  className="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-gray-200 hover:bg-white/10 flex items-center gap-2"
                 >
                   <MessageSquare className="w-4 h-4" />
                   Messages
@@ -315,15 +340,22 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
               </>
             )}
 
-            <div className="pt-4 border-t border-[#1E3A5F] space-y-2">
+            <div className="pt-3 border-t border-white/10 space-y-1">
               {isLoggedIn ? (
                 <>
-                  <div className="px-4 py-2 text-sm text-gray-300">
-                    Signed in as <span className="font-medium text-white">{userName}</span>
+                  <div className="px-4 py-2 text-sm text-gray-300 flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-[#3B82F6] flex items-center justify-center overflow-hidden">
+                      {currentUser?.image ? (
+                        <img src={currentUser.image} alt={userName} className="w-6 h-6 rounded-full object-cover" />
+                      ) : (
+                        <span className="text-white text-xs font-bold">{userName.charAt(0)}</span>
+                      )}
+                    </div>
+                    <span className="font-medium text-white">{userName}</span>
                   </div>
                   <button
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block w-full text-center px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium"
+                    className="block w-full text-center px-4 py-2.5 bg-red-500/20 text-red-300 rounded-lg text-sm font-medium hover:bg-red-500/30"
                   >
                     Sign Out
                   </button>
@@ -335,7 +367,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                       onLoginClick();
                       setMobileMenuOpen(false);
                     }}
-                    className="block w-full text-left px-4 py-2 text-sm font-medium text-gray-200 hover:bg-[#1E3A5F]/80 rounded-lg"
+                    className="block w-full text-left px-4 py-2.5 text-sm font-medium text-gray-200 hover:bg-white/10 rounded-lg"
                   >
                     Sign In
                   </button>
@@ -344,7 +376,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                       onSignupClick();
                       setMobileMenuOpen(false);
                     }}
-                    className="block w-full text-center px-4 py-2 bg-[#3B82F6] text-white rounded-lg text-sm font-medium"
+                    className="block w-full text-center px-4 py-2.5 bg-[#3B82F6] text-white rounded-lg text-sm font-medium"
                   >
                     Get Started
                   </button>

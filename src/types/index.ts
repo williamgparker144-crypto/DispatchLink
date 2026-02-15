@@ -138,6 +138,12 @@ export interface Post {
   comments_count: number;
   liked_by_current_user: boolean;
   created_at: string;
+  image_url?: string;
+  video_url?: string;
+  link_url?: string;
+  link_title?: string;
+  link_description?: string;
+  link_image?: string;
 }
 
 export interface PostComment {
