@@ -23,7 +23,7 @@ const DispatcherCard: React.FC<DispatcherCardProps> = ({ dispatcher, onViewProfi
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all group">
       {/* Header with Image */}
       <div className="relative">
-        <div className="h-32 bg-gradient-to-r from-[#1a365d] to-[#2d4a6f]" />
+        <div className="h-32 bg-gradient-to-r from-[#1E3A5F] to-[#1E3A5F]/80" />
         <div className="absolute -bottom-10 left-6">
           <div className="relative">
             <img
@@ -45,7 +45,7 @@ const DispatcherCard: React.FC<DispatcherCardProps> = ({ dispatcher, onViewProfi
       <div className="pt-12 p-6">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="font-bold text-[#1a365d] text-lg group-hover:text-[#ff6b35] transition-colors">
+            <h3 className="font-bold text-[#1E3A5F] text-lg group-hover:text-[#3B82F6] transition-colors">
               {dispatcher.name}
             </h3>
             <p className="text-sm text-gray-500">{dispatcher.company}</p>
@@ -68,7 +68,7 @@ const DispatcherCard: React.FC<DispatcherCardProps> = ({ dispatcher, onViewProfi
           {dispatcher.specialties.slice(0, 3).map((specialty, index) => (
             <span
               key={index}
-              className="px-2 py-1 bg-[#1a365d]/5 text-[#1a365d] text-xs font-medium rounded-lg"
+              className="px-2 py-1 bg-[#1E3A5F]/5 text-[#1E3A5F] text-xs font-medium rounded-lg"
             >
               {specialty}
             </span>
@@ -79,14 +79,14 @@ const DispatcherCard: React.FC<DispatcherCardProps> = ({ dispatcher, onViewProfi
         <div className="flex gap-2 pt-4 border-t border-gray-100">
           <button
             onClick={() => onViewProfile(dispatcher.id)}
-            className="flex-1 py-2 px-4 bg-[#1a365d] text-white rounded-lg text-sm font-medium hover:bg-[#2d4a6f] transition-colors flex items-center justify-center gap-1"
+            className="flex-1 py-2 px-4 bg-[#1E3A5F] text-white rounded-lg text-sm font-medium hover:bg-[#1E3A5F]/80 transition-colors flex items-center justify-center gap-1"
           >
             View Profile
             <ChevronRight className="w-4 h-4" />
           </button>
           <button
             onClick={() => onContact(dispatcher.id)}
-            className="py-2 px-4 border border-[#1a365d] text-[#1a365d] rounded-lg text-sm font-medium hover:bg-[#1a365d]/5 transition-colors"
+            className="py-2 px-4 border border-[#1E3A5F] text-[#1E3A5F] rounded-lg text-sm font-medium hover:bg-[#1E3A5F]/5 transition-colors"
           >
             <MessageCircle className="w-4 h-4" />
           </button>

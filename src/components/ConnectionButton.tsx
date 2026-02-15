@@ -76,7 +76,7 @@ const ConnectionButton: React.FC<ConnectionButtonProps> = ({
   return (
     <button
       onClick={handleConnect}
-      className={`inline-flex items-center gap-1.5 ${sizeClasses} bg-[#1a365d] text-white rounded-lg font-medium hover:bg-[#2d4a6f] transition-colors`}
+      className={`inline-flex items-center gap-1.5 ${sizeClasses} bg-[#1E3A5F] text-white rounded-lg font-medium hover:bg-[#1E3A5F]/80 transition-colors`}
     >
       <UserPlus className={size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'} />
       Connect

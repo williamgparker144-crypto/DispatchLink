@@ -223,7 +223,7 @@ const VerifyDOTPage: React.FC = () => {
           <div className="inline-flex items-center justify-center p-4 bg-green-100 rounded-2xl mb-4 print:hidden">
             <Shield className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="text-3xl font-bold text-[#1a365d] mb-2">FMCSA Carrier Verification</h1>
+          <h1 className="text-3xl font-bold text-[#1E3A5F] mb-2">FMCSA Carrier Verification</h1>
           <p className="text-gray-600 max-w-2xl mx-auto print:hidden">
             Verify carrier operating authority, insurance status, safety ratings, and inspection history 
             directly from the FMCSA SAFER database in real-time.
@@ -264,7 +264,7 @@ const VerifyDOTPage: React.FC = () => {
           <button
             onClick={handleVerify}
             disabled={loading || (!dotNumber && !mcNumber)}
-            className="w-full py-4 bg-[#1a365d] text-white rounded-xl font-semibold hover:bg-[#2d4a6f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 print:hidden"
+            className="w-full py-4 bg-[#1E3A5F] text-white rounded-xl font-semibold hover:bg-[#1E3A5F]/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 print:hidden"
           >
             {loading ? (
               <>
@@ -409,7 +409,7 @@ const VerifyDOTPage: React.FC = () => {
                 href={`https://safer.fmcsa.dot.gov/query.asp?searchtype=ANY&query_type=queryCarrierSnapshot&query_param=USDOT&query_string=${carrier.dotNumber}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-[#1a365d] text-white rounded-lg font-medium hover:bg-[#2d4a6f] transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[#1E3A5F] text-white rounded-lg font-medium hover:bg-[#1E3A5F]/80 transition-colors"
               >
                 <ExternalLink className="w-4 h-4" />
                 View Full SAFER Report
@@ -427,22 +427,22 @@ const VerifyDOTPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 print:shadow-none">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-[#1a365d]/10 rounded-lg">
-                    <FileCheck className="w-5 h-5 text-[#1a365d]" />
+                  <div className="p-2 bg-[#1E3A5F]/10 rounded-lg">
+                    <FileCheck className="w-5 h-5 text-[#1E3A5F]" />
                   </div>
                   <span className="font-medium text-gray-700">DOT Number</span>
                 </div>
-                <p className="text-2xl font-bold font-mono text-[#1a365d]">{carrier.dotNumber || 'N/A'}</p>
+                <p className="text-2xl font-bold font-mono text-[#1E3A5F]">{carrier.dotNumber || 'N/A'}</p>
               </div>
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 print:shadow-none">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-[#ff6b35]/10 rounded-lg">
-                    <FileCheck className="w-5 h-5 text-[#ff6b35]" />
+                  <div className="p-2 bg-[#3B82F6]/10 rounded-lg">
+                    <FileCheck className="w-5 h-5 text-[#3B82F6]" />
                   </div>
                   <span className="font-medium text-gray-700">MC Number</span>
                 </div>
-                <p className="text-2xl font-bold font-mono text-[#1a365d]">{carrier.mcNumber || 'N/A'}</p>
+                <p className="text-2xl font-bold font-mono text-[#1E3A5F]">{carrier.mcNumber || 'N/A'}</p>
               </div>
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 print:shadow-none">
@@ -452,7 +452,7 @@ const VerifyDOTPage: React.FC = () => {
                   </div>
                   <span className="font-medium text-gray-700">Power Units</span>
                 </div>
-                <p className="text-2xl font-bold text-[#1a365d]">{carrier.totalPowerUnits || 0}</p>
+                <p className="text-2xl font-bold text-[#1E3A5F]">{carrier.totalPowerUnits || 0}</p>
               </div>
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 print:shadow-none">
@@ -462,7 +462,7 @@ const VerifyDOTPage: React.FC = () => {
                   </div>
                   <span className="font-medium text-gray-700">Drivers</span>
                 </div>
-                <p className="text-2xl font-bold text-[#1a365d]">{carrier.totalDrivers || 0}</p>
+                <p className="text-2xl font-bold text-[#1E3A5F]">{carrier.totalDrivers || 0}</p>
               </div>
             </div>
 
@@ -475,7 +475,7 @@ const VerifyDOTPage: React.FC = () => {
                   </div>
                   <div>
                     <span className="font-medium text-gray-700">Operation Type</span>
-                    <p className="text-lg font-semibold text-[#1a365d]">{carrier.carrierOperation}</p>
+                    <p className="text-lg font-semibold text-[#1E3A5F]">{carrier.carrierOperation}</p>
                   </div>
                 </div>
               </div>
@@ -483,7 +483,7 @@ const VerifyDOTPage: React.FC = () => {
 
             {/* Authority Status */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 print:shadow-none">
-              <h3 className="font-bold text-lg text-[#1a365d] mb-4 flex items-center gap-2">
+              <h3 className="font-bold text-lg text-[#1E3A5F] mb-4 flex items-center gap-2">
                 <Shield className="w-5 h-5" />
                 Operating Authority Status
               </h3>
@@ -514,7 +514,7 @@ const VerifyDOTPage: React.FC = () => {
 
             {/* Insurance Status */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 print:shadow-none">
-              <h3 className="font-bold text-lg text-[#1a365d] mb-4 flex items-center gap-2">
+              <h3 className="font-bold text-lg text-[#1E3A5F] mb-4 flex items-center gap-2">
                 <FileCheck className="w-5 h-5" />
                 Insurance Coverage
               </h3>
@@ -543,7 +543,7 @@ const VerifyDOTPage: React.FC = () => {
 
             {/* Safety Rating */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 print:shadow-none">
-              <h3 className="font-bold text-lg text-[#1a365d] mb-4 flex items-center gap-2">
+              <h3 className="font-bold text-lg text-[#1E3A5F] mb-4 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5" />
                 Safety Information
               </h3>
@@ -571,7 +571,7 @@ const VerifyDOTPage: React.FC = () => {
 
             {/* Inspection History */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 print:shadow-none">
-              <h3 className="font-bold text-lg text-[#1a365d] mb-4 flex items-center gap-2">
+              <h3 className="font-bold text-lg text-[#1E3A5F] mb-4 flex items-center gap-2">
                 <Activity className="w-5 h-5" />
                 Inspection History (24 Months)
               </h3>
@@ -665,7 +665,7 @@ const VerifyDOTPage: React.FC = () => {
             {/* Crash Statistics */}
             {(carrier.crashTotal > 0 || carrier.fatalCrash > 0 || carrier.injCrash > 0 || carrier.towCrash > 0) && (
               <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6 print:shadow-none">
-                <h3 className="font-bold text-lg text-[#1a365d] mb-4 flex items-center gap-2">
+                <h3 className="font-bold text-lg text-[#1E3A5F] mb-4 flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-red-500" />
                   Crash Statistics (24 Months)
                 </h3>
@@ -693,7 +693,7 @@ const VerifyDOTPage: React.FC = () => {
             {/* Contact Information */}
             {(carrier.phone || carrier.email || carrier.hqAddress.street) && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 print:shadow-none">
-                <h3 className="font-bold text-lg text-[#1a365d] mb-4 flex items-center gap-2">
+                <h3 className="font-bold text-lg text-[#1E3A5F] mb-4 flex items-center gap-2">
                   <Building2 className="w-5 h-5" />
                   Contact Information
                 </h3>
@@ -714,13 +714,13 @@ const VerifyDOTPage: React.FC = () => {
                     {carrier.phone && (
                       <div className="flex items-center gap-3">
                         <Phone className="w-5 h-5 text-gray-400" />
-                        <a href={`tel:${carrier.phone}`} className="text-gray-900 hover:text-[#1a365d]">{carrier.phone}</a>
+                        <a href={`tel:${carrier.phone}`} className="text-gray-900 hover:text-[#1E3A5F]">{carrier.phone}</a>
                       </div>
                     )}
                     {carrier.email && (
                       <div className="flex items-center gap-3">
                         <Mail className="w-5 h-5 text-gray-400" />
-                        <a href={`mailto:${carrier.email}`} className="text-gray-900 hover:text-[#1a365d]">{carrier.email}</a>
+                        <a href={`mailto:${carrier.email}`} className="text-gray-900 hover:text-[#1E3A5F]">{carrier.email}</a>
                       </div>
                     )}
                     {carrier.fax && (
@@ -748,7 +748,7 @@ const VerifyDOTPage: React.FC = () => {
                 href={`https://safer.fmcsa.dot.gov/query.asp?searchtype=ANY&query_type=queryCarrierSnapshot&query_param=USDOT&query_string=${carrier.dotNumber}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[#1a365d] hover:text-[#ff6b35] font-medium transition-colors print:hidden"
+                className="flex items-center gap-2 text-[#1E3A5F] hover:text-[#3B82F6] font-medium transition-colors print:hidden"
               >
                 <ExternalLink className="w-4 h-4" />
                 View on FMCSA SAFER
@@ -764,7 +764,7 @@ const VerifyDOTPage: React.FC = () => {
                   setMcNumber('');
                   setVerifiedAt(null);
                 }}
-                className="px-6 py-3 bg-[#1a365d] text-white rounded-xl font-semibold hover:bg-[#2d4a6f] transition-colors"
+                className="px-6 py-3 bg-[#1E3A5F] text-white rounded-xl font-semibold hover:bg-[#1E3A5F]/80 transition-colors"
               >
                 Verify Another Carrier
               </button>

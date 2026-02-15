@@ -39,11 +39,11 @@ const IntentLeadCard: React.FC<IntentLeadCardProps> = ({ lead, onContact, onMark
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-all">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-[#1a365d]/10 rounded-xl flex items-center justify-center">
-            <Building className="w-6 h-6 text-[#1a365d]" />
+          <div className="w-12 h-12 bg-[#1E3A5F]/10 rounded-xl flex items-center justify-center">
+            <Building className="w-6 h-6 text-[#1E3A5F]" />
           </div>
           <div>
-            <h3 className="font-semibold text-[#1a365d]">{lead.company}</h3>
+            <h3 className="font-semibold text-[#1E3A5F]">{lead.company}</h3>
             <p className="text-sm text-gray-500">{lead.contact}</p>
           </div>
         </div>
@@ -80,14 +80,14 @@ const IntentLeadCard: React.FC<IntentLeadCardProps> = ({ lead, onContact, onMark
       <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
         <a
           href={`mailto:${lead.email}`}
-          className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#ff6b35]"
+          className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#3B82F6]"
         >
           <Mail className="w-4 h-4" />
           {lead.email}
         </a>
         <a
           href={`tel:${lead.phone}`}
-          className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#ff6b35]"
+          className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#3B82F6]"
         >
           <Phone className="w-4 h-4" />
           {lead.phone}
@@ -97,7 +97,7 @@ const IntentLeadCard: React.FC<IntentLeadCardProps> = ({ lead, onContact, onMark
       <div className="flex gap-2 mt-4">
         <button
           onClick={() => onContact(lead.id)}
-          className="flex-1 py-2 bg-[#ff6b35] text-white rounded-lg text-sm font-medium hover:bg-[#e55a2b] transition-colors flex items-center justify-center gap-1"
+          className="flex-1 py-2 bg-[#3B82F6] text-white rounded-lg text-sm font-medium hover:bg-[#2563EB] transition-colors flex items-center justify-center gap-1"
         >
           Contact Lead
           <ChevronRight className="w-4 h-4" />

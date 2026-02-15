@@ -1,5 +1,5 @@
 import React from 'react';
-import { Truck, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram, ExternalLink } from 'lucide-react';
+import { Truck, Mail, MapPin, Facebook, Twitter, Linkedin, Instagram, ExternalLink } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (view: string) => void;
@@ -40,14 +40,14 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   };
 
   return (
-    <footer className="bg-[#1a365d] text-white">
+    <footer className="bg-[#1E3A5F] text-white">
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-8">
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="bg-[#ff6b35] p-2 rounded-lg">
+              <div className="bg-[#3B82F6] p-2 rounded-lg">
                 <Truck className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -66,10 +66,6 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 <Mail className="w-4 h-4" />
                 support@dispatchlinkpro.com
               </a>
-              <a href="tel:1-800-555-0123" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors text-sm">
-                <Phone className="w-4 h-4" />
-                1-800-555-0123
-              </a>
               <div className="flex items-center gap-3 text-gray-400 text-sm">
                 <MapPin className="w-4 h-4" />
                 Dallas, TX 75201
@@ -78,16 +74,16 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
             {/* Social Links */}
             <div className="flex gap-3 mt-6">
-              <a href="#" className="p-2 bg-white/10 rounded-lg hover:bg-[#ff6b35] transition-colors">
+              <a href="#" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="p-2 bg-white/10 rounded-lg hover:bg-[#ff6b35] transition-colors">
+              <a href="#" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="p-2 bg-white/10 rounded-lg hover:bg-[#ff6b35] transition-colors">
+              <a href="#" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
                 <Linkedin className="w-5 h-5" />
               </a>
-              <a href="#" className="p-2 bg-white/10 rounded-lg hover:bg-[#ff6b35] transition-colors">
+              <a href="#" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
                 <Instagram className="w-5 h-5" />
               </a>
             </div>

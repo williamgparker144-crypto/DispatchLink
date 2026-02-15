@@ -67,7 +67,7 @@ const CarrierScoutPage: React.FC = () => {
     {
       icon: Users,
       role: 'Dispatchers',
-      color: 'from-[#ff6b35] to-[#ff8c5a]',
+      color: 'from-[#3B82F6] to-[#60A5FA]',
       points: [
         'Access every load board from one dashboard',
         'AI-powered rate recommendations per lane',
@@ -78,7 +78,7 @@ const CarrierScoutPage: React.FC = () => {
     {
       icon: Truck,
       role: 'Carriers',
-      color: 'from-[#1a365d] to-[#2d4a6f]',
+      color: 'from-[#1E3A5F] to-[#1E3A5F]/80',
       points: [
         'Get matched to freight that fits your equipment',
         'Real-time market rate visibility per lane',
@@ -89,7 +89,7 @@ const CarrierScoutPage: React.FC = () => {
     {
       icon: Building,
       role: 'Brokers',
-      color: 'from-teal-600 to-teal-700',
+      color: 'from-emerald-600 to-emerald-700',
       points: [
         'Instantly find verified, available capacity',
         'Trust scores and carrier performance history',
@@ -123,21 +123,21 @@ const CarrierScoutPage: React.FC = () => {
   ];
 
   const stats = [
-    { label: 'DispatchLink Members', value: '2,400+' },
-    { label: 'Verified Carriers', value: '1,200+' },
-    { label: 'FMCSA Verified', value: '100%' },
-    { label: 'Active Connections', value: '8,500+' },
+    { label: 'DispatchLink Members', value: 'Growing Network' },
+    { label: 'Verified Carriers', value: 'FMCSA Verified' },
+    { label: 'Core Platform', value: '100% Free' },
+    { label: 'Community', value: 'Active Community' },
   ];
 
   return (
     <div className="bg-white">
       {/* Hero */}
-      <section className="relative bg-gradient-to-br from-[#1a365d] via-[#2d4a6f] to-teal-700 text-white overflow-hidden">
+      <section className="relative bg-gradient-to-br from-[#1E3A5F] via-[#1E3A5F] to-emerald-700 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDE4YzEuNjU2IDAgMyAxLjM0NCAzIDNzLTEuMzQ0IDMtMyAzLTMtMS4zNDQtMy0zIDEuMzQ0LTMgMy0zeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 relative">
           <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-white/20">
-              <Rocket className="w-4 h-4 text-[#ff6b35]" />
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-white/20 animate-glow">
+              <Rocket className="w-4 h-4 text-[#3B82F6]" />
               <span className="text-sm font-medium">Coming Soon</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
@@ -167,12 +167,12 @@ const CarrierScoutPage: React.FC = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
                     required
-                    className="w-full pl-12 pr-4 py-3.5 rounded-xl text-gray-900 bg-white focus:ring-2 focus:ring-[#ff6b35] outline-none"
+                    className="w-full pl-12 pr-4 py-3.5 rounded-xl text-gray-900 bg-white focus:ring-2 focus:ring-[#3B82F6] outline-none"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="px-6 py-3.5 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                  className="px-6 py-3.5 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
                 >
                   <Rocket className="w-5 h-5" />
                   Join Waitlist
@@ -186,7 +186,7 @@ const CarrierScoutPage: React.FC = () => {
       {/* Problem Statement */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-[#1a365d] mb-4">
+          <h2 className="text-3xl font-extrabold text-[#1E3A5F] mb-4">
             The freight industry is fragmented. It doesn't have to be.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
@@ -201,7 +201,7 @@ const CarrierScoutPage: React.FC = () => {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-[#1a365d] mb-3">
+            <h2 className="text-3xl font-extrabold text-[#1E3A5F] mb-3">
               Everything you need. One platform.
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
@@ -213,12 +213,12 @@ const CarrierScoutPage: React.FC = () => {
             {capabilities.map((cap, i) => (
               <div
                 key={i}
-                className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:border-[#ff6b35]/30 transition-all group"
+                className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:border-[#3B82F6]/30 transition-all group"
               >
-                <div className="w-12 h-12 bg-[#1a365d]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#ff6b35]/10 transition-colors">
-                  <cap.icon className="w-6 h-6 text-[#1a365d] group-hover:text-[#ff6b35] transition-colors" />
+                <div className="w-12 h-12 bg-[#1E3A5F]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#3B82F6]/10 transition-colors">
+                  <cap.icon className="w-6 h-6 text-[#1E3A5F] group-hover:text-[#3B82F6] transition-colors" />
                 </div>
-                <h3 className="text-lg font-bold text-[#1a365d] mb-2">{cap.title}</h3>
+                <h3 className="text-lg font-bold text-[#1E3A5F] mb-2">{cap.title}</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">{cap.desc}</p>
               </div>
             ))}
@@ -230,7 +230,7 @@ const CarrierScoutPage: React.FC = () => {
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-[#1a365d] mb-3">
+            <h2 className="text-3xl font-extrabold text-[#1E3A5F] mb-3">
               Built for every role in freight
             </h2>
             <p className="text-gray-600 text-lg">
@@ -249,7 +249,7 @@ const CarrierScoutPage: React.FC = () => {
                   <ul className="space-y-3">
                     {p.points.map((point, j) => (
                       <li key={j} className="flex items-start gap-3 text-sm text-gray-700">
-                        <ArrowRight className="w-4 h-4 text-[#ff6b35] flex-shrink-0 mt-0.5" />
+                        <ArrowRight className="w-4 h-4 text-[#3B82F6] flex-shrink-0 mt-0.5" />
                         {point}
                       </li>
                     ))}
@@ -262,7 +262,7 @@ const CarrierScoutPage: React.FC = () => {
       </section>
 
       {/* Stats Bar */}
-      <section className="py-12 bg-[#1a365d]">
+      <section className="py-12 bg-[#1E3A5F]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {stats.map((stat, i) => (
@@ -278,9 +278,9 @@ const CarrierScoutPage: React.FC = () => {
       {/* Waitlist Signup */}
       <section className="py-20">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="bg-gradient-to-br from-[#1a365d] via-[#2d4a6f] to-teal-700 rounded-2xl p-10 text-white">
-            <Rocket className="w-12 h-12 mx-auto mb-4 text-[#ff6b35]" />
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">Get early access</h2>
+          <div className="bg-gradient-to-br from-[#1E3A5F] via-[#1E3A5F] to-emerald-700 rounded-2xl p-10 text-white glass-dark">
+            <Rocket className="w-12 h-12 mx-auto mb-4 text-[#3B82F6]" />
+            <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Get early access</h2>
             <p className="text-blue-100/80 mb-8 max-w-md mx-auto">
               Join the waitlist to be among the first to experience CarrierScout.
               Your DispatchLink profile and connections carry over seamlessly.
@@ -301,12 +301,12 @@ const CarrierScoutPage: React.FC = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
                     required
-                    className="w-full pl-12 pr-4 py-3.5 rounded-xl text-gray-900 bg-white focus:ring-2 focus:ring-[#ff6b35] outline-none"
+                    className="w-full pl-12 pr-4 py-3.5 rounded-xl text-gray-900 bg-white focus:ring-2 focus:ring-[#3B82F6] outline-none"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="px-6 py-3.5 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                  className="px-6 py-3.5 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
                 >
                   Join Waitlist
                 </button>
@@ -319,7 +319,7 @@ const CarrierScoutPage: React.FC = () => {
       {/* FAQ */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-[#1a365d] text-center mb-12">
+          <h2 className="text-3xl font-extrabold text-[#1E3A5F] text-center mb-12">
             Frequently Asked Questions
           </h2>
 
@@ -333,7 +333,7 @@ const CarrierScoutPage: React.FC = () => {
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                   className="w-full flex items-center justify-between p-5 text-left"
                 >
-                  <span className="font-semibold text-[#1a365d] pr-4">{faq.q}</span>
+                  <span className="font-semibold text-[#1E3A5F] pr-4">{faq.q}</span>
                   <ChevronDown
                     className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${
                       openFaq === i ? 'rotate-180' : ''

@@ -52,11 +52,11 @@ const MCPermissionModal: React.FC<MCPermissionModalProps> = ({
         {step === 'review' && (
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-[#ff6b35]/10 rounded-xl">
-                <Shield className="w-6 h-6 text-[#ff6b35]" />
+              <div className="p-3 bg-[#3B82F6]/10 rounded-xl">
+                <Shield className="w-6 h-6 text-[#3B82F6]" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-[#1a365d]">MC# Permission Request</h2>
+                <h2 className="text-xl font-bold text-[#1E3A5F]">MC# Permission Request</h2>
                 <p className="text-sm text-gray-500">Review before granting access</p>
               </div>
             </div>
@@ -66,18 +66,18 @@ const MCPermissionModal: React.FC<MCPermissionModalProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-gray-500">Carrier</p>
-                  <p className="font-semibold text-[#1a365d]">{carrierName}</p>
+                  <p className="font-semibold text-[#1E3A5F]">{carrierName}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">MC Number</p>
-                  <p className="font-semibold text-[#1a365d]">{mcNumber}</p>
+                  <p className="font-semibold text-[#1E3A5F]">{mcNumber}</p>
                 </div>
               </div>
             </div>
 
             {/* What This Allows */}
             <div className="mb-6">
-              <h3 className="font-semibold text-[#1a365d] mb-3">This permission allows:</h3>
+              <h3 className="font-semibold text-[#1E3A5F] mb-3">This permission allows:</h3>
               <ul className="space-y-2">
                 {[
                   'Access to book loads using your MC# on loadboards',
@@ -116,7 +116,7 @@ const MCPermissionModal: React.FC<MCPermissionModalProps> = ({
               </button>
               <button
                 onClick={() => setStep('confirm')}
-                className="flex-1 py-3 bg-[#ff6b35] text-white rounded-xl font-medium hover:bg-[#e55a2b] transition-colors"
+                className="flex-1 py-3 bg-[#3B82F6] text-white rounded-xl font-medium hover:bg-[#2563EB] transition-colors"
               >
                 Continue
               </button>
@@ -127,11 +127,11 @@ const MCPermissionModal: React.FC<MCPermissionModalProps> = ({
         {step === 'confirm' && (
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-[#1a365d]/10 rounded-xl">
-                <FileText className="w-6 h-6 text-[#1a365d]" />
+              <div className="p-3 bg-[#1E3A5F]/10 rounded-xl">
+                <FileText className="w-6 h-6 text-[#1E3A5F]" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-[#1a365d]">Digital Consent</h2>
+                <h2 className="text-xl font-bold text-[#1E3A5F]">Digital Consent</h2>
                 <p className="text-sm text-gray-500">Sign to grant permission</p>
               </div>
             </div>
@@ -170,7 +170,7 @@ const MCPermissionModal: React.FC<MCPermissionModalProps> = ({
                   type="text"
                   value={signatureName}
                   onChange={(e) => setSignatureName(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                   placeholder="Your Full Legal Name"
                 />
               </div>
@@ -179,7 +179,7 @@ const MCPermissionModal: React.FC<MCPermissionModalProps> = ({
                   type="checkbox"
                   checked={agreedToTerms}
                   onChange={(e) => setAgreedToTerms(e.target.checked)}
-                  className="mt-1 w-4 h-4 text-[#ff6b35] rounded"
+                  className="mt-1 w-4 h-4 text-[#3B82F6] rounded"
                 />
                 <span className="text-sm text-gray-600">
                   I confirm that I am authorized to grant this permission and understand the terms above.
@@ -197,7 +197,7 @@ const MCPermissionModal: React.FC<MCPermissionModalProps> = ({
               <button
                 onClick={handleConfirm}
                 disabled={!signatureName.trim() || !agreedToTerms}
-                className="flex-1 py-3 bg-[#ff6b35] text-white rounded-xl font-medium hover:bg-[#e55a2b] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-3 bg-[#3B82F6] text-white rounded-xl font-medium hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Grant Permission
               </button>
@@ -210,7 +210,7 @@ const MCPermissionModal: React.FC<MCPermissionModalProps> = ({
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-xl font-bold text-[#1a365d] mb-2">Permission Granted!</h2>
+            <h2 className="text-xl font-bold text-[#1E3A5F] mb-2">Permission Granted!</h2>
             <p className="text-gray-600 mb-4">
               The dispatcher now has access to book loads using your MC#.
             </p>
@@ -222,7 +222,7 @@ const MCPermissionModal: React.FC<MCPermissionModalProps> = ({
             {onInviteToCarrierScout && (
               <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
-                  <Rocket className="w-5 h-5 text-[#ff6b35]" />
+                  <Rocket className="w-5 h-5 text-[#3B82F6]" />
                   <p className="font-semibold text-sm text-gray-800">This carrier isn't on CarrierScout yet</p>
                 </div>
                 <p className="text-sm text-gray-600 mb-3">
@@ -236,7 +236,7 @@ const MCPermissionModal: React.FC<MCPermissionModalProps> = ({
                     setAgreedToTerms(false);
                     onInviteToCarrierScout(carrierName, mcNumber);
                   }}
-                  className="w-full py-2.5 bg-[#ff6b35] text-white rounded-lg font-medium hover:bg-[#e55a2b] transition-colors flex items-center justify-center gap-2 text-sm"
+                  className="w-full py-2.5 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors flex items-center justify-center gap-2 text-sm"
                 >
                   <Rocket className="w-4 h-4" />
                   Invite to CarrierScout

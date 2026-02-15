@@ -60,8 +60,8 @@ const PermissionsList: React.FC<PermissionsListProps> = ({ permissions, onRevoke
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="p-4 border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <Shield className="w-5 h-5 text-[#1a365d]" />
-          <h3 className="font-semibold text-[#1a365d]">MC# Permissions</h3>
+          <Shield className="w-5 h-5 text-[#1E3A5F]" />
+          <h3 className="font-semibold text-[#1E3A5F]">MC# Permissions</h3>
         </div>
         <p className="text-sm text-gray-500 mt-1">Manage dispatcher access to your authority</p>
       </div>
@@ -83,13 +83,13 @@ const PermissionsList: React.FC<PermissionsListProps> = ({ permissions, onRevoke
                 onClick={() => setExpandedId(expandedId === permission.id ? null : permission.id)}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#1a365d]/10 rounded-lg flex items-center justify-center">
-                    <span className="text-sm font-bold text-[#1a365d]">
+                  <div className="w-10 h-10 bg-[#1E3A5F]/10 rounded-lg flex items-center justify-center">
+                    <span className="text-sm font-bold text-[#1E3A5F]">
                       {permission.dispatcherName.charAt(0)}
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-medium text-[#1a365d]">{permission.dispatcherName}</h4>
+                    <h4 className="font-medium text-[#1E3A5F]">{permission.dispatcherName}</h4>
                     <p className="text-sm text-gray-500">{permission.dispatcherCompany}</p>
                   </div>
                 </div>
@@ -108,11 +108,11 @@ const PermissionsList: React.FC<PermissionsListProps> = ({ permissions, onRevoke
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <p className="text-xs text-gray-500">Granted On</p>
-                      <p className="text-sm font-medium text-[#1a365d]">{permission.grantedAt}</p>
+                      <p className="text-sm font-medium text-[#1E3A5F]">{permission.grantedAt}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Last Activity</p>
-                      <p className="text-sm font-medium text-[#1a365d]">{permission.lastActivity || 'No activity yet'}</p>
+                      <p className="text-sm font-medium text-[#1E3A5F]">{permission.lastActivity || 'No activity yet'}</p>
                     </div>
                   </div>
 

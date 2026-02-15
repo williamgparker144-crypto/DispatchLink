@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 221 83% 53%;
+    --primary: 217 91% 60%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -33,18 +33,18 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221 83% 53%;
+    --ring: 217 91% 60%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 220 23% 95%;
     --sidebar-foreground: 215 25% 27%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 14% 90%;
     --sidebar-accent-foreground: 215 25% 27%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-ring: 217 91% 60%;
   }
 
   .dark {
@@ -129,4 +129,22 @@
 .markdown-preview ul,
 .markdown-preview ol {
   @apply my-4 ml-6;
+}
+
+/* Glassmorphism Utilities */
+.glass-light {
+  @apply backdrop-blur-md bg-white/80 border border-white/20;
+}
+
+.glass-dark {
+  @apply backdrop-blur-md bg-slate-900/70 border border-white/10;
+}
+
+.glass-card {
+  @apply backdrop-blur-lg bg-white/90 border border-white/30 shadow-lg;
+}
+
+/* Freight-themed subtle background gradient */
+.freight-bg {
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 25%, #f8fafc 50%, #eef2ff 75%, #f0f4ff 100%);
 }

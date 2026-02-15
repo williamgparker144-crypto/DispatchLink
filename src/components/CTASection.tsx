@@ -12,14 +12,14 @@ const CTASection: React.FC<CTASectionProps> = ({ onDispatcherSignup, onCarrierSi
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-8">
           {/* Dispatcher CTA */}
-          <div className="bg-gradient-to-br from-[#1a365d] to-[#2d4a6f] rounded-2xl p-8 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#ff6b35]/10 rounded-full blur-3xl" />
+          <div className="bg-gradient-to-br from-[#1E3A5F] to-[#1E3A5F]/80 rounded-2xl p-8 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#3B82F6]/10 rounded-full blur-3xl" />
             <div className="relative">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 bg-white/10 rounded-xl">
                   <Users className="w-6 h-6" />
                 </div>
-                <span className="text-sm font-medium text-[#ff6b35]">FOR DISPATCHERS</span>
+                <span className="text-sm font-medium text-[#3B82F6]">FOR DISPATCHERS</span>
               </div>
               
               <h3 className="text-2xl lg:text-3xl font-bold mb-4">
@@ -38,7 +38,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onDispatcherSignup, onCarrierSi
                   'Compliance templates',
                 ].map((item, index) => (
                   <li key={index} className="flex items-center gap-3 text-sm">
-                    <Zap className="w-4 h-4 text-[#ff6b35]" />
+                    <Zap className="w-4 h-4 text-[#3B82F6]" />
                     {item}
                   </li>
                 ))}
@@ -47,7 +47,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onDispatcherSignup, onCarrierSi
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={onDispatcherSignup}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors"
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors"
                 >
                   Join Free
                   <ArrowRight className="w-4 h-4" />
@@ -58,7 +58,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onDispatcherSignup, onCarrierSi
           </div>
 
           {/* Carrier CTA */}
-          <div className="bg-gradient-to-br from-[#ff6b35] to-[#ff8c5a] rounded-2xl p-8 text-white relative overflow-hidden">
+          <div className="bg-gradient-to-br from-[#3B82F6] to-[#60A5FA] rounded-2xl p-8 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
             <div className="relative">
               <div className="flex items-center gap-3 mb-6">
@@ -93,7 +93,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onDispatcherSignup, onCarrierSi
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={onCarrierSignup}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#ff6b35] rounded-xl font-semibold hover:bg-gray-100 transition-colors"
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#3B82F6] rounded-xl font-semibold hover:bg-gray-100 transition-colors"
                 >
                   Join Free Today
                   <ArrowRight className="w-4 h-4" />
@@ -106,15 +106,6 @@ const CTASection: React.FC<CTASectionProps> = ({ onDispatcherSignup, onCarrierSi
           </div>
         </div>
 
-        {/* Trust Badges */}
-        <div className="mt-12 text-center">
-          <p className="text-sm text-gray-500 mb-4">Trusted by leading trucking companies</p>
-          <div className="flex flex-wrap justify-center gap-8 items-center opacity-50">
-            {['DAT', 'Truckstop.com', '123Loadboard', 'FMCSA', 'TIA'].map((brand, index) => (
-              <span key={index} className="text-xl font-bold text-gray-400">{brand}</span>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );

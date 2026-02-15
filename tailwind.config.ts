@@ -63,7 +63,9 @@ export default {
           'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))'
-        }
+        },
+        navy: '#1E3A5F',
+        success: '#10B981'
       },
       fontFamily: {
         mono: ['JetBrains Mono', 'monospace'],
@@ -91,12 +93,27 @@ export default {
           from: { transform: 'translateY(10px)', opacity: '0' },
           to: { transform: 'translateY(0)', opacity: '1' },
         },
+        'pulse-slow': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.5' },
+        },
+        'glow': {
+          '0%, 100%': { boxShadow: '0 0 5px rgba(59,130,246,0.3), 0 0 15px rgba(59,130,246,0.1)' },
+          '50%': { boxShadow: '0 0 10px rgba(59,130,246,0.5), 0 0 30px rgba(59,130,246,0.2)' },
+        },
+        'live-dot': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.6', transform: 'scale(1.2)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.3s ease-out',
         'slide-in': 'slide-in 0.3s ease-out',
+        'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
+        'glow': 'glow 2s ease-in-out infinite',
+        'live-dot': 'live-dot 2s ease-in-out infinite',
       },
       typography: {
         DEFAULT: {

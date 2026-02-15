@@ -409,7 +409,7 @@ export default function CarrierLoadSearch() {
             ) : (
               <Button
                 size="sm"
-                className="flex-1 bg-[#1a365d] hover:bg-[#2d4a6f]"
+                className="flex-1 bg-[#1E3A5F] hover:bg-[#1E3A5F]/80"
                 onClick={() => handleExpressInterest(load)}
               >
                 <Send className="h-4 w-4 mr-1" />
@@ -434,7 +434,7 @@ export default function CarrierLoadSearch() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-[#1a365d] text-white py-6">
+      <div className="bg-[#1E3A5F] text-white py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
@@ -445,7 +445,7 @@ export default function CarrierLoadSearch() {
               {/* Notification Bell */}
               <button
                 onClick={() => setShowNotifications(true)}
-                className="relative p-2 rounded-lg hover:bg-[#2d4a6f] transition-colors"
+                className="relative p-2 rounded-lg hover:bg-[#1E3A5F]/80 transition-colors"
               >
                 <Bell className="h-6 w-6" />
                 {unreadNotifications > 0 && (
@@ -634,7 +634,7 @@ export default function CarrierLoadSearch() {
             {/* Load Grid */}
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-[#1a365d]" />
+                <Loader2 className="h-8 w-8 animate-spin text-[#1E3A5F]" />
               </div>
             ) : filteredLoads.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-xl">
@@ -841,7 +841,7 @@ export default function CarrierLoadSearch() {
                   Close
                 </Button>
                 <Button
-                  className="flex-1 bg-[#1a365d] hover:bg-[#2d4a6f]"
+                  className="flex-1 bg-[#1E3A5F] hover:bg-[#1E3A5F]/80"
                   onClick={() => {
                     handleExpressInterest(selectedLoad);
                     setShowLoadDetail(false);
@@ -927,7 +927,7 @@ export default function CarrierLoadSearch() {
                         <Button
                           variant="link"
                           size="sm"
-                          className="p-0 h-auto text-[#1a365d]"
+                          className="p-0 h-auto text-[#1E3A5F]"
                           onClick={() => {
                             setSelectedLoad(notification.load!);
                             setShowNotifications(false);

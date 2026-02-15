@@ -168,10 +168,10 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
   const renderVerifyStep = () => (
     <div className="max-w-xl mx-auto">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-[#ff6b35]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Shield className="w-8 h-8 text-[#ff6b35]" />
+        <div className="w-16 h-16 bg-[#3B82F6]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Shield className="w-8 h-8 text-[#3B82F6]" />
         </div>
-        <h2 className="text-2xl font-bold text-[#1a365d] mb-2">Verify Your Authority</h2>
+        <h2 className="text-2xl font-bold text-[#1E3A5F] mb-2">Verify Your Authority</h2>
         <p className="text-gray-600">
           Enter your DOT or MC number to verify your carrier authority with FMCSA and auto-populate your profile.
         </p>
@@ -196,7 +196,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
                 value={dotNumber}
                 onChange={(e) => setDotNumber(e.target.value.replace(/\D/g, ''))}
                 placeholder="e.g., 1234567"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent pl-10"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent pl-10"
               />
               <Truck className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             </div>
@@ -218,7 +218,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
                 value={mcNumber}
                 onChange={(e) => setMcNumber(e.target.value.replace(/\D/g, ''))}
                 placeholder="e.g., 987654"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent pl-10"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent pl-10"
               />
               <FileCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             </div>
@@ -228,7 +228,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
         <button
           onClick={handleVerify}
           disabled={loading || (!dotNumber && !mcNumber)}
-          className="w-full mt-6 py-3 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full mt-6 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? (
             <>
@@ -256,7 +256,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="w-8 h-8 text-green-600" />
         </div>
-        <h2 className="text-2xl font-bold text-[#1a365d] mb-2">Authority Verified!</h2>
+        <h2 className="text-2xl font-bold text-[#1E3A5F] mb-2">Authority Verified!</h2>
         <p className="text-gray-600">
           Review your FMCSA information below. This data will be used to create your carrier profile.
         </p>
@@ -272,7 +272,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
       {carrierData && (
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#1a365d] to-[#2d4a6f] p-6 text-white">
+          <div className="bg-gradient-to-r from-[#1E3A5F] to-[#1E3A5F]/80 p-6 text-white">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold">{carrierData.legalName}</h3>
@@ -300,7 +300,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
           <div className="p-6 space-y-6">
             {/* Contact Info */}
             <div>
-              <h4 className="font-semibold text-[#1a365d] mb-3 flex items-center gap-2">
+              <h4 className="font-semibold text-[#1E3A5F] mb-3 flex items-center gap-2">
                 <Building2 className="w-5 h-5" />
                 Contact Information
               </h4>
@@ -309,7 +309,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
                   <MapPin className="w-4 h-4 text-gray-400 mt-1" />
                   <div>
                     <p className="text-sm text-gray-500">Address</p>
-                    <p className="text-[#1a365d]">
+                    <p className="text-[#1E3A5F]">
                       {carrierData.hqAddress.street}<br />
                       {carrierData.hqAddress.city}, {carrierData.hqAddress.state} {carrierData.hqAddress.zipCode}
                     </p>
@@ -319,13 +319,13 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
                   {carrierData.phone && (
                     <div className="flex items-center gap-3">
                       <Phone className="w-4 h-4 text-gray-400" />
-                      <span className="text-[#1a365d]">{carrierData.phone}</span>
+                      <span className="text-[#1E3A5F]">{carrierData.phone}</span>
                     </div>
                   )}
                   {carrierData.email && (
                     <div className="flex items-center gap-3">
                       <Mail className="w-4 h-4 text-gray-400" />
-                      <span className="text-[#1a365d]">{carrierData.email}</span>
+                      <span className="text-[#1E3A5F]">{carrierData.email}</span>
                     </div>
                   )}
                 </div>
@@ -334,7 +334,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
 
             {/* Authority Status */}
             <div>
-              <h4 className="font-semibold text-[#1a365d] mb-3 flex items-center gap-2">
+              <h4 className="font-semibold text-[#1E3A5F] mb-3 flex items-center gap-2">
                 <Shield className="w-5 h-5" />
                 Authority Status
               </h4>
@@ -357,7 +357,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
             {/* Insurance & Fleet */}
             <div className="grid sm:grid-cols-2 gap-6">
               <div>
-                <h4 className="font-semibold text-[#1a365d] mb-3 flex items-center gap-2">
+                <h4 className="font-semibold text-[#1E3A5F] mb-3 flex items-center gap-2">
                   <FileCheck className="w-5 h-5" />
                   Insurance
                 </h4>
@@ -382,18 +382,18 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
               </div>
 
               <div>
-                <h4 className="font-semibold text-[#1a365d] mb-3 flex items-center gap-2">
+                <h4 className="font-semibold text-[#1E3A5F] mb-3 flex items-center gap-2">
                   <Users className="w-5 h-5" />
                   Fleet Size
                 </h4>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
                     <span className="text-sm text-gray-600">Drivers</span>
-                    <span className="font-semibold text-[#1a365d]">{carrierData.totalDrivers}</span>
+                    <span className="font-semibold text-[#1E3A5F]">{carrierData.totalDrivers}</span>
                   </div>
                   <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
                     <span className="text-sm text-gray-600">Power Units</span>
-                    <span className="font-semibold text-[#1a365d]">{carrierData.totalPowerUnits}</span>
+                    <span className="font-semibold text-[#1E3A5F]">{carrierData.totalPowerUnits}</span>
                   </div>
                 </div>
               </div>
@@ -431,7 +431,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
               <button
                 onClick={handleSaveAndContinue}
                 disabled={loading}
-                className="flex-1 py-3 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -455,10 +455,10 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
   const renderAccountStep = () => (
     <div className="max-w-xl mx-auto">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-[#1a365d]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Users className="w-8 h-8 text-[#1a365d]" />
+        <div className="w-16 h-16 bg-[#1E3A5F]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Users className="w-8 h-8 text-[#1E3A5F]" />
         </div>
-        <h2 className="text-2xl font-bold text-[#1a365d] mb-2">Create Your Account</h2>
+        <h2 className="text-2xl font-bold text-[#1E3A5F] mb-2">Create Your Account</h2>
         <p className="text-gray-600">
           Set up your login credentials to access your carrier dashboard.
         </p>
@@ -482,7 +482,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
               value={contactName}
               onChange={(e) => setContactName(e.target.value)}
               placeholder="Your full name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
               required
             />
           </div>
@@ -496,7 +496,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
               required
             />
           </div>
@@ -510,7 +510,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
               value={contactPhone}
               onChange={(e) => setContactPhone(e.target.value)}
               placeholder="(555) 123-4567"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
             />
           </div>
 
@@ -523,7 +523,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="At least 8 characters"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
               required
               minLength={8}
             />
@@ -538,7 +538,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm your password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
               required
             />
           </div>
@@ -549,13 +549,13 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
                 type="checkbox"
                 checked={agreedToTerms}
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="mt-1 w-4 h-4 text-[#ff6b35] border-gray-300 rounded focus:ring-[#ff6b35]"
+                className="mt-1 w-4 h-4 text-[#3B82F6] border-gray-300 rounded focus:ring-[#3B82F6]"
               />
               <span className="text-sm text-gray-600">
                 I agree to the{' '}
-                <a href="#" className="text-[#ff6b35] hover:underline">Terms of Service</a>
+                <a href="#" className="text-[#3B82F6] hover:underline">Terms of Service</a>
                 {' '}and{' '}
-                <a href="#" className="text-[#ff6b35] hover:underline">Privacy Policy</a>
+                <a href="#" className="text-[#3B82F6] hover:underline">Privacy Policy</a>
               </span>
             </label>
           </div>
@@ -572,7 +572,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 py-3 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -594,14 +594,14 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 className="w-10 h-10 text-green-600" />
         </div>
-        <h2 className="text-2xl font-bold text-[#1a365d] mb-4">Registration Complete!</h2>
+        <h2 className="text-2xl font-bold text-[#1E3A5F] mb-4">Registration Complete!</h2>
         <p className="text-gray-600 mb-6">
           Your carrier profile has been created and verified with FMCSA data. 
           Check your email to verify your account and get started.
         </p>
 
         <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-          <h3 className="font-semibold text-[#1a365d] mb-2">What's Next?</h3>
+          <h3 className="font-semibold text-[#1E3A5F] mb-2">What's Next?</h3>
           <ul className="space-y-2 text-sm text-gray-600">
             <li className="flex items-start gap-2">
               <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
@@ -624,7 +624,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
 
         <button
           onClick={onComplete}
-          className="w-full py-3 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors"
+          className="w-full py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors"
         >
           Go to Dashboard
         </button>
@@ -638,7 +638,7 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
         {/* Back Button */}
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-[#1a365d] hover:text-[#ff6b35] mb-8 transition-colors"
+          className="flex items-center gap-2 text-[#1E3A5F] hover:text-[#3B82F6] mb-8 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           Back
@@ -653,11 +653,11 @@ const CarrierRegistration: React.FC<CarrierRegistrationProps> = ({ onBack, onCom
             return (
               <React.Fragment key={s}>
                 {index > 0 && (
-                  <div className={`w-12 h-0.5 ${isPast ? 'bg-[#ff6b35]' : 'bg-gray-200'}`} />
+                  <div className={`w-12 h-0.5 ${isPast ? 'bg-[#3B82F6]' : 'bg-gray-200'}`} />
                 )}
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
                   isActive 
-                    ? 'bg-[#ff6b35] text-white' 
+                    ? 'bg-[#3B82F6] text-white' 
                     : isPast 
                       ? 'bg-green-500 text-white' 
                       : 'bg-gray-200 text-gray-500'

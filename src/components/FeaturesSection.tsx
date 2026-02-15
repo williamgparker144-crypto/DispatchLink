@@ -59,7 +59,7 @@ const FeaturesSection: React.FC = () => {
       icon: <Globe className="w-6 h-6" />,
       title: 'Multi-Platform Access',
       description: 'Available on web, iOS, and Android. Manage your business from anywhere.',
-      color: 'bg-teal-500',
+      color: 'bg-emerald-500',
     },
     {
       icon: <Bell className="w-6 h-6" />,
@@ -86,10 +86,10 @@ const FeaturesSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <span className="inline-block px-4 py-1 bg-[#1a365d]/10 text-[#1a365d] rounded-full text-sm font-semibold mb-4">
+          <span className="inline-block px-4 py-1 bg-[#1E3A5F]/10 text-[#1E3A5F] rounded-full text-sm font-semibold mb-4">
             PLATFORM FEATURES
           </span>
-          <h2 className="text-3xl lg:text-4xl font-bold text-[#1a365d] mb-4">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1E3A5F] mb-4">
             Everything You Need to Connect & Grow
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -102,12 +102,12 @@ const FeaturesSection: React.FC = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="p-6 bg-gray-50 rounded-xl hover:bg-white hover:shadow-lg transition-all border border-transparent hover:border-gray-100 group"
+              className="p-6 bg-gray-50 rounded-xl hover:bg-white hover:shadow-lg hover:shadow-[#3B82F6]/10 transition-all border border-transparent hover:border-gray-100 group glass-light"
             >
               <div className={`inline-flex p-3 rounded-xl ${feature.color} text-white mb-4 group-hover:scale-110 transition-transform`}>
                 {feature.icon}
               </div>
-              <h3 className="font-bold text-[#1a365d] mb-2">{feature.title}</h3>
+              <h3 className="font-bold text-[#1E3A5F] mb-2">{feature.title}</h3>
               <p className="text-sm text-gray-600">{feature.description}</p>
             </div>
           ))}
@@ -122,7 +122,7 @@ const FeaturesSection: React.FC = () => {
               className="w-full max-w-md rounded-xl shadow-lg"
             />
             <div className="text-left max-w-md">
-              <h3 className="text-2xl font-bold text-[#1a365d] mb-4">
+              <h3 className="text-2xl font-bold text-[#1E3A5F] mb-4">
                 Your Professional Trucking Network
               </h3>
               <p className="text-gray-600 mb-4">
@@ -130,9 +130,9 @@ const FeaturesSection: React.FC = () => {
                 Your DispatchLink connections and verified badges carry over when premium features launch on CarrierScout.
               </p>
               <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1 bg-[#1a365d]/10 text-[#1a365d] rounded-full text-sm font-medium">Dispatchers</span>
-                <span className="px-3 py-1 bg-[#1a365d]/10 text-[#1a365d] rounded-full text-sm font-medium">Carriers</span>
-                <span className="px-3 py-1 bg-[#1a365d]/10 text-[#1a365d] rounded-full text-sm font-medium">Brokers</span>
+                <span className="px-3 py-1 bg-[#1E3A5F]/10 text-[#1E3A5F] rounded-full text-sm font-medium">Dispatchers</span>
+                <span className="px-3 py-1 bg-[#1E3A5F]/10 text-[#1E3A5F] rounded-full text-sm font-medium">Carriers</span>
+                <span className="px-3 py-1 bg-[#1E3A5F]/10 text-[#1E3A5F] rounded-full text-sm font-medium">Brokers</span>
               </div>
             </div>
           </div>

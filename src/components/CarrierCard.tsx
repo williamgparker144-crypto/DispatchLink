@@ -27,7 +27,7 @@ const CarrierCard: React.FC<CarrierCardProps> = ({ carrier, onViewProfile, onReq
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all group">
       {/* Header */}
       <div className="relative">
-        <div className="h-28 bg-gradient-to-r from-[#ff6b35] to-[#ff8c5a]" />
+        <div className="h-28 bg-gradient-to-r from-[#3B82F6] to-[#60A5FA]" />
         <div className="absolute -bottom-10 left-6">
           <div className="relative">
             <img
@@ -56,7 +56,7 @@ const CarrierCard: React.FC<CarrierCardProps> = ({ carrier, onViewProfile, onReq
       <div className="pt-12 p-6">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="font-bold text-[#1a365d] text-lg group-hover:text-[#ff6b35] transition-colors">
+            <h3 className="font-bold text-[#1E3A5F] text-lg group-hover:text-[#3B82F6] transition-colors">
               {carrier.company}
             </h3>
             <p className="text-sm text-gray-500">{carrier.name}</p>
@@ -71,11 +71,11 @@ const CarrierCard: React.FC<CarrierCardProps> = ({ carrier, onViewProfile, onReq
         <div className="grid grid-cols-2 gap-2 mb-4 p-3 bg-gray-50 rounded-lg">
           <div>
             <p className="text-xs text-gray-500">DOT #</p>
-            <p className="text-sm font-semibold text-[#1a365d]">{carrier.dotNumber}</p>
+            <p className="text-sm font-semibold text-[#1E3A5F]">{carrier.dotNumber}</p>
           </div>
           <div>
             <p className="text-xs text-gray-500">MC #</p>
-            <p className="text-sm font-semibold text-[#1a365d]">{carrier.mcNumber}</p>
+            <p className="text-sm font-semibold text-[#1E3A5F]">{carrier.mcNumber}</p>
           </div>
         </div>
 
@@ -96,7 +96,7 @@ const CarrierCard: React.FC<CarrierCardProps> = ({ carrier, onViewProfile, onReq
           {carrier.equipmentTypes.slice(0, 3).map((type, index) => (
             <span
               key={index}
-              className="px-2 py-1 bg-[#ff6b35]/10 text-[#ff6b35] text-xs font-medium rounded-lg"
+              className="px-2 py-1 bg-[#3B82F6]/10 text-[#3B82F6] text-xs font-medium rounded-lg"
             >
               {type}
             </span>
@@ -107,7 +107,7 @@ const CarrierCard: React.FC<CarrierCardProps> = ({ carrier, onViewProfile, onReq
         <div className="flex gap-2 pt-4 border-t border-gray-100">
           <button
             onClick={() => onViewProfile(carrier.id)}
-            className="flex-1 py-2 px-4 bg-[#1a365d] text-white rounded-lg text-sm font-medium hover:bg-[#2d4a6f] transition-colors flex items-center justify-center gap-1"
+            className="flex-1 py-2 px-4 bg-[#1E3A5F] text-white rounded-lg text-sm font-medium hover:bg-[#1E3A5F]/80 transition-colors flex items-center justify-center gap-1"
           >
             View Profile
             <ChevronRight className="w-4 h-4" />

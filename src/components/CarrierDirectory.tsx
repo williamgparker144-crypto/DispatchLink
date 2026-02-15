@@ -3,27 +3,7 @@ import { Search, SlidersHorizontal, Grid, List, X, MapPin } from 'lucide-react';
 import CarrierCard from './CarrierCard';
 import CarrierScoutUpgradeCTA from './CarrierScoutUpgradeCTA';
 
-const carrierImages = [
-  'https://d64gsuwffb70l.cloudfront.net/6967ea24d7d2122c9a86ad94_1768418505750_37b6a043.png',
-  'https://d64gsuwffb70l.cloudfront.net/6967ea24d7d2122c9a86ad94_1768418508724_339e2fd2.png',
-  'https://d64gsuwffb70l.cloudfront.net/6967ea24d7d2122c9a86ad94_1768418505142_c40ccc0d.png',
-  'https://d64gsuwffb70l.cloudfront.net/6967ea24d7d2122c9a86ad94_1768418500972_44b130a6.jpg',
-];
-
-const sampleCarriers = [
-  { id: '1', name: 'Robert Thompson', company: 'Thompson Trucking LLC', image: carrierImages[0], rating: 4.8, reviews: 89, dotNumber: 'DOT1234567', mcNumber: 'MC987654', fleetSize: 15, equipmentTypes: ['Flatbed', 'Step Deck'], regions: ['Southeast', 'Midwest'], verified: true, insuranceVerified: true },
-  { id: '2', name: 'Maria Garcia', company: 'Garcia Freight Services', image: carrierImages[1], rating: 4.9, reviews: 112, dotNumber: 'DOT2345678', mcNumber: 'MC876543', fleetSize: 8, equipmentTypes: ['Reefer', 'Dry Van'], regions: ['West Coast', 'Southwest'], verified: true, insuranceVerified: true },
-  { id: '3', name: 'William Anderson', company: 'Anderson Transport Inc', image: carrierImages[2], rating: 4.7, reviews: 156, dotNumber: 'DOT3456789', mcNumber: 'MC765432', fleetSize: 25, equipmentTypes: ['Dry Van', 'Reefer', 'Flatbed'], regions: ['Nationwide'], verified: true, insuranceVerified: true },
-  { id: '4', name: 'Jennifer Taylor', company: 'Taylor Logistics', image: carrierImages[3], rating: 4.85, reviews: 67, dotNumber: 'DOT4567890', mcNumber: 'MC654321', fleetSize: 5, equipmentTypes: ['Tanker', 'Hazmat'], regions: ['Texas', 'Oklahoma', 'Louisiana'], verified: true, insuranceVerified: true },
-  { id: '5', name: 'Michael Wilson', company: 'Wilson Heavy Hauling', image: carrierImages[0], rating: 4.95, reviews: 98, dotNumber: 'DOT5678901', mcNumber: 'MC543210', fleetSize: 12, equipmentTypes: ['Heavy Haul', 'Oversized', 'Lowboy'], regions: ['Midwest', 'Northeast'], verified: true, insuranceVerified: true },
-  { id: '6', name: 'Amanda Moore', company: 'Moore Express Trucking', image: carrierImages[1], rating: 4.6, reviews: 45, dotNumber: 'DOT6789012', mcNumber: 'MC432109', fleetSize: 3, equipmentTypes: ['Dry Van'], regions: ['Southeast'], verified: true, insuranceVerified: true },
-  { id: '7', name: 'David Martinez', company: 'Martinez Freight LLC', image: carrierImages[2], rating: 4.75, reviews: 78, dotNumber: 'DOT7890123', mcNumber: 'MC321098', fleetSize: 18, equipmentTypes: ['Reefer', 'Produce'], regions: ['California', 'Arizona'], verified: true, insuranceVerified: true },
-  { id: '8', name: 'Sarah Johnson', company: 'Johnson Carriers Inc', image: carrierImages[3], rating: 4.8, reviews: 134, dotNumber: 'DOT8901234', mcNumber: 'MC210987', fleetSize: 22, equipmentTypes: ['Flatbed', 'Conestoga'], regions: ['Northeast', 'Mid-Atlantic'], verified: true, insuranceVerified: true },
-  { id: '9', name: 'James Brown', company: 'Brown Transport Co', image: carrierImages[0], rating: 4.55, reviews: 56, dotNumber: 'DOT9012345', mcNumber: 'MC109876', fleetSize: 7, equipmentTypes: ['Dry Van', 'LTL'], regions: ['Midwest'], verified: true, insuranceVerified: true },
-  { id: '10', name: 'Emily Davis', company: 'Davis Trucking Services', image: carrierImages[1], rating: 4.9, reviews: 145, dotNumber: 'DOT0123456', mcNumber: 'MC098765', fleetSize: 30, equipmentTypes: ['Reefer', 'Dry Van', 'Intermodal'], regions: ['Nationwide'], verified: true, insuranceVerified: true },
-  { id: '11', name: 'Christopher Lee', company: 'Lee Hauling LLC', image: carrierImages[2], rating: 4.65, reviews: 67, dotNumber: 'DOT1234560', mcNumber: 'MC987650', fleetSize: 10, equipmentTypes: ['Auto Transport', 'Car Hauler'], regions: ['Southeast', 'Southwest'], verified: true, insuranceVerified: true },
-  { id: '12', name: 'Jessica Thomas', company: 'Thomas Logistics Corp', image: carrierImages[3], rating: 4.85, reviews: 189, dotNumber: 'DOT2345670', mcNumber: 'MC876540', fleetSize: 45, equipmentTypes: ['Dry Van', 'Reefer', 'Flatbed', 'Tanker'], regions: ['Nationwide'], verified: true, insuranceVerified: true },
-];
+const sampleCarriers: any[] = [];
 
 const equipmentOptions = ['Flatbed', 'Reefer', 'Dry Van', 'Tanker', 'Hazmat', 'Heavy Haul', 'Auto Transport', 'LTL', 'Intermodal'];
 const regionOptions = ['Nationwide', 'Northeast', 'Southeast', 'Midwest', 'Southwest', 'West Coast'];
@@ -108,12 +88,12 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#1a365d] mb-2">Find Carriers</h1>
+          <h1 className="text-3xl font-bold text-[#1E3A5F] mb-2">Find Carriers</h1>
           <p className="text-gray-600">Browse verified carriers with active DOT MC# authority</p>
         </div>
 
         {/* Search and Filters Bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6 glass-light">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search Input */}
             <div className="flex-1 relative">
@@ -123,7 +103,7 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by company, DOT#, MC#, or equipment type..."
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
               />
             </div>
 
@@ -132,13 +112,13 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center gap-2 px-4 py-3 border rounded-lg transition-colors ${
-                  showFilters ? 'bg-[#1a365d] text-white border-[#1a365d]' : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                  showFilters ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <SlidersHorizontal className="w-5 h-5" />
                 Filters
                 {(selectedEquipment.length + selectedRegions.length) > 0 && (
-                  <span className="bg-[#ff6b35] text-white text-xs px-2 py-0.5 rounded-full">
+                  <span className="bg-[#3B82F6] text-white text-xs px-2 py-0.5 rounded-full">
                     {selectedEquipment.length + selectedRegions.length}
                   </span>
                 )}
@@ -147,7 +127,7 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-4 py-3 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                className="px-4 py-3 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
               >
                 <option value="rating">Sort by Rating</option>
                 <option value="fleetSize">Sort by Fleet Size</option>
@@ -157,13 +137,13 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
               <div className="hidden sm:flex border border-gray-200 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-3 ${viewMode === 'grid' ? 'bg-[#1a365d] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                  className={`p-3 ${viewMode === 'grid' ? 'bg-[#1E3A5F] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
                 >
                   <Grid className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-3 ${viewMode === 'list' ? 'bg-[#1a365d] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                  className={`p-3 ${viewMode === 'list' ? 'bg-[#1E3A5F] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
                 >
                   <List className="w-5 h-5" />
                 </button>
@@ -185,7 +165,7 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
                         onClick={() => toggleEquipment(equipment)}
                         className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                           selectedEquipment.includes(equipment)
-                            ? 'bg-[#ff6b35] text-white'
+                            ? 'bg-[#3B82F6] text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
@@ -205,7 +185,7 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
                         onClick={() => toggleRegion(region)}
                         className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1 ${
                           selectedRegions.includes(region)
-                            ? 'bg-[#1a365d] text-white'
+                            ? 'bg-[#1E3A5F] text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
@@ -224,7 +204,7 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
                     setSelectedEquipment([]);
                     setSelectedRegions([]);
                   }}
-                  className="mt-4 flex items-center gap-2 text-sm text-[#ff6b35] hover:text-[#e55a2b]"
+                  className="mt-4 flex items-center gap-2 text-sm text-[#3B82F6] hover:text-[#2563EB]"
                 >
                   <X className="w-4 h-4" />
                   Clear all filters
@@ -270,14 +250,14 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
               <Search className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">No carriers found</h3>
-            <p className="text-gray-500 mb-4">Try adjusting your search or filters</p>
+            <p className="text-gray-500 mb-4">No carriers found. Use Verify DOT/MC to look up carriers.</p>
             <button
               onClick={() => {
                 setSearchQuery('');
                 setSelectedEquipment([]);
                 setSelectedRegions([]);
               }}
-              className="px-4 py-2 bg-[#ff6b35] text-white rounded-lg font-medium hover:bg-[#e55a2b] transition-colors"
+              className="px-4 py-2 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors"
             >
               Clear all filters
             </button>

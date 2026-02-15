@@ -38,16 +38,9 @@ export const useAppContext = () => useContext(AppContext);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>({
-    id: 'demo-user-1',
-    name: 'John Smith',
-    email: 'john@smithdispatch.com',
-    company: 'Smith Dispatch Services',
-    userType: 'dispatcher',
-    verified: true,
-  });
-  const [unreadMessages, setUnreadMessages] = useState(3);
-  const [pendingConnections, setPendingConnections] = useState(2);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [pendingConnections, setPendingConnections] = useState(0);
 
   const toggleSidebar = () => {
     setSidebarOpen(prev => !prev);

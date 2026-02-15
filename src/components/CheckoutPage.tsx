@@ -23,7 +23,7 @@ const PLANS = {
     name: 'Basic Dispatcher',
     price: 19.99,
     icon: Zap,
-    color: '#1a365d',
+    color: '#1E3A5F',
     features: [
       'Verified dispatcher profile',
       'Intent-data marketing hub access',
@@ -39,7 +39,7 @@ const PLANS = {
     name: 'Premier Dispatcher',
     price: 49.99,
     icon: Crown,
-    color: '#ff6b35',
+    color: '#3B82F6',
     features: [
       'Everything in Basic, plus:',
       'Full carrier marketplace access',
@@ -126,7 +126,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
         {/* Back Button */}
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-[#1a365d] hover:text-[#ff6b35] mb-8 transition-colors"
+          className="flex items-center gap-2 text-[#1E3A5F] hover:text-[#3B82F6] mb-8 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           Back to Pricing
@@ -136,13 +136,13 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
           {/* Order Summary */}
           <div className="order-2 lg:order-1">
             <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-8">
-              <h2 className="text-xl font-bold text-[#1a365d] mb-6">Order Summary</h2>
+              <h2 className="text-xl font-bold text-[#1E3A5F] mb-6">Order Summary</h2>
               
               {/* Plan Card */}
-              <div className={`rounded-xl p-4 mb-6 ${planId === 'premier' ? 'bg-[#1a365d] text-white' : 'bg-gray-50'}`}>
+              <div className={`rounded-xl p-4 mb-6 ${planId === 'premier' ? 'bg-[#1E3A5F] text-white' : 'bg-gray-50'}`}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className={`p-2 rounded-lg ${planId === 'premier' ? 'bg-[#ff6b35]/20' : 'bg-[#1a365d]/10'}`}>
-                    <PlanIcon className={`w-5 h-5 ${planId === 'premier' ? 'text-[#ff6b35]' : 'text-[#1a365d]'}`} />
+                  <div className={`p-2 rounded-lg ${planId === 'premier' ? 'bg-[#3B82F6]/20' : 'bg-[#1E3A5F]/10'}`}>
+                    <PlanIcon className={`w-5 h-5 ${planId === 'premier' ? 'text-[#3B82F6]' : 'text-[#1E3A5F]'}`} />
                   </div>
                   <div>
                     <h3 className="font-semibold">{plan.name}</h3>
@@ -159,7 +159,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
 
               {/* Features */}
               <div className="mb-6">
-                <h4 className="font-medium text-[#1a365d] mb-3">What's included:</h4>
+                <h4 className="font-medium text-[#1E3A5F] mb-3">What's included:</h4>
                 <ul className="space-y-2">
                   {plan.features.slice(0, 6).map((feature, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
@@ -168,7 +168,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
                     </li>
                   ))}
                   {plan.features.length > 6 && (
-                    <li className="text-sm text-[#ff6b35] font-medium">
+                    <li className="text-sm text-[#3B82F6] font-medium">
                       + {plan.features.length - 6} more features
                     </li>
                   )}
@@ -181,7 +181,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-medium">${plan.price}</span>
                 </div>
-                <div className="flex justify-between items-center text-lg font-bold text-[#1a365d]">
+                <div className="flex justify-between items-center text-lg font-bold text-[#1E3A5F]">
                   <span>Total due today</span>
                   <span>${plan.price}</span>
                 </div>
@@ -203,20 +203,20 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
             <div className="bg-white rounded-2xl shadow-lg p-6">
               {/* Progress Steps */}
               <div className="flex items-center gap-4 mb-8">
-                <div className={`flex items-center gap-2 ${step === 'info' ? 'text-[#ff6b35]' : 'text-green-500'}`}>
+                <div className={`flex items-center gap-2 ${step === 'info' ? 'text-[#3B82F6]' : 'text-green-500'}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    step === 'info' ? 'bg-[#ff6b35] text-white' : 'bg-green-500 text-white'
+                    step === 'info' ? 'bg-[#3B82F6] text-white' : 'bg-green-500 text-white'
                   }`}>
                     {step === 'payment' ? <Check className="w-4 h-4" /> : '1'}
                   </div>
                   <span className="font-medium">Your Info</span>
                 </div>
                 <div className="flex-1 h-0.5 bg-gray-200">
-                  <div className={`h-full bg-[#ff6b35] transition-all ${step === 'payment' ? 'w-full' : 'w-0'}`} />
+                  <div className={`h-full bg-[#3B82F6] transition-all ${step === 'payment' ? 'w-full' : 'w-0'}`} />
                 </div>
-                <div className={`flex items-center gap-2 ${step === 'payment' ? 'text-[#ff6b35]' : 'text-gray-400'}`}>
+                <div className={`flex items-center gap-2 ${step === 'payment' ? 'text-[#3B82F6]' : 'text-gray-400'}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    step === 'payment' ? 'bg-[#ff6b35] text-white' : 'bg-gray-200 text-gray-500'
+                    step === 'payment' ? 'bg-[#3B82F6] text-white' : 'bg-gray-200 text-gray-500'
                   }`}>
                     2
                   </div>
@@ -236,7 +236,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
 
               {step === 'info' ? (
                 <form onSubmit={handleSubmitInfo}>
-                  <h2 className="text-xl font-bold text-[#1a365d] mb-6">Your Information</h2>
+                  <h2 className="text-xl font-bold text-[#1E3A5F] mb-6">Your Information</h2>
                   
                   <div className="grid sm:grid-cols-2 gap-4 mb-4">
                     <div>
@@ -247,7 +247,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
                         type="text"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
                         required
                       />
                     </div>
@@ -259,7 +259,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
                         type="text"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
                         required
                       />
                     </div>
@@ -273,7 +273,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
                       required
                     />
                   </div>
@@ -286,7 +286,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
                     />
                   </div>
 
@@ -298,7 +298,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
                       type="text"
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
                     />
                   </div>
 
@@ -308,27 +308,27 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
                         type="checkbox"
                         checked={agreedToTerms}
                         onChange={(e) => setAgreedToTerms(e.target.checked)}
-                        className="mt-1 w-4 h-4 text-[#ff6b35] border-gray-300 rounded focus:ring-[#ff6b35]"
+                        className="mt-1 w-4 h-4 text-[#3B82F6] border-gray-300 rounded focus:ring-[#3B82F6]"
                       />
                       <span className="text-sm text-gray-600">
                         I agree to the{' '}
-                        <a href="#" className="text-[#ff6b35] hover:underline">Terms of Service</a>
+                        <a href="#" className="text-[#3B82F6] hover:underline">Terms of Service</a>
                         {' '}and{' '}
-                        <a href="#" className="text-[#ff6b35] hover:underline">Privacy Policy</a>
+                        <a href="#" className="text-[#3B82F6] hover:underline">Privacy Policy</a>
                       </span>
                     </label>
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-3 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors"
+                    className="w-full py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors"
                   >
                     Continue to Payment
                   </button>
                 </form>
               ) : (
                 <div>
-                  <h2 className="text-xl font-bold text-[#1a365d] mb-6">Payment Details</h2>
+                  <h2 className="text-xl font-bold text-[#1E3A5F] mb-6">Payment Details</h2>
                   
                   <div className="bg-gray-50 rounded-lg p-4 mb-6">
                     <div className="flex items-center justify-between mb-2">
@@ -341,7 +341,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
                     </div>
                     <button
                       onClick={() => setStep('info')}
-                      className="text-sm text-[#ff6b35] hover:underline mt-2"
+                      className="text-sm text-[#3B82F6] hover:underline mt-2"
                     >
                       Edit information
                     </button>
@@ -349,8 +349,8 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
 
                   <div className="mb-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <CreditCard className="w-5 h-5 text-[#1a365d]" />
-                      <span className="font-medium text-[#1a365d]">Secure Payment</span>
+                      <CreditCard className="w-5 h-5 text-[#1E3A5F]" />
+                      <span className="font-medium text-[#1E3A5F]">Secure Payment</span>
                     </div>
                     <p className="text-sm text-gray-600 mb-4">
                       You'll be redirected to Stripe's secure checkout to complete your payment. 
@@ -380,7 +380,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ planId, onBack, onSuccess }
                     <button
                       onClick={handleCheckout}
                       disabled={loading}
-                      className="flex-1 py-3 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="flex-1 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {loading ? (
                         <>

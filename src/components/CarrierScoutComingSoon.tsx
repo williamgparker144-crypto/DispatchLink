@@ -37,7 +37,7 @@ const CarrierScoutComingSoon: React.FC<CarrierScoutComingSoonProps> = ({ isOpen,
 
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-br from-[#1a365d] via-[#2d4a6f] to-teal-700 p-8 text-white text-center relative">
+        <div className="bg-gradient-to-br from-[#1E3A5F] via-[#1E3A5F] to-emerald-700 p-8 text-white text-center relative">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors"
@@ -73,7 +73,7 @@ const CarrierScoutComingSoon: React.FC<CarrierScoutComingSoonProps> = ({ isOpen,
               </p>
               <button
                 onClick={onClose}
-                className="w-full py-3 bg-[#1a365d] text-white rounded-xl font-semibold hover:bg-[#2d4a6f] transition-colors"
+                className="w-full py-3 bg-[#1E3A5F] text-white rounded-xl font-semibold hover:bg-[#1E3A5F]/80 transition-colors"
               >
                 Back to DispatchLink
               </button>
@@ -82,7 +82,7 @@ const CarrierScoutComingSoon: React.FC<CarrierScoutComingSoonProps> = ({ isOpen,
             <>
               {/* Value proposition */}
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-[#1a365d] mb-1">
+                <h3 className="text-lg font-bold text-[#1E3A5F] mb-1">
                   Why the industry needs CarrierScout
                 </h3>
                 <p className="text-sm text-gray-600">
@@ -96,8 +96,8 @@ const CarrierScoutComingSoon: React.FC<CarrierScoutComingSoonProps> = ({ isOpen,
               <div className="grid grid-cols-1 gap-3 mb-6">
                 {capabilities.map((cap, idx) => (
                   <div key={idx} className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                    <div className="p-2 bg-[#1a365d]/10 rounded-lg flex-shrink-0">
-                      <cap.icon className="w-4 h-4 text-[#1a365d]" />
+                    <div className="p-2 bg-[#1E3A5F]/10 rounded-lg flex-shrink-0">
+                      <cap.icon className="w-4 h-4 text-[#1E3A5F]" />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{cap.label}</p>
@@ -108,8 +108,8 @@ const CarrierScoutComingSoon: React.FC<CarrierScoutComingSoonProps> = ({ isOpen,
               </div>
 
               {/* Waitlist form */}
-              <div className="bg-gradient-to-r from-[#1a365d]/5 to-teal-600/5 rounded-xl p-5 mb-4">
-                <p className="text-sm font-semibold text-[#1a365d] mb-3">
+              <div className="bg-gradient-to-r from-[#1E3A5F]/5 to-emerald-600/5 rounded-xl p-5 mb-4">
+                <p className="text-sm font-semibold text-[#1E3A5F] mb-3">
                   Get priority access when CarrierScout launches
                 </p>
                 <form onSubmit={handleSubmit} className="space-y-3">
@@ -120,14 +120,14 @@ const CarrierScoutComingSoon: React.FC<CarrierScoutComingSoonProps> = ({ isOpen,
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="your@email.com"
-                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1a365d] focus:border-transparent outline-none bg-white"
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1E3A5F] focus:border-transparent outline-none bg-white"
                       required
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-3 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors flex items-center justify-center gap-2"
                   >
                     <Rocket className="w-4 h-4" />
                     Join the Waitlist

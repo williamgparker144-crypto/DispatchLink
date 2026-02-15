@@ -49,10 +49,10 @@ const MarketingHub: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-[#ff6b35] rounded-lg">
+            <div className="p-2 bg-[#3B82F6] rounded-lg">
               <Target className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-[#1a365d]">Intent Marketing Hub</h1>
+            <h1 className="text-3xl font-bold text-[#1E3A5F]">Intent Marketing Hub</h1>
           </div>
           <p className="text-gray-600">
             Access carriers actively searching for dispatcher services based on real-time intent data
@@ -64,7 +64,7 @@ const MarketingHub: React.FC = () => {
           {stats.map((stat, index) => (
             <div key={index} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-[#1a365d]/10 rounded-lg text-[#1a365d]">
+                <div className="p-2 bg-[#1E3A5F]/10 rounded-lg text-[#1E3A5F]">
                   {stat.icon}
                 </div>
                 <span className={`text-sm font-medium ${
@@ -73,7 +73,7 @@ const MarketingHub: React.FC = () => {
                   {stat.change}
                 </span>
               </div>
-              <p className="text-2xl font-bold text-[#1a365d]">{stat.value}</p>
+              <p className="text-2xl font-bold text-[#1E3A5F]">{stat.value}</p>
               <p className="text-sm text-gray-500">{stat.label}</p>
             </div>
           ))}
@@ -85,7 +85,7 @@ const MarketingHub: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               {/* Filter Header */}
               <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="font-semibold text-[#1a365d]">Intent Leads</h2>
+                <h2 className="font-semibold text-[#1E3A5F]">Intent Leads</h2>
                 <div className="flex gap-2">
                   {['all', 'new', 'contacted', 'converted'].map((status) => (
                     <button
@@ -93,7 +93,7 @@ const MarketingHub: React.FC = () => {
                       onClick={() => setSelectedStatus(status as any)}
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize ${
                         selectedStatus === status
-                          ? 'bg-[#1a365d] text-white'
+                          ? 'bg-[#1E3A5F] text-white'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
@@ -110,16 +110,16 @@ const MarketingHub: React.FC = () => {
                     key={lead.id}
                     onClick={() => setSelectedLead(selectedLead === lead.id ? null : lead.id)}
                     className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                      selectedLead === lead.id ? 'bg-[#ff6b35]/5' : ''
+                      selectedLead === lead.id ? 'bg-[#3B82F6]/5' : ''
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#1a365d]/10 rounded-full flex items-center justify-center">
-                          <Building className="w-5 h-5 text-[#1a365d]" />
+                        <div className="w-10 h-10 bg-[#1E3A5F]/10 rounded-full flex items-center justify-center">
+                          <Building className="w-5 h-5 text-[#1E3A5F]" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-[#1a365d]">{lead.company}</h3>
+                          <h3 className="font-semibold text-[#1E3A5F]">{lead.company}</h3>
                           <p className="text-sm text-gray-500">{lead.contact}</p>
                         </div>
                       </div>
@@ -156,19 +156,19 @@ const MarketingHub: React.FC = () => {
                         <div className="grid sm:grid-cols-2 gap-4 mb-4">
                           <div className="flex items-center gap-2 text-sm">
                             <Mail className="w-4 h-4 text-gray-400" />
-                            <a href={`mailto:${lead.email}`} className="text-[#ff6b35] hover:underline">
+                            <a href={`mailto:${lead.email}`} className="text-[#3B82F6] hover:underline">
                               {lead.email}
                             </a>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <Phone className="w-4 h-4 text-gray-400" />
-                            <a href={`tel:${lead.phone}`} className="text-[#ff6b35] hover:underline">
+                            <a href={`tel:${lead.phone}`} className="text-[#3B82F6] hover:underline">
                               {lead.phone}
                             </a>
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <button className="flex-1 py-2 bg-[#ff6b35] text-white rounded-lg text-sm font-medium hover:bg-[#e55a2b] transition-colors">
+                          <button className="flex-1 py-2 bg-[#3B82F6] text-white rounded-lg text-sm font-medium hover:bg-[#2563EB] transition-colors">
                             Contact Lead
                           </button>
                           <button className="py-2 px-4 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
@@ -187,7 +187,7 @@ const MarketingHub: React.FC = () => {
           <div className="space-y-6">
             {/* Intent Sources */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h3 className="font-semibold text-[#1a365d] mb-4">Lead Sources</h3>
+              <h3 className="font-semibold text-[#1E3A5F] mb-4">Lead Sources</h3>
               <div className="space-y-3">
                 {[
                   { source: 'Google Search', count: 68, percent: 44 },
@@ -198,11 +198,11 @@ const MarketingHub: React.FC = () => {
                   <div key={index}>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-gray-600">{item.source}</span>
-                      <span className="font-medium text-[#1a365d]">{item.count}</span>
+                      <span className="font-medium text-[#1E3A5F]">{item.count}</span>
                     </div>
                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-[#ff6b35] rounded-full"
+                        className="h-full bg-[#3B82F6] rounded-full"
                         style={{ width: `${item.percent}%` }}
                       />
                     </div>
@@ -213,7 +213,7 @@ const MarketingHub: React.FC = () => {
 
             {/* Quick Actions */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h3 className="font-semibold text-[#1a365d] mb-4">Quick Actions</h3>
+              <h3 className="font-semibold text-[#1E3A5F] mb-4">Quick Actions</h3>
               <div className="space-y-2">
                 <button className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                   <span className="text-sm font-medium text-gray-700">Create Campaign</span>
@@ -231,16 +231,16 @@ const MarketingHub: React.FC = () => {
             </div>
 
             {/* Upgrade CTA */}
-            <div className="bg-gradient-to-br from-[#1a365d] to-[#2d4a6f] rounded-xl p-6 text-white">
+            <div className="bg-gradient-to-br from-[#1E3A5F] to-[#1E3A5F]/80 rounded-xl p-6 text-white">
               <div className="flex items-center gap-2 mb-3">
-                <Zap className="w-5 h-5 text-[#ff6b35]" />
-                <span className="text-sm font-medium text-[#ff6b35]">Premier Feature</span>
+                <Zap className="w-5 h-5 text-[#3B82F6]" />
+                <span className="text-sm font-medium text-[#3B82F6]">Premier Feature</span>
               </div>
               <h3 className="font-bold text-lg mb-2">Unlock More Leads</h3>
               <p className="text-sm text-gray-300 mb-4">
                 Upgrade to Premier for 50+ monthly leads and advanced intent analytics.
               </p>
-              <button className="w-full py-2 bg-[#ff6b35] text-white rounded-lg text-sm font-medium hover:bg-[#e55a2b] transition-colors">
+              <button className="w-full py-2 bg-[#3B82F6] text-white rounded-lg text-sm font-medium hover:bg-[#2563EB] transition-colors">
                 Upgrade Now
               </button>
             </div>

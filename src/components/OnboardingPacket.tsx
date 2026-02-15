@@ -52,11 +52,11 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-[#ff6b35]/10 px-4 py-2 rounded-full mb-4">
-            <Truck className="w-5 h-5 text-[#ff6b35]" />
-            <span className="text-sm font-medium text-[#ff6b35]">Carrier Onboarding</span>
+          <div className="inline-flex items-center gap-2 bg-[#3B82F6]/10 px-4 py-2 rounded-full mb-4">
+            <Truck className="w-5 h-5 text-[#3B82F6]" />
+            <span className="text-sm font-medium text-[#3B82F6]">Carrier Onboarding</span>
           </div>
-          <h1 className="text-3xl font-bold text-[#1a365d] mb-2">Carrier Packet</h1>
+          <h1 className="text-3xl font-bold text-[#1E3A5F] mb-2">Carrier Packet</h1>
           <p className="text-gray-600">Complete your onboarding to start working with dispatchers</p>
         </div>
 
@@ -67,7 +67,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                   currentStep >= step.id 
-                    ? 'bg-[#ff6b35] text-white' 
+                    ? 'bg-[#3B82F6] text-white' 
                     : 'bg-gray-100 text-gray-400'
                 }`}>
                   {currentStep > step.id ? (
@@ -77,14 +77,14 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
                   )}
                 </div>
                 <span className={`hidden sm:block text-sm font-medium ${
-                  currentStep >= step.id ? 'text-[#1a365d]' : 'text-gray-400'
+                  currentStep >= step.id ? 'text-[#1E3A5F]' : 'text-gray-400'
                 }`}>
                   {step.title}
                 </span>
               </div>
               {index < steps.length - 1 && (
                 <div className={`flex-1 h-1 mx-4 rounded ${
-                  currentStep > step.id ? 'bg-[#ff6b35]' : 'bg-gray-200'
+                  currentStep > step.id ? 'bg-[#3B82F6]' : 'bg-gray-200'
                 }`} />
               )}
             </React.Fragment>
@@ -96,13 +96,13 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
           {/* Step 1: Company Info */}
           {currentStep === 1 && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-[#1a365d] mb-6">Company Information</h2>
+              <h2 className="text-xl font-bold text-[#1E3A5F] mb-6">Company Information</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
                   <input
                     type="text"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                     placeholder="Your Company LLC"
                   />
                 </div>
@@ -110,7 +110,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">DOT Number *</label>
                   <input
                     type="text"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                     placeholder="DOT1234567"
                   />
                 </div>
@@ -118,7 +118,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">MC Number *</label>
                   <input
                     type="text"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                     placeholder="MC987654"
                   />
                 </div>
@@ -126,7 +126,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Fleet Size</label>
                   <input
                     type="number"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                     placeholder="10"
                   />
                 </div>
@@ -135,7 +135,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
                   <div className="flex flex-wrap gap-2">
                     {['Dry Van', 'Reefer', 'Flatbed', 'Step Deck', 'Tanker', 'Hazmat'].map((type) => (
                       <label key={type} className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
-                        <input type="checkbox" className="w-4 h-4 text-[#ff6b35] rounded" />
+                        <input type="checkbox" className="w-4 h-4 text-[#3B82F6] rounded" />
                         <span className="text-sm text-gray-700">{type}</span>
                       </label>
                     ))}
@@ -145,7 +145,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setCurrentStep(2)}
-                  className="px-6 py-2.5 bg-[#ff6b35] text-white rounded-lg font-medium hover:bg-[#e55a2b] transition-colors flex items-center gap-2"
+                  className="px-6 py-2.5 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors flex items-center gap-2"
                 >
                   Continue
                   <ChevronRight className="w-4 h-4" />
@@ -157,7 +157,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
           {/* Step 2: Documents */}
           {currentStep === 2 && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-[#1a365d] mb-2">Required Documents</h2>
+              <h2 className="text-xl font-bold text-[#1E3A5F] mb-2">Required Documents</h2>
               <p className="text-gray-600 mb-6">Upload the following documents to complete your carrier packet</p>
               
               <div className="space-y-4">
@@ -167,7 +167,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
                     className={`p-4 border-2 rounded-xl transition-colors ${
                       documents[doc.id as keyof typeof documents]
                         ? 'border-green-200 bg-green-50'
-                        : 'border-gray-200 hover:border-[#ff6b35]'
+                        : 'border-gray-200 hover:border-[#3B82F6]'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -184,7 +184,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
                           )}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-[#1a365d]">{doc.name}</h3>
+                          <h3 className="font-semibold text-[#1E3A5F]">{doc.name}</h3>
                           <p className="text-sm text-gray-500">{doc.description}</p>
                         </div>
                       </div>
@@ -193,13 +193,13 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
                           <span className="text-sm text-green-600 font-medium">Uploaded</span>
                         ) : (
                           <>
-                            <button className="px-3 py-1.5 text-sm text-[#1a365d] hover:bg-gray-100 rounded-lg flex items-center gap-1">
+                            <button className="px-3 py-1.5 text-sm text-[#1E3A5F] hover:bg-gray-100 rounded-lg flex items-center gap-1">
                               <Download className="w-4 h-4" />
                               Template
                             </button>
                             <button
                               onClick={() => handleFileUpload(doc.id)}
-                              className="px-4 py-1.5 bg-[#1a365d] text-white text-sm rounded-lg hover:bg-[#2d4a6f] flex items-center gap-1"
+                              className="px-4 py-1.5 bg-[#1E3A5F] text-white text-sm rounded-lg hover:bg-[#1E3A5F]/80 flex items-center gap-1"
                             >
                               <Upload className="w-4 h-4" />
                               Upload
@@ -222,7 +222,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
                 <button
                   onClick={() => setCurrentStep(3)}
                   disabled={!documents.w9 || !documents.insurance || !documents.authority}
-                  className="px-6 py-2.5 bg-[#ff6b35] text-white rounded-lg font-medium hover:bg-[#e55a2b] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-2.5 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   Continue
                   <ChevronRight className="w-4 h-4" />
@@ -234,7 +234,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
           {/* Step 3: Agreement */}
           {currentStep === 3 && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-[#1a365d] mb-2">Service Agreement</h2>
+              <h2 className="text-xl font-bold text-[#1E3A5F] mb-2">Service Agreement</h2>
               <p className="text-gray-600 mb-6">Review and sign the dispatcher-carrier service agreement</p>
 
               <div className="bg-gray-50 rounded-xl p-6 mb-6 max-h-64 overflow-y-auto text-sm text-gray-700">
@@ -280,12 +280,12 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
                       type="text"
                       value={signatureName}
                       onChange={(e) => setSignatureName(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                       placeholder="John Doe"
                     />
                   </div>
                   <label className="flex items-start gap-3 cursor-pointer">
-                    <input type="checkbox" className="mt-1 w-4 h-4 text-[#ff6b35] rounded" />
+                    <input type="checkbox" className="mt-1 w-4 h-4 text-[#3B82F6] rounded" />
                     <span className="text-sm text-gray-600">
                       I have read and agree to the terms of this Service Agreement. I understand that by typing 
                       my name above, I am providing my electronic signature.
@@ -313,14 +313,14 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
                   <button
                     onClick={handleSignAgreement}
                     disabled={!signatureName.trim()}
-                    className="px-6 py-2.5 bg-[#ff6b35] text-white rounded-lg font-medium hover:bg-[#e55a2b] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2.5 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Sign Agreement
                   </button>
                 ) : (
                   <button
                     onClick={() => setCurrentStep(4)}
-                    className="px-6 py-2.5 bg-[#ff6b35] text-white rounded-lg font-medium hover:bg-[#e55a2b] transition-colors flex items-center gap-2"
+                    className="px-6 py-2.5 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors flex items-center gap-2"
                   >
                     Complete Onboarding
                     <ChevronRight className="w-4 h-4" />
@@ -336,7 +336,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-10 h-10 text-green-600" />
               </div>
-              <h2 className="text-2xl font-bold text-[#1a365d] mb-2">Onboarding Complete!</h2>
+              <h2 className="text-2xl font-bold text-[#1E3A5F] mb-2">Onboarding Complete!</h2>
               <p className="text-gray-600 mb-8 max-w-md mx-auto">
                 Your carrier packet has been submitted successfully. You can now connect with dispatchers 
                 and grant MC# permissions.
@@ -344,7 +344,7 @@ const OnboardingPacket: React.FC<OnboardingPacketProps> = ({ onComplete }) => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
                   onClick={onComplete}
-                  className="px-6 py-3 bg-[#ff6b35] text-white rounded-lg font-medium hover:bg-[#e55a2b] transition-colors"
+                  className="px-6 py-3 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors"
                 >
                   Go to Dashboard
                 </button>

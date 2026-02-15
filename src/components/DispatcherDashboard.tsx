@@ -41,62 +41,13 @@ interface MCPermissionRequest {
 }
 
 // Sample data — matches the pattern used throughout the app
-const sampleMcPermissions: MCPermissionRequest[] = [
-  {
-    id: '1',
-    carrierName: 'Thompson Trucking LLC',
-    mcNumber: 'MC-987654',
-    dotNumber: '1234567',
-    requestDate: '2026-01-15T10:30:00Z',
-    status: 'approved',
-    type: 'sent',
-    expiresAt: '2026-07-15T10:30:00Z',
-  },
-  {
-    id: '2',
-    carrierName: 'Garcia Freight Services',
-    mcNumber: 'MC-876543',
-    dotNumber: '2345678',
-    requestDate: '2026-02-01T14:00:00Z',
-    status: 'pending',
-    type: 'sent',
-  },
-  {
-    id: '3',
-    carrierName: 'Anderson Transport Inc',
-    mcNumber: 'MC-765432',
-    dotNumber: '3456789',
-    requestDate: '2026-01-20T09:00:00Z',
-    status: 'approved',
-    type: 'received',
-    expiresAt: '2026-07-20T09:00:00Z',
-  },
-  {
-    id: '4',
-    carrierName: 'Wilson Heavy Hauling',
-    mcNumber: 'MC-543210',
-    dotNumber: '5678901',
-    requestDate: '2025-12-10T16:00:00Z',
-    status: 'expired',
-    type: 'sent',
-    expiresAt: '2026-01-10T16:00:00Z',
-  },
-  {
-    id: '5',
-    carrierName: 'Martinez Freight LLC',
-    mcNumber: 'MC-321098',
-    dotNumber: '7890123',
-    requestDate: '2026-02-05T11:00:00Z',
-    status: 'rejected',
-    type: 'sent',
-  },
-];
+const sampleMcPermissions: MCPermissionRequest[] = [];
 
 const sampleAnalytics = {
-  profileViews: 1247,
-  contactRequests: 89,
-  connections: 52,
-  responseRate: 94,
+  profileViews: 0,
+  contactRequests: 0,
+  connections: 0,
+  responseRate: 0,
 };
 
 const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate }) => {
@@ -106,10 +57,10 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
   const [analytics] = useState(sampleAnalytics);
 
   const engagementMetrics = [
-    { label: 'Profile Views', value: analytics.profileViews, change: 18.5, icon: <Eye className="w-5 h-5" />, color: 'bg-blue-500' },
-    { label: 'Contact Requests', value: analytics.contactRequests, change: 12.3, icon: <MessageSquare className="w-5 h-5" />, color: 'bg-green-500' },
-    { label: 'Connections', value: analytics.connections, change: 8.7, icon: <Users className="w-5 h-5" />, color: 'bg-purple-500' },
-    { label: 'Response Rate', value: analytics.responseRate, change: 2.1, icon: <Activity className="w-5 h-5" />, color: 'bg-orange-500' },
+    { label: 'Profile Views', value: analytics.profileViews, change: 0, icon: <Eye className="w-5 h-5" />, color: 'bg-blue-500' },
+    { label: 'Contact Requests', value: analytics.contactRequests, change: 0, icon: <MessageSquare className="w-5 h-5" />, color: 'bg-green-500' },
+    { label: 'Connections', value: analytics.connections, change: 0, icon: <Users className="w-5 h-5" />, color: 'bg-purple-500' },
+    { label: 'Response Rate', value: analytics.responseRate, change: 0, icon: <Activity className="w-5 h-5" />, color: 'bg-orange-500' },
   ];
 
   const filteredPermissions = mcPermissions.filter(perm => {
@@ -134,7 +85,7 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Dashboard Header */}
-      <div className="bg-gradient-to-r from-[#1a365d] to-[#2d4a6f] text-white">
+      <div className="bg-gradient-to-r from-[#1E3A5F] to-[#1E3A5F]/80 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
@@ -174,7 +125,7 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
                   activeTab === tab.id
-                    ? 'border-[#ff6b35] text-[#ff6b35]'
+                    ? 'border-[#3B82F6] text-[#3B82F6]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -182,7 +133,7 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
                 {tab.label}
                 {tab.count !== undefined && (
                   <span className={`px-2 py-0.5 rounded-full text-xs ${
-                    activeTab === tab.id ? 'bg-[#ff6b35]/10 text-[#ff6b35]' : 'bg-gray-100 text-gray-600'
+                    activeTab === tab.id ? 'bg-[#3B82F6]/10 text-[#3B82F6]' : 'bg-gray-100 text-gray-600'
                   }`}>
                     {tab.count}
                   </span>
@@ -201,7 +152,7 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
             {/* Quick Stats */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {engagementMetrics.map((metric, index) => (
-                <div key={index} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div key={index} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 glass-light">
                   <div className="flex items-center justify-between mb-4">
                     <div className={`p-3 rounded-xl ${metric.color} text-white`}>
                       {metric.icon}
@@ -211,7 +162,7 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
                       {metric.change}%
                     </div>
                   </div>
-                  <p className="text-2xl font-bold text-[#1a365d] mb-1">
+                  <p className="text-2xl font-bold text-[#1E3A5F] mb-1">
                     {metric.label === 'Response Rate' ? `${metric.value}%` : metric.value.toLocaleString()}
                   </p>
                   <p className="text-sm text-gray-500">{metric.label}</p>
@@ -223,11 +174,11 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Quick Actions */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 className="font-semibold text-[#1a365d] mb-4">Quick Actions</h3>
+                <h3 className="font-semibold text-[#1E3A5F] mb-4">Quick Actions</h3>
                 <div className="space-y-3">
                   <button onClick={() => onNavigate('feed')} className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <div className="flex items-center gap-3">
-                      <MessageCircle className="w-5 h-5 text-[#ff6b35]" />
+                      <MessageCircle className="w-5 h-5 text-[#3B82F6]" />
                       <span className="font-medium text-gray-700">Go to Feed</span>
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -277,8 +228,8 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
                 {/* MC Permission Summary */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-semibold text-[#1a365d]">MC Permission Summary</h3>
-                    <button onClick={() => setActiveTab('permissions')} className="text-sm text-[#ff6b35] hover:underline flex items-center gap-1">
+                    <h3 className="font-semibold text-[#1E3A5F]">MC Permission Summary</h3>
+                    <button onClick={() => setActiveTab('permissions')} className="text-sm text-[#3B82F6] hover:underline flex items-center gap-1">
                       Manage All <ArrowUpRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -324,7 +275,7 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-bold text-[#1a365d]">MC Permission Requests</h2>
+                  <h2 className="text-xl font-bold text-[#1E3A5F]">MC Permission Requests</h2>
                   <p className="text-gray-500">Manage your MC# authority permissions with carriers</p>
                 </div>
                 <div className="flex gap-2">
@@ -333,7 +284,7 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
                     { id: 'sent', label: 'Sent', icon: <Send className="w-4 h-4" /> },
                     { id: 'received', label: 'Received', icon: <Inbox className="w-4 h-4" /> },
                   ].map(filter => (
-                    <button key={filter.id} onClick={() => setPermissionFilter(filter.id as any)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${permissionFilter === filter.id ? 'bg-[#1a365d] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                    <button key={filter.id} onClick={() => setPermissionFilter(filter.id as any)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${permissionFilter === filter.id ? 'bg-[#1E3A5F] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                       {filter.icon}
                       {filter.label}
                     </button>
@@ -362,8 +313,8 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
                       <tr key={permission.id} className="hover:bg-gray-50 transition-colors">
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-[#1a365d]/10 rounded-lg flex items-center justify-center">
-                              <Truck className="w-5 h-5 text-[#1a365d]" />
+                            <div className="w-10 h-10 bg-[#1E3A5F]/10 rounded-lg flex items-center justify-center">
+                              <Truck className="w-5 h-5 text-[#1E3A5F]" />
                             </div>
                             <span className="font-medium text-gray-800">{permission.carrierName}</span>
                           </div>
@@ -380,9 +331,9 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
                         <td className="py-4 px-6 text-gray-600">{permission.expiresAt ? new Date(permission.expiresAt).toLocaleDateString() : '-'}</td>
                         <td className="py-4 px-6 text-right">
                           {permission.status === 'pending' && permission.type === 'sent' && <button className="text-sm text-red-600 hover:underline">Cancel</button>}
-                          {permission.status === 'approved' && <button className="text-sm text-[#ff6b35] hover:underline">View Details</button>}
-                          {permission.status === 'rejected' && <button className="text-sm text-[#1a365d] hover:underline">Resend</button>}
-                          {permission.status === 'expired' && <button className="text-sm text-[#1a365d] hover:underline">Renew</button>}
+                          {permission.status === 'approved' && <button className="text-sm text-[#3B82F6] hover:underline">View Details</button>}
+                          {permission.status === 'rejected' && <button className="text-sm text-[#1E3A5F] hover:underline">Resend</button>}
+                          {permission.status === 'expired' && <button className="text-sm text-[#1E3A5F] hover:underline">Renew</button>}
                         </td>
                       </tr>
                     ))}

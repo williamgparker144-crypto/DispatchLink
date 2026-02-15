@@ -226,7 +226,7 @@ const VerifyDOTModal: React.FC<VerifyDOTModalProps> = ({ isOpen, onClose, onVeri
                 <Shield className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-[#1a365d]">FMCSA Authority Verification</h2>
+                <h2 className="text-xl font-bold text-[#1E3A5F]">FMCSA Authority Verification</h2>
                 <p className="text-sm text-gray-500">Real-time verification against SAFER database</p>
               </div>
             </div>
@@ -258,7 +258,7 @@ const VerifyDOTModal: React.FC<VerifyDOTModalProps> = ({ isOpen, onClose, onVeri
             <button
               onClick={handleVerify}
               disabled={loading || (!dotNumber && !mcNumber)}
-              className="w-full py-3 bg-[#1a365d] text-white rounded-xl font-semibold hover:bg-[#2d4a6f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-6"
+              className="w-full py-3 bg-[#1E3A5F] text-white rounded-xl font-semibold hover:bg-[#1E3A5F]/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-6"
             >
               {loading ? (
                 <>
@@ -342,7 +342,7 @@ const VerifyDOTModal: React.FC<VerifyDOTModalProps> = ({ isOpen, onClose, onVeri
                   {/* DOT & MC Numbers */}
                   <div className="bg-gray-50 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <FileCheck className="w-5 h-5 text-[#1a365d]" />
+                      <FileCheck className="w-5 h-5 text-[#1E3A5F]" />
                       <h4 className="font-semibold text-gray-900">Authority Numbers</h4>
                     </div>
                     <div className="space-y-2">
@@ -366,7 +366,7 @@ const VerifyDOTModal: React.FC<VerifyDOTModalProps> = ({ isOpen, onClose, onVeri
                   {/* Fleet Size */}
                   <div className="bg-gray-50 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <Truck className="w-5 h-5 text-[#1a365d]" />
+                      <Truck className="w-5 h-5 text-[#1E3A5F]" />
                       <h4 className="font-semibold text-gray-900">Fleet Size</h4>
                     </div>
                     <div className="space-y-2">
@@ -388,7 +388,7 @@ const VerifyDOTModal: React.FC<VerifyDOTModalProps> = ({ isOpen, onClose, onVeri
                   {/* Contact Info */}
                   <div className="bg-gray-50 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <Building2 className="w-5 h-5 text-[#1a365d]" />
+                      <Building2 className="w-5 h-5 text-[#1E3A5F]" />
                       <h4 className="font-semibold text-gray-900">Contact</h4>
                     </div>
                     <div className="space-y-2 text-sm">
@@ -417,7 +417,7 @@ const VerifyDOTModal: React.FC<VerifyDOTModalProps> = ({ isOpen, onClose, onVeri
                 {/* Authority Status */}
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
                   <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-[#1a365d]" />
+                    <Shield className="w-5 h-5 text-[#1E3A5F]" />
                     Authority Status
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -445,7 +445,7 @@ const VerifyDOTModal: React.FC<VerifyDOTModalProps> = ({ isOpen, onClose, onVeri
                 {/* Insurance Status */}
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
                   <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <FileCheck className="w-5 h-5 text-[#1a365d]" />
+                    <FileCheck className="w-5 h-5 text-[#1E3A5F]" />
                     Insurance Coverage
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -473,7 +473,7 @@ const VerifyDOTModal: React.FC<VerifyDOTModalProps> = ({ isOpen, onClose, onVeri
                 {/* Safety Rating */}
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
                   <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-[#1a365d]" />
+                    <TrendingUp className="w-5 h-5 text-[#1E3A5F]" />
                     Safety Information
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -503,7 +503,7 @@ const VerifyDOTModal: React.FC<VerifyDOTModalProps> = ({ isOpen, onClose, onVeri
                 {/* Inspection History */}
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
                   <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-[#1a365d]" />
+                    <Activity className="w-5 h-5 text-[#1E3A5F]" />
                     Inspection History (24 Months)
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -613,7 +613,7 @@ const VerifyDOTModal: React.FC<VerifyDOTModalProps> = ({ isOpen, onClose, onVeri
                 {carrier.hqAddress.street && (
                   <div className="bg-white border border-gray-200 rounded-xl p-4">
                     <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                      <MapPin className="w-5 h-5 text-[#1a365d]" />
+                      <MapPin className="w-5 h-5 text-[#1E3A5F]" />
                       Address Information
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

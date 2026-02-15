@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Truck, Menu, X, User, LogIn, Settings, LayoutDashboard, Bell, MessageSquare, Users, UserPlus, UserCheck, Shield, CheckCircle } from 'lucide-react';
+import { Truck, Menu, X, User, LogIn, Settings, LayoutDashboard, Bell, MessageSquare, Users, UserPlus } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
 
 interface HeaderProps {
@@ -27,13 +27,6 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [notificationsOpen]);
 
-  const sampleNotifications = [
-    { id: '1', type: 'connection', icon: UserCheck, color: 'bg-blue-100 text-blue-600', title: 'New Connection Request', message: 'Garcia Freight Services wants to connect with you.', time: '5 min ago', unread: true },
-    { id: '2', type: 'permission', icon: Shield, color: 'bg-green-100 text-green-600', title: 'MC# Permission Granted', message: 'Thompson Trucking LLC granted you MC# access.', time: '1 hour ago', unread: true },
-    { id: '3', type: 'system', icon: CheckCircle, color: 'bg-purple-100 text-purple-600', title: 'Profile Verified', message: 'Your dispatcher profile has been verified successfully.', time: '3 hours ago', unread: false },
-    { id: '4', type: 'connection', icon: UserCheck, color: 'bg-blue-100 text-blue-600', title: 'Connection Accepted', message: 'Anderson Transport accepted your connection request.', time: 'Yesterday', unread: false },
-  ];
-
   const isLoggedIn = !!currentUser;
   const userType = currentUser?.userType || null;
   const userName = currentUser?.name || '';
@@ -49,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
   ];
 
   return (
-    <header className="bg-[#1a365d] text-white sticky top-0 z-50 shadow-lg">
+    <header className="bg-[#1E3A5F] text-white sticky top-0 z-50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -57,9 +50,13 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => setCurrentView('home')}
           >
-            <div className="bg-[#ff6b35] p-2 rounded-lg">
+            <div className="bg-[#3B82F6] p-2 rounded-lg">
               <Truck className="w-6 h-6 text-white" />
             </div>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-live-dot absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
             <div>
               <span className="text-xl font-bold">DispatchLink</span>
               <span className="text-xs block text-gray-300">Trucking Network</span>
@@ -72,8 +69,8 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
               <button
                 key={item.id}
                 onClick={() => setCurrentView(item.id)}
-                className={`text-sm font-medium transition-colors hover:text-[#ff6b35] ${
-                  currentView === item.id ? 'text-[#ff6b35]' : 'text-gray-200'
+                className={`text-sm font-medium transition-colors hover:text-[#3B82F6] ${
+                  currentView === item.id ? 'text-[#3B82F6]' : 'text-gray-200'
                 }`}
               >
                 {item.label}
@@ -83,8 +80,8 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
             {isLoggedIn && userType === 'dispatcher' && (
               <button
                 onClick={() => setCurrentView('dashboard')}
-                className={`text-sm font-medium transition-colors hover:text-[#ff6b35] flex items-center gap-1 ${
-                  currentView === 'dashboard' ? 'text-[#ff6b35]' : 'text-gray-200'
+                className={`text-sm font-medium transition-colors hover:text-[#3B82F6] flex items-center gap-1 ${
+                  currentView === 'dashboard' ? 'text-[#3B82F6]' : 'text-gray-200'
                 }`}
               >
                 <LayoutDashboard className="w-4 h-4" />
@@ -100,11 +97,11 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                 {/* Messages */}
                 <button
                   onClick={() => setCurrentView('messages')}
-                  className="p-2 rounded-lg hover:bg-[#2d4a6f] transition-colors relative"
+                  className="p-2 rounded-lg hover:bg-[#1E3A5F]/80 transition-colors relative"
                 >
                   <MessageSquare className="w-5 h-5" />
                   {unreadMessages > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#ff6b35] rounded-full text-[10px] flex items-center justify-center font-bold">
+                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#3B82F6] rounded-full text-[10px] flex items-center justify-center font-bold">
                       {unreadMessages}
                     </span>
                   )}
@@ -117,11 +114,11 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                       setNotificationsOpen(!notificationsOpen);
                       setUserMenuOpen(false);
                     }}
-                    className="p-2 rounded-lg hover:bg-[#2d4a6f] transition-colors relative"
+                    className="p-2 rounded-lg hover:bg-[#1E3A5F]/80 transition-colors relative"
                   >
                     <Bell className="w-5 h-5" />
                     {pendingConnections > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#ff6b35] rounded-full text-[10px] flex items-center justify-center font-bold">
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#3B82F6] rounded-full text-[10px] flex items-center justify-center font-bold">
                         {pendingConnections}
                       </span>
                     )}
@@ -131,29 +128,11 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                     <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
                       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                         <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
-                        <span className="text-xs text-[#ff6b35] font-medium cursor-pointer hover:underline">Mark all read</span>
+                        <span className="text-xs text-[#3B82F6] font-medium cursor-pointer hover:underline">Mark all read</span>
                       </div>
-                      <div className="max-h-80 overflow-y-auto">
-                        {sampleNotifications.map((notif) => (
-                          <div
-                            key={notif.id}
-                            className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${notif.unread ? 'bg-blue-50/50' : ''}`}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className={`p-2 rounded-full flex-shrink-0 ${notif.color}`}>
-                                <notif.icon className="w-4 h-4" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <p className="text-sm font-medium text-gray-900">{notif.title}</p>
-                                  {notif.unread && <span className="w-2 h-2 bg-[#ff6b35] rounded-full flex-shrink-0" />}
-                                </div>
-                                <p className="text-xs text-gray-600 mt-0.5">{notif.message}</p>
-                                <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                      <div className="py-8 text-center">
+                        <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">No notifications yet</p>
                       </div>
                       <div className="px-4 py-3 border-t border-gray-100 text-center">
                         <button
@@ -161,7 +140,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                             setNotificationsOpen(false);
                             setCurrentView('connections');
                           }}
-                          className="text-xs text-[#1a365d] font-medium hover:underline"
+                          className="text-xs text-[#1E3A5F] font-medium hover:underline"
                         >
                           View All Notifications
                         </button>
@@ -172,9 +151,9 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
 
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2d4a6f] transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#1E3A5F]/80 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-[#ff6b35] rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-[#3B82F6] rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-white" />
                   </div>
                   <span className="text-sm font-medium">{userName}</span>
@@ -219,7 +198,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                       <MessageSquare className="w-4 h-4" />
                       Messages
                       {unreadMessages > 0 && (
-                        <span className="ml-auto px-2 py-0.5 bg-[#ff6b35] text-white text-xs rounded-full">{unreadMessages}</span>
+                        <span className="ml-auto px-2 py-0.5 bg-[#3B82F6] text-white text-xs rounded-full">{unreadMessages}</span>
                       )}
                     </button>
                     <button
@@ -245,14 +224,14 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
               <>
                 <button
                   onClick={onLoginClick}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white hover:text-[#ff6b35] transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white hover:text-[#3B82F6] transition-colors"
                 >
                   <LogIn className="w-4 h-4" />
                   Sign In
                 </button>
                 <button
                   onClick={onSignupClick}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#ff6b35] text-white rounded-lg text-sm font-medium hover:bg-[#e55a2b] transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#3B82F6] text-white rounded-lg text-sm font-medium hover:bg-[#2563EB] transition-colors"
                 >
                   <User className="w-4 h-4" />
                   Get Started
@@ -264,7 +243,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-[#2d4a6f] transition-colors"
+            className="md:hidden p-2 rounded-lg hover:bg-[#1E3A5F]/80 transition-colors"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -273,7 +252,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#2d4a6f] border-t border-[#3d5a7f]">
+        <div className="md:hidden bg-[#1E3A5F] border-t border-[#1E3A5F]">
           <div className="px-4 py-4 space-y-2">
             {navItems.map((item) => (
               <button
@@ -284,8 +263,8 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                 }}
                 className={`block w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   currentView === item.id
-                    ? 'bg-[#ff6b35] text-white'
-                    : 'text-gray-200 hover:bg-[#3d5a7f]'
+                    ? 'bg-[#3B82F6] text-white'
+                    : 'text-gray-200 hover:bg-[#1E3A5F]/80'
                 }`}
               >
                 {item.label}
@@ -302,8 +281,8 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                     }}
                     className={`block w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                       currentView === 'dashboard'
-                        ? 'bg-[#ff6b35] text-white'
-                        : 'text-gray-200 hover:bg-[#3d5a7f]'
+                        ? 'bg-[#3B82F6] text-white'
+                        : 'text-gray-200 hover:bg-[#1E3A5F]/80'
                     }`}
                   >
                     <LayoutDashboard className="w-4 h-4" />
@@ -315,7 +294,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                     setCurrentView('connections');
                     setMobileMenuOpen(false);
                   }}
-                  className="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium text-gray-200 hover:bg-[#3d5a7f] flex items-center gap-2"
+                  className="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium text-gray-200 hover:bg-[#1E3A5F]/80 flex items-center gap-2"
                 >
                   <Users className="w-4 h-4" />
                   Connections
@@ -325,18 +304,18 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                     setCurrentView('messages');
                     setMobileMenuOpen(false);
                   }}
-                  className="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium text-gray-200 hover:bg-[#3d5a7f] flex items-center gap-2"
+                  className="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium text-gray-200 hover:bg-[#1E3A5F]/80 flex items-center gap-2"
                 >
                   <MessageSquare className="w-4 h-4" />
                   Messages
                   {unreadMessages > 0 && (
-                    <span className="ml-auto px-2 py-0.5 bg-[#ff6b35] text-white text-xs rounded-full">{unreadMessages}</span>
+                    <span className="ml-auto px-2 py-0.5 bg-[#3B82F6] text-white text-xs rounded-full">{unreadMessages}</span>
                   )}
                 </button>
               </>
             )}
 
-            <div className="pt-4 border-t border-[#3d5a7f] space-y-2">
+            <div className="pt-4 border-t border-[#1E3A5F] space-y-2">
               {isLoggedIn ? (
                 <>
                   <div className="px-4 py-2 text-sm text-gray-300">
@@ -356,7 +335,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                       onLoginClick();
                       setMobileMenuOpen(false);
                     }}
-                    className="block w-full text-left px-4 py-2 text-sm font-medium text-gray-200 hover:bg-[#3d5a7f] rounded-lg"
+                    className="block w-full text-left px-4 py-2 text-sm font-medium text-gray-200 hover:bg-[#1E3A5F]/80 rounded-lg"
                   >
                     Sign In
                   </button>
@@ -365,7 +344,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                       onSignupClick();
                       setMobileMenuOpen(false);
                     }}
-                    className="block w-full text-center px-4 py-2 bg-[#ff6b35] text-white rounded-lg text-sm font-medium"
+                    className="block w-full text-center px-4 py-2 bg-[#3B82F6] text-white rounded-lg text-sm font-medium"
                   >
                     Get Started
                   </button>

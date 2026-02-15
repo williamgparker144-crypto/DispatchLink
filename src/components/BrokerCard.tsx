@@ -47,7 +47,7 @@ const BrokerCard: React.FC<BrokerCardProps> = ({ broker, onViewProfile }) => {
       <div className="pt-12 p-6">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="font-bold text-[#1a365d] text-lg group-hover:text-purple-600 transition-colors">
+            <h3 className="font-bold text-[#1E3A5F] text-lg group-hover:text-purple-600 transition-colors">
               {broker.company}
             </h3>
             <p className="text-sm text-gray-500">{broker.name}</p>
@@ -61,7 +61,7 @@ const BrokerCard: React.FC<BrokerCardProps> = ({ broker, onViewProfile }) => {
         {/* MC Number */}
         <div className="mb-4 p-3 bg-gray-50 rounded-lg">
           <p className="text-xs text-gray-500">MC #</p>
-          <p className="text-sm font-semibold text-[#1a365d]">{broker.mcNumber}</p>
+          <p className="text-sm font-semibold text-[#1E3A5F]">{broker.mcNumber}</p>
         </div>
 
         {/* Info */}
@@ -92,7 +92,7 @@ const BrokerCard: React.FC<BrokerCardProps> = ({ broker, onViewProfile }) => {
         <div className="flex gap-2 pt-4 border-t border-gray-100">
           <button
             onClick={() => onViewProfile(broker.id)}
-            className="flex-1 py-2 px-4 bg-[#1a365d] text-white rounded-lg text-sm font-medium hover:bg-[#2d4a6f] transition-colors flex items-center justify-center gap-1"
+            className="flex-1 py-2 px-4 bg-[#1E3A5F] text-white rounded-lg text-sm font-medium hover:bg-[#1E3A5F]/80 transition-colors flex items-center justify-center gap-1"
           >
             View Profile
             <ChevronRight className="w-4 h-4" />

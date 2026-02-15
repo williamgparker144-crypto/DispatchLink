@@ -261,11 +261,11 @@ const VerifiedCarrierProfile: React.FC<VerifiedCarrierProfileProps> = ({
         </div>
         <div className="mt-3 grid grid-cols-3 gap-3 text-center">
           <div className="bg-white/60 rounded-lg p-2">
-            <p className="text-lg font-bold text-[#1a365d]">{carrier.totalPowerUnits}</p>
+            <p className="text-lg font-bold text-[#1E3A5F]">{carrier.totalPowerUnits}</p>
             <p className="text-xs text-gray-500">Trucks</p>
           </div>
           <div className="bg-white/60 rounded-lg p-2">
-            <p className="text-lg font-bold text-[#1a365d]">{carrier.totalDrivers}</p>
+            <p className="text-lg font-bold text-[#1E3A5F]">{carrier.totalDrivers}</p>
             <p className="text-xs text-gray-500">Drivers</p>
           </div>
           <div className="bg-white/60 rounded-lg p-2">
@@ -356,24 +356,24 @@ const VerifiedCarrierProfile: React.FC<VerifiedCarrierProfileProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-gray-50 rounded-lg p-3">
             <p className="text-xs text-gray-500 mb-1">DOT Number</p>
-            <p className="font-mono font-bold text-[#1a365d]">{carrier.dotNumber}</p>
+            <p className="font-mono font-bold text-[#1E3A5F]">{carrier.dotNumber}</p>
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <p className="text-xs text-gray-500 mb-1">MC Number</p>
-            <p className="font-mono font-bold text-[#1a365d]">{carrier.mcNumber || 'N/A'}</p>
+            <p className="font-mono font-bold text-[#1E3A5F]">{carrier.mcNumber || 'N/A'}</p>
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <p className="text-xs text-gray-500 mb-1">Power Units</p>
             <div className="flex items-center gap-2">
               <Truck className="w-4 h-4 text-gray-400" />
-              <p className="font-bold text-[#1a365d]">{carrier.totalPowerUnits}</p>
+              <p className="font-bold text-[#1E3A5F]">{carrier.totalPowerUnits}</p>
             </div>
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <p className="text-xs text-gray-500 mb-1">Drivers</p>
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-gray-400" />
-              <p className="font-bold text-[#1a365d]">{carrier.totalDrivers}</p>
+              <p className="font-bold text-[#1E3A5F]">{carrier.totalDrivers}</p>
             </div>
           </div>
         </div>
@@ -382,14 +382,14 @@ const VerifiedCarrierProfile: React.FC<VerifiedCarrierProfileProps> = ({
         {carrier.carrierOperation && (
           <div className="bg-gray-50 rounded-lg p-3">
             <p className="text-xs text-gray-500 mb-1">Operation Type</p>
-            <p className="font-semibold text-[#1a365d]">{carrier.carrierOperation}</p>
+            <p className="font-semibold text-[#1E3A5F]">{carrier.carrierOperation}</p>
           </div>
         )}
 
         {/* Authority Status */}
         <div className="border border-gray-200 rounded-lg p-4">
           <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <FileCheck className="w-4 h-4 text-[#1a365d]" />
+            <FileCheck className="w-4 h-4 text-[#1E3A5F]" />
             Authority Status
           </h4>
           <div className="grid grid-cols-3 gap-3 text-sm">
@@ -411,7 +411,7 @@ const VerifiedCarrierProfile: React.FC<VerifiedCarrierProfileProps> = ({
         {/* Insurance */}
         <div className="border border-gray-200 rounded-lg p-4">
           <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-[#1a365d]" />
+            <Shield className="w-4 h-4 text-[#1E3A5F]" />
             Insurance Status
           </h4>
           <div className="grid grid-cols-3 gap-3">
@@ -433,7 +433,7 @@ const VerifiedCarrierProfile: React.FC<VerifiedCarrierProfileProps> = ({
         {/* Safety Rating */}
         <div className="border border-gray-200 rounded-lg p-4">
           <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-[#1a365d]" />
+            <TrendingUp className="w-4 h-4 text-[#1E3A5F]" />
             Safety Rating
           </h4>
           <div className="flex items-center gap-4">
@@ -447,7 +447,7 @@ const VerifiedCarrierProfile: React.FC<VerifiedCarrierProfileProps> = ({
         {/* Inspection Rates */}
         <div className="border border-gray-200 rounded-lg p-4">
           <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <Activity className="w-4 h-4 text-[#1a365d]" />
+            <Activity className="w-4 h-4 text-[#1E3A5F]" />
             Out-of-Service Rates (24 Months)
           </h4>
           <div className="space-y-3">
@@ -515,20 +515,20 @@ const VerifiedCarrierProfile: React.FC<VerifiedCarrierProfileProps> = ({
         {(carrier.phone || carrier.email || carrier.hqAddress.city) && (
           <div className="border border-gray-200 rounded-lg p-4">
             <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-[#1a365d]" />
+              <Building2 className="w-4 h-4 text-[#1E3A5F]" />
               Contact Information
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               {carrier.phone && (
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-gray-400" />
-                  <a href={`tel:${carrier.phone}`} className="hover:text-[#1a365d]">{carrier.phone}</a>
+                  <a href={`tel:${carrier.phone}`} className="hover:text-[#1E3A5F]">{carrier.phone}</a>
                 </div>
               )}
               {carrier.email && (
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-gray-400" />
-                  <a href={`mailto:${carrier.email}`} className="hover:text-[#1a365d] truncate">{carrier.email}</a>
+                  <a href={`mailto:${carrier.email}`} className="hover:text-[#1E3A5F] truncate">{carrier.email}</a>
                 </div>
               )}
               {carrier.hqAddress.city && (
@@ -558,7 +558,7 @@ const VerifiedCarrierProfile: React.FC<VerifiedCarrierProfileProps> = ({
               href={`https://safer.fmcsa.dot.gov/query.asp?searchtype=ANY&query_type=queryCarrierSnapshot&query_param=USDOT&query_string=${carrier.dotNumber}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-[#1a365d] hover:underline flex items-center gap-1"
+              className="text-xs text-[#1E3A5F] hover:underline flex items-center gap-1"
             >
               <ExternalLink className="w-3 h-3" />
               View on SAFER

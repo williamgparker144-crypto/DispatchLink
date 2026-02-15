@@ -86,11 +86,11 @@ const PendingInvitesCard: React.FC = () => {
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-[#ff6b35]/10 rounded-xl">
-            <Rocket className="w-5 h-5 text-[#ff6b35]" />
+          <div className="p-2.5 bg-[#3B82F6]/10 rounded-xl">
+            <Rocket className="w-5 h-5 text-[#3B82F6]" />
           </div>
           <div>
-            <h3 className="font-semibold text-[#1a365d]">CarrierScout Invites</h3>
+            <h3 className="font-semibold text-[#1E3A5F]">CarrierScout Invites</h3>
             <p className="text-xs text-gray-500">{pendingCount} pending invite{pendingCount !== 1 ? 's' : ''}</p>
           </div>
         </div>
@@ -116,7 +116,7 @@ const PendingInvitesCard: React.FC = () => {
                 <button
                   onClick={() => handleResend(invite.id)}
                   disabled={resending === invite.id}
-                  className="p-2 text-[#ff6b35] hover:bg-[#ff6b35]/10 rounded-lg transition-colors"
+                  className="p-2 text-[#3B82F6] hover:bg-[#3B82F6]/10 rounded-lg transition-colors"
                   title="Resend invitation"
                 >
                   <RefreshCw className={`w-4 h-4 ${resending === invite.id ? 'animate-spin' : ''}`} />

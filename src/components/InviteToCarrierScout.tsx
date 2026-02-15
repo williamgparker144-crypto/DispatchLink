@@ -74,11 +74,11 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
         {step === 'info' && (
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-[#ff6b35]/10 rounded-xl">
-                <Rocket className="w-6 h-6 text-[#ff6b35]" />
+              <div className="p-3 bg-[#3B82F6]/10 rounded-xl">
+                <Rocket className="w-6 h-6 text-[#3B82F6]" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-[#1a365d]">Invite to CarrierScout</h2>
+                <h2 className="text-xl font-bold text-[#1E3A5F]">Invite to CarrierScout</h2>
                 <p className="text-sm text-gray-500">Help this carrier get on the platform</p>
               </div>
             </div>
@@ -88,34 +88,34 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-gray-500">Carrier</p>
-                  <p className="font-semibold text-[#1a365d]">{carrierName}</p>
+                  <p className="font-semibold text-[#1E3A5F]">{carrierName}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">MC Number</p>
-                  <p className="font-semibold text-[#1a365d]">{mcNumber}</p>
+                  <p className="font-semibold text-[#1E3A5F]">{mcNumber}</p>
                 </div>
               </div>
             </div>
 
             {/* Explanation */}
             <div className="mb-6">
-              <h3 className="font-semibold text-[#1a365d] mb-3">Why invite this carrier?</h3>
+              <h3 className="font-semibold text-[#1E3A5F] mb-3">Why invite this carrier?</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3 text-sm text-gray-600">
-                  <div className="w-6 h-6 bg-[#ff6b35]/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-[#ff6b35] font-bold text-xs">1</span>
+                  <div className="w-6 h-6 bg-[#3B82F6]/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-[#3B82F6] font-bold text-xs">1</span>
                   </div>
                   <p>You have MC# permission from this carrier, but they need a <strong>CarrierScout account</strong> to access load boards and rate tools.</p>
                 </div>
                 <div className="flex items-start gap-3 text-sm text-gray-600">
-                  <div className="w-6 h-6 bg-[#ff6b35]/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-[#ff6b35] font-bold text-xs">2</span>
+                  <div className="w-6 h-6 bg-[#3B82F6]/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-[#3B82F6] font-bold text-xs">2</span>
                   </div>
                   <p>Once they sign up, you'll be able to book loads, negotiate rates, and manage freight together seamlessly.</p>
                 </div>
                 <div className="flex items-start gap-3 text-sm text-gray-600">
-                  <div className="w-6 h-6 bg-[#ff6b35]/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-[#ff6b35] font-bold text-xs">3</span>
+                  <div className="w-6 h-6 bg-[#3B82F6]/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-[#3B82F6] font-bold text-xs">3</span>
                   </div>
                   <p>We'll send them a professional invitation email explaining CarrierScout and how to get started.</p>
                 </div>
@@ -124,7 +124,7 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
 
             <button
               onClick={() => setStep('contact')}
-              className="w-full py-3 bg-[#ff6b35] text-white rounded-xl font-medium hover:bg-[#e55a2b] transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 bg-[#3B82F6] text-white rounded-xl font-medium hover:bg-[#2563EB] transition-colors flex items-center justify-center gap-2"
             >
               Continue
               <ChevronRight className="w-5 h-5" />
@@ -136,11 +136,11 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
         {step === 'contact' && (
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-[#1a365d]/10 rounded-xl">
-                <Mail className="w-6 h-6 text-[#1a365d]" />
+              <div className="p-3 bg-[#1E3A5F]/10 rounded-xl">
+                <Mail className="w-6 h-6 text-[#1E3A5F]" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-[#1a365d]">Contact Details</h2>
+                <h2 className="text-xl font-bold text-[#1E3A5F]">Contact Details</h2>
                 <p className="text-sm text-gray-500">How should we reach {carrierName}?</p>
               </div>
             </div>
@@ -158,7 +158,7 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="carrier@example.com"
-                    className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                    className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                   />
                 </div>
               </div>
@@ -175,7 +175,7 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="(555) 123-4567"
-                    className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                    className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                   />
                 </div>
               </div>
@@ -187,7 +187,7 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
                     type="checkbox"
                     checked={sendSms}
                     onChange={(e) => setSendSms(e.target.checked)}
-                    className="w-4 h-4 text-[#ff6b35] rounded"
+                    className="w-4 h-4 text-[#3B82F6] rounded"
                   />
                   <div>
                     <span className="text-sm font-medium text-gray-700">Also send SMS notification</span>
@@ -207,7 +207,7 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
                   placeholder="Add a personal note to the invitation..."
                   rows={3}
                   maxLength={500}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none resize-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none resize-none"
                 />
                 <p className="text-xs text-gray-400 mt-1">{personalMessage.length}/500 characters</p>
               </div>
@@ -223,7 +223,7 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
               <button
                 onClick={() => setStep('preview')}
                 disabled={!email || !isValidEmail(email)}
-                className="flex-1 py-3 bg-[#ff6b35] text-white rounded-xl font-medium hover:bg-[#e55a2b] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-[#3B82F6] text-white rounded-xl font-medium hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 Preview
                 <Eye className="w-5 h-5" />
@@ -240,14 +240,14 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
                 <Eye className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-[#1a365d]">Review Invitation</h2>
+                <h2 className="text-xl font-bold text-[#1E3A5F]">Review Invitation</h2>
                 <p className="text-sm text-gray-500">Confirm before sending</p>
               </div>
             </div>
 
             {/* Preview Card */}
             <div className="border border-gray-200 rounded-xl overflow-hidden mb-6">
-              <div className="bg-gradient-to-r from-[#1a365d] to-[#2d4a6f] p-4 text-center">
+              <div className="bg-gradient-to-r from-[#1E3A5F] to-[#1E3A5F]/80 p-4 text-center">
                 <p className="text-white font-bold text-lg">You're Invited to CarrierScout</p>
                 <p className="text-blue-200 text-sm">by DispatchLink</p>
               </div>
@@ -255,12 +255,12 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
                 <p>Hi <strong>{carrierName}</strong> ({mcNumber}),</p>
                 <p>A dispatcher on DispatchLink wants to work with you and has invited you to join CarrierScout.</p>
                 {personalMessage && (
-                  <div className="bg-white border-l-4 border-[#ff6b35] p-3 italic">
+                  <div className="bg-white border-l-4 border-[#3B82F6] p-3 italic">
                     "{personalMessage}"
                   </div>
                 )}
                 <div className="text-center py-2">
-                  <span className="inline-block bg-[#ff6b35] text-white px-6 py-2 rounded-lg font-medium text-sm">
+                  <span className="inline-block bg-[#3B82F6] text-white px-6 py-2 rounded-lg font-medium text-sm">
                     Join CarrierScout
                   </span>
                 </div>
@@ -303,7 +303,7 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
               <button
                 onClick={handleSendInvite}
                 disabled={loading}
-                className="flex-1 py-3 bg-[#ff6b35] text-white rounded-xl font-medium hover:bg-[#e55a2b] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-[#3B82F6] text-white rounded-xl font-medium hover:bg-[#2563EB] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -327,7 +327,7 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-xl font-bold text-[#1a365d] mb-2">Invitation Sent!</h2>
+            <h2 className="text-xl font-bold text-[#1E3A5F] mb-2">Invitation Sent!</h2>
             <p className="text-gray-600 mb-2">
               We've sent a CarrierScout invitation to <strong>{carrierName}</strong>.
             </p>
@@ -343,7 +343,7 @@ const InviteToCarrierScout: React.FC<InviteToCarrierScoutProps> = ({
 
             <button
               onClick={resetAndClose}
-              className="w-full py-3 bg-[#1a365d] text-white rounded-xl font-medium hover:bg-[#2d4a6f] transition-colors"
+              className="w-full py-3 bg-[#1E3A5F] text-white rounded-xl font-medium hover:bg-[#1E3A5F]/80 transition-colors"
             >
               Done
             </button>

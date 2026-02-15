@@ -48,13 +48,13 @@ const PLANS = {
     name: 'Basic Dispatcher',
     price: 19.99,
     icon: Zap,
-    color: '#1a365d'
+    color: '#1E3A5F'
   },
   premier: {
     name: 'Premier Dispatcher',
     price: 49.99,
     icon: Crown,
-    color: '#ff6b35'
+    color: '#3B82F6'
   }
 };
 
@@ -247,7 +247,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-[#ff6b35] mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-[#3B82F6] mx-auto mb-4" />
           <p className="text-gray-600">Loading subscription details...</p>
         </div>
       </div>
@@ -263,13 +263,13 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
         {/* Back Button */}
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-[#1a365d] hover:text-[#ff6b35] mb-8 transition-colors"
+          className="flex items-center gap-2 text-[#1E3A5F] hover:text-[#3B82F6] mb-8 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           Back to Dashboard
         </button>
 
-        <h1 className="text-3xl font-bold text-[#1a365d] mb-8">Subscription Management</h1>
+        <h1 className="text-3xl font-bold text-[#1E3A5F] mb-8">Subscription Management</h1>
 
         {/* Alerts */}
         {error && (
@@ -303,13 +303,13 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CreditCard className="w-8 h-8 text-gray-400" />
             </div>
-            <h2 className="text-xl font-bold text-[#1a365d] mb-2">No Active Subscription</h2>
+            <h2 className="text-xl font-bold text-[#1E3A5F] mb-2">No Active Subscription</h2>
             <p className="text-gray-600 mb-6">
               You don't have an active subscription. Choose a plan to get started.
             </p>
             <button
               onClick={onBack}
-              className="px-6 py-3 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors"
+              className="px-6 py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors"
             >
               View Plans
             </button>
@@ -318,14 +318,14 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
           <div className="space-y-6">
             {/* Current Plan Card */}
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className={`p-6 ${subscription.planId === 'premier' ? 'bg-[#1a365d]' : 'bg-gray-50'}`}>
+              <div className={`p-6 ${subscription.planId === 'premier' ? 'bg-[#1E3A5F]' : 'bg-gray-50'}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-xl ${subscription.planId === 'premier' ? 'bg-[#ff6b35]/20' : 'bg-[#1a365d]/10'}`}>
-                      <PlanIcon className={`w-6 h-6 ${subscription.planId === 'premier' ? 'text-[#ff6b35]' : 'text-[#1a365d]'}`} />
+                    <div className={`p-3 rounded-xl ${subscription.planId === 'premier' ? 'bg-[#3B82F6]/20' : 'bg-[#1E3A5F]/10'}`}>
+                      <PlanIcon className={`w-6 h-6 ${subscription.planId === 'premier' ? 'text-[#3B82F6]' : 'text-[#1E3A5F]'}`} />
                     </div>
                     <div>
-                      <h2 className={`text-xl font-bold ${subscription.planId === 'premier' ? 'text-white' : 'text-[#1a365d]'}`}>
+                      <h2 className={`text-xl font-bold ${subscription.planId === 'premier' ? 'text-white' : 'text-[#1E3A5F]'}`}>
                         {subscription.planName}
                       </h2>
                       <p className={subscription.planId === 'premier' ? 'text-gray-300' : 'text-gray-500'}>
@@ -362,7 +362,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
                         <button
                           onClick={handleReactivateSubscription}
                           disabled={actionLoading === 'reactivate'}
-                          className="mt-2 text-sm text-[#ff6b35] font-medium hover:underline flex items-center gap-1"
+                          className="mt-2 text-sm text-[#3B82F6] font-medium hover:underline flex items-center gap-1"
                         >
                           {actionLoading === 'reactivate' ? (
                             <>
@@ -386,7 +386,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
                     <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div>
                       <p className="text-sm text-gray-500">Next billing date</p>
-                      <p className="font-medium text-[#1a365d]">
+                      <p className="font-medium text-[#1E3A5F]">
                         {formatDate(subscription.currentPeriodEnd)}
                       </p>
                     </div>
@@ -395,7 +395,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
                     <CreditCard className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div>
                       <p className="text-sm text-gray-500">Payment method</p>
-                      <p className="font-medium text-[#1a365d]">•••• •••• •••• 4242</p>
+                      <p className="font-medium text-[#1E3A5F]">•••• •••• •••• 4242</p>
                     </div>
                   </div>
                 </div>
@@ -404,17 +404,17 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
 
             {/* Actions */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-bold text-[#1a365d] mb-4">Manage Subscription</h3>
+              <h3 className="text-lg font-bold text-[#1E3A5F] mb-4">Manage Subscription</h3>
               
               <div className="space-y-3">
                 <button
                   onClick={() => setShowChangePlan(true)}
-                  className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-[#ff6b35] hover:bg-orange-50 transition-colors"
+                  className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-[#3B82F6] hover:bg-orange-50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <RefreshCw className="w-5 h-5 text-[#1a365d]" />
+                    <RefreshCw className="w-5 h-5 text-[#1E3A5F]" />
                     <div className="text-left">
-                      <p className="font-medium text-[#1a365d]">Change Plan</p>
+                      <p className="font-medium text-[#1E3A5F]">Change Plan</p>
                       <p className="text-sm text-gray-500">Upgrade or downgrade your subscription</p>
                     </div>
                   </div>
@@ -424,17 +424,17 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
                 <button
                   onClick={handleManageBilling}
                   disabled={actionLoading === 'billing'}
-                  className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-[#ff6b35] hover:bg-orange-50 transition-colors"
+                  className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-[#3B82F6] hover:bg-orange-50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <CreditCard className="w-5 h-5 text-[#1a365d]" />
+                    <CreditCard className="w-5 h-5 text-[#1E3A5F]" />
                     <div className="text-left">
-                      <p className="font-medium text-[#1a365d]">Update Payment Method</p>
+                      <p className="font-medium text-[#1E3A5F]">Update Payment Method</p>
                       <p className="text-sm text-gray-500">Change your card or billing details</p>
                     </div>
                   </div>
                   {actionLoading === 'billing' ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-[#ff6b35]" />
+                    <Loader2 className="w-5 h-5 animate-spin text-[#3B82F6]" />
                   ) : (
                     <ChevronRight className="w-5 h-5 text-gray-400" />
                   )}
@@ -460,7 +460,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
 
             {/* Billing History */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-bold text-[#1a365d] mb-4">Billing History</h3>
+              <h3 className="text-lg font-bold text-[#1E3A5F] mb-4">Billing History</h3>
               
               {invoices.length === 0 ? (
                 <p className="text-gray-500 text-center py-4">No invoices yet</p>
@@ -474,7 +474,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
                       <div className="flex items-center gap-3">
                         <FileText className="w-5 h-5 text-gray-400" />
                         <div>
-                          <p className="font-medium text-[#1a365d]">
+                          <p className="font-medium text-[#1E3A5F]">
                             ${(invoice.amount_paid / 100).toFixed(2)}
                           </p>
                           <p className="text-sm text-gray-500">
@@ -494,7 +494,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
                           href={invoice.hosted_invoice_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#ff6b35] hover:text-[#e55a2b]"
+                          className="text-[#3B82F6] hover:text-[#2563EB]"
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
@@ -515,7 +515,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <AlertCircle className="w-8 h-8 text-red-500" />
                 </div>
-                <h3 className="text-xl font-bold text-[#1a365d] mb-2">Cancel Subscription?</h3>
+                <h3 className="text-xl font-bold text-[#1E3A5F] mb-2">Cancel Subscription?</h3>
                 <p className="text-gray-600">
                   Are you sure you want to cancel? You'll lose access to premium features at the end of your billing period.
                 </p>
@@ -525,7 +525,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
                 <p className="text-sm text-gray-600">
                   <strong>Your subscription will remain active until:</strong>
                 </p>
-                <p className="text-lg font-semibold text-[#1a365d]">
+                <p className="text-lg font-semibold text-[#1E3A5F]">
                   {subscription && formatDate(subscription.currentPeriodEnd)}
                 </p>
               </div>
@@ -560,7 +560,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
         {showChangePlan && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
-              <h3 className="text-xl font-bold text-[#1a365d] mb-6">Change Your Plan</h3>
+              <h3 className="text-xl font-bold text-[#1E3A5F] mb-6">Change Your Plan</h3>
 
               <div className="space-y-4 mb-6">
                 {Object.entries(PLANS).map(([id, plan]) => {
@@ -575,16 +575,16 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
                       className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
                         isCurrentPlan
                           ? 'border-green-500 bg-green-50'
-                          : 'border-gray-200 hover:border-[#ff6b35]'
+                          : 'border-gray-200 hover:border-[#3B82F6]'
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${id === 'premier' ? 'bg-[#ff6b35]/10' : 'bg-[#1a365d]/10'}`}>
-                            <Icon className={`w-5 h-5 ${id === 'premier' ? 'text-[#ff6b35]' : 'text-[#1a365d]'}`} />
+                          <div className={`p-2 rounded-lg ${id === 'premier' ? 'bg-[#3B82F6]/10' : 'bg-[#1E3A5F]/10'}`}>
+                            <Icon className={`w-5 h-5 ${id === 'premier' ? 'text-[#3B82F6]' : 'text-[#1E3A5F]'}`} />
                           </div>
                           <div>
-                            <p className="font-semibold text-[#1a365d]">{plan.name}</p>
+                            <p className="font-semibold text-[#1E3A5F]">{plan.name}</p>
                             <p className="text-sm text-gray-500">${plan.price}/month</p>
                           </div>
                         </div>
@@ -600,7 +600,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onBack 
               </div>
 
               {actionLoading === 'change' && (
-                <div className="flex items-center justify-center gap-2 text-[#ff6b35] mb-4">
+                <div className="flex items-center justify-center gap-2 text-[#3B82F6] mb-4">
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span>Updating your plan...</span>
                 </div>

@@ -29,8 +29,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       id: `comment-${Date.now()}`,
       post_id: post.id,
       author_id: 'demo-user-1',
-      author_name: 'John Smith',
-      author_company: 'Smith Dispatch Services',
+      author_name: 'You',
+      author_company: '',
       author_type: 'dispatcher',
       content: commentText,
       created_at: new Date().toISOString(),
@@ -84,7 +84,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       {/* Author Info */}
       <div className="p-5 pb-3">
         <div className="flex items-start gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-[#1a365d] to-[#2d4a6f] rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+          <div className="w-12 h-12 bg-gradient-to-br from-[#1E3A5F] to-[#1E3A5F]/80 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
             {post.author_image ? (
               <img src={post.author_image} alt={post.author_name} className="w-12 h-12 rounded-xl object-cover" />
             ) : (
@@ -93,7 +93,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-[#1a365d]">{post.author_name}</span>
+              <span className="font-semibold text-[#1E3A5F]">{post.author_name}</span>
               {post.author_verified && (
                 <Shield className="w-4 h-4 text-green-500" />
               )}
@@ -114,7 +114,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           {contentTruncated ? `${post.content.substring(0, 280)}...` : post.content}
         </p>
         {post.content.length > 280 && !expanded && (
-          <button onClick={() => setExpanded(true)} className="text-[#ff6b35] text-sm font-medium mt-1 hover:underline">
+          <button onClick={() => setExpanded(true)} className="text-[#3B82F6] text-sm font-medium mt-1 hover:underline">
             Read more
           </button>
         )}
@@ -134,7 +134,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
         <button
           onClick={() => setShowComments(!showComments)}
-          className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-[#1a365d] transition-colors"
+          className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-[#1E3A5F] transition-colors"
         >
           <MessageCircle className="w-5 h-5" />
           {(post.comments_count + comments.length) > 0 && (post.comments_count + comments.length)}
@@ -157,7 +157,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                     {comment.author_name.charAt(0)}
                   </div>
                   <div className="bg-gray-50 rounded-lg px-3 py-2 flex-1">
-                    <span className="text-sm font-medium text-[#1a365d]">{comment.author_name}</span>
+                    <span className="text-sm font-medium text-[#1E3A5F]">{comment.author_name}</span>
                     <p className="text-sm text-gray-700">{comment.content}</p>
                   </div>
                 </div>
@@ -173,12 +173,12 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               onChange={(e) => setCommentText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
               placeholder="Write a comment..."
-              className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+              className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
             />
             <button
               onClick={handleAddComment}
               disabled={!commentText.trim()}
-              className="p-2 bg-[#ff6b35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 bg-[#3B82F6] text-white rounded-lg hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send className="w-4 h-4" />
             </button>

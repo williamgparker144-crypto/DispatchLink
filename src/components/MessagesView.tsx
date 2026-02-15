@@ -2,76 +2,12 @@ import React, { useState } from 'react';
 import { Send, Search, MessageSquare, Shield } from 'lucide-react';
 import type { Conversation, Message } from '@/types';
 
-const sampleConversations: Conversation[] = [
-  {
-    id: 'conv-1',
-    participant_id: 'user-2',
-    participant_name: 'Sarah Williams',
-    participant_company: 'Williams Logistics Group',
-    participant_type: 'dispatcher',
-    participant_image: 'https://d64gsuwffb70l.cloudfront.net/6967ea24d7d2122c9a86ad94_1768418479994_627b2454.png',
-    last_message: 'Sounds great! Let me check the rates for that lane.',
-    last_message_at: new Date(Date.now() - 30 * 60000).toISOString(),
-    unread_count: 2,
-  },
-  {
-    id: 'conv-2',
-    participant_id: 'user-3',
-    participant_name: 'Robert Thompson',
-    participant_company: 'Thompson Trucking LLC',
-    participant_type: 'carrier',
-    participant_image: 'https://d64gsuwffb70l.cloudfront.net/6967ea24d7d2122c9a86ad94_1768418505750_37b6a043.png',
-    last_message: 'We have 2 flatbeds available starting Monday.',
-    last_message_at: new Date(Date.now() - 2 * 3600000).toISOString(),
-    unread_count: 0,
-  },
-  {
-    id: 'conv-3',
-    participant_id: 'user-5',
-    participant_name: 'James Wilson',
-    participant_company: 'Wilson Brokerage Inc',
-    participant_type: 'broker',
-    last_message: 'I can send over the load details tomorrow morning.',
-    last_message_at: new Date(Date.now() - 5 * 3600000).toISOString(),
-    unread_count: 1,
-  },
-  {
-    id: 'conv-4',
-    participant_id: 'user-4',
-    participant_name: 'Lisa Martinez',
-    participant_company: 'TruckHub Solutions',
-    participant_type: 'dispatcher',
-    participant_image: 'https://d64gsuwffb70l.cloudfront.net/6967ea24d7d2122c9a86ad94_1768418479362_901c4ead.png',
-    last_message: 'Thanks for the referral!',
-    last_message_at: new Date(Date.now() - 24 * 3600000).toISOString(),
-    unread_count: 0,
-  },
-];
+const sampleConversations: Conversation[] = [];
 
-const sampleMessages: Record<string, Message[]> = {
-  'conv-1': [
-    { id: 'm1', conversation_id: 'conv-1', sender_id: 'demo-user-1', sender_name: 'John Smith', content: 'Hi Sarah! I have a carrier looking for reefer loads from CA to TX. Are you working that lane?', read: true, created_at: new Date(Date.now() - 2 * 3600000).toISOString() },
-    { id: 'm2', conversation_id: 'conv-1', sender_id: 'user-2', sender_name: 'Sarah Williams', content: 'Hey John! Yes, we run that lane regularly. What kind of volume are you looking at?', read: true, created_at: new Date(Date.now() - 90 * 60000).toISOString() },
-    { id: 'm3', conversation_id: 'conv-1', sender_id: 'demo-user-1', sender_name: 'John Smith', content: 'About 3-4 loads per week. Consistent shipper, been running for 2 years.', read: true, created_at: new Date(Date.now() - 60 * 60000).toISOString() },
-    { id: 'm4', conversation_id: 'conv-1', sender_id: 'user-2', sender_name: 'Sarah Williams', content: 'Sounds great! Let me check the rates for that lane.', read: false, created_at: new Date(Date.now() - 30 * 60000).toISOString() },
-  ],
-  'conv-2': [
-    { id: 'm5', conversation_id: 'conv-2', sender_id: 'user-3', sender_name: 'Robert Thompson', content: 'Hi John, saw your post about needing flatbed carriers. We might be a good fit.', read: true, created_at: new Date(Date.now() - 4 * 3600000).toISOString() },
-    { id: 'm6', conversation_id: 'conv-2', sender_id: 'demo-user-1', sender_name: 'John Smith', content: 'Robert! Great to hear. What regions do you cover and what\'s your fleet like?', read: true, created_at: new Date(Date.now() - 3 * 3600000).toISOString() },
-    { id: 'm7', conversation_id: 'conv-2', sender_id: 'user-3', sender_name: 'Robert Thompson', content: 'We have 2 flatbeds available starting Monday.', read: true, created_at: new Date(Date.now() - 2 * 3600000).toISOString() },
-  ],
-  'conv-3': [
-    { id: 'm8', conversation_id: 'conv-3', sender_id: 'user-5', sender_name: 'James Wilson', content: 'John, we have some heavy haul freight from Chicago that needs a dispatcher. Interested?', read: true, created_at: new Date(Date.now() - 6 * 3600000).toISOString() },
-    { id: 'm9', conversation_id: 'conv-3', sender_id: 'demo-user-1', sender_name: 'John Smith', content: 'Absolutely! Send me the details and I\'ll see if we can match a carrier.', read: true, created_at: new Date(Date.now() - 5.5 * 3600000).toISOString() },
-    { id: 'm10', conversation_id: 'conv-3', sender_id: 'user-5', sender_name: 'James Wilson', content: 'I can send over the load details tomorrow morning.', read: false, created_at: new Date(Date.now() - 5 * 3600000).toISOString() },
-  ],
-  'conv-4': [
-    { id: 'm11', conversation_id: 'conv-4', sender_id: 'user-4', sender_name: 'Lisa Martinez', content: 'Thanks for the referral!', read: true, created_at: new Date(Date.now() - 24 * 3600000).toISOString() },
-  ],
-};
+const sampleMessages: Record<string, Message[]> = {};
 
 const MessagesView: React.FC = () => {
-  const [selectedConversation, setSelectedConversation] = useState<string | null>('conv-1');
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState('');
   const [messages, setMessages] = useState(sampleMessages);
   const [searchQuery, setSearchQuery] = useState('');
@@ -83,7 +19,7 @@ const MessagesView: React.FC = () => {
       id: `m-${Date.now()}`,
       conversation_id: selectedConversation,
       sender_id: 'demo-user-1',
-      sender_name: 'John Smith',
+      sender_name: 'You',
       content: messageInput,
       read: true,
       created_at: new Date().toISOString(),
@@ -133,7 +69,7 @@ const MessagesView: React.FC = () => {
     <section className="bg-gray-50 min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#1a365d]">Messages</h1>
+          <h1 className="text-2xl font-bold text-[#1E3A5F]">Messages</h1>
           <p className="text-gray-600">Chat with your connections</p>
         </div>
 
@@ -149,7 +85,7 @@ const MessagesView: React.FC = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search messages..."
-                    className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                    className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                   />
                 </div>
               </div>
@@ -160,10 +96,10 @@ const MessagesView: React.FC = () => {
                     key={conv.id}
                     onClick={() => setSelectedConversation(conv.id)}
                     className={`w-full p-3 flex items-start gap-3 hover:bg-gray-50 transition-colors text-left ${
-                      selectedConversation === conv.id ? 'bg-blue-50 border-l-2 border-[#1a365d]' : ''
+                      selectedConversation === conv.id ? 'bg-blue-50 border-l-2 border-[#1E3A5F]' : ''
                     }`}
                   >
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#1a365d] to-[#2d4a6f] rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#1E3A5F] to-[#1E3A5F]/80 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                       {conv.participant_image ? (
                         <img src={conv.participant_image} alt={conv.participant_name} className="w-10 h-10 rounded-lg object-cover" />
                       ) : (
@@ -178,7 +114,7 @@ const MessagesView: React.FC = () => {
                       <p className="text-xs text-gray-500 truncate">{conv.last_message}</p>
                     </div>
                     {conv.unread_count > 0 && (
-                      <span className="w-5 h-5 bg-[#ff6b35] text-white rounded-full text-xs flex items-center justify-center flex-shrink-0">
+                      <span className="w-5 h-5 bg-[#3B82F6] text-white rounded-full text-xs flex items-center justify-center flex-shrink-0">
                         {conv.unread_count}
                       </span>
                     )}
@@ -193,7 +129,7 @@ const MessagesView: React.FC = () => {
                 <>
                   {/* Header */}
                   <div className="p-4 border-b border-gray-100 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#1a365d] to-[#2d4a6f] rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#1E3A5F] to-[#1E3A5F]/80 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                       {selectedConv.participant_image ? (
                         <img src={selectedConv.participant_image} alt={selectedConv.participant_name} className="w-10 h-10 rounded-lg object-cover" />
                       ) : (
@@ -202,7 +138,7 @@ const MessagesView: React.FC = () => {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-[#1a365d]">{selectedConv.participant_name}</span>
+                        <span className="font-semibold text-[#1E3A5F]">{selectedConv.participant_name}</span>
                         {getTypeBadge(selectedConv.participant_type)}
                       </div>
                       <p className="text-xs text-gray-500">{selectedConv.participant_company}</p>
@@ -219,7 +155,7 @@ const MessagesView: React.FC = () => {
                         <div
                           className={`max-w-[70%] px-4 py-2.5 rounded-2xl ${
                             msg.sender_id === 'demo-user-1'
-                              ? 'bg-[#1a365d] text-white rounded-br-md'
+                              ? 'bg-[#1E3A5F] text-white rounded-br-md'
                               : 'bg-gray-100 text-gray-800 rounded-bl-md'
                           }`}
                         >
@@ -241,12 +177,12 @@ const MessagesView: React.FC = () => {
                         onChange={(e) => setMessageInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                         placeholder="Type a message..."
-                        className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                        className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                       />
                       <button
                         onClick={handleSendMessage}
                         disabled={!messageInput.trim()}
-                        className="px-4 py-2.5 bg-[#ff6b35] text-white rounded-xl hover:bg-[#e55a2b] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2.5 bg-[#3B82F6] text-white rounded-xl hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Send className="w-5 h-5" />
                       </button>
@@ -257,8 +193,7 @@ const MessagesView: React.FC = () => {
                 <div className="flex-1 flex items-center justify-center text-center">
                   <div>
                     <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-700 mb-2">Select a conversation</h3>
-                    <p className="text-gray-500">Choose from your existing conversations to start messaging</p>
+                    <h3 className="text-lg font-medium text-gray-700 mb-2">Connect with carriers to start messaging</h3>
                   </div>
                 </div>
               )}

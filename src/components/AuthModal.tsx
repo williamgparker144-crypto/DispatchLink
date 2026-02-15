@@ -112,7 +112,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-[#1a365d] mb-2">
+            <h2 className="text-2xl font-bold text-[#1E3A5F] mb-2">
               {mode === 'signup' ? 'Account Created!' : 'Welcome Back!'}
             </h2>
             <p className="text-gray-600 mb-6">
@@ -122,7 +122,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
             </p>
             <button
               onClick={onClose}
-              className="w-full py-3 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors"
+              className="w-full py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors"
             >
               Continue to Dashboard
             </button>
@@ -130,7 +130,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
         ) : (
           /* Form */
           <div className="p-8">
-            <h2 className="text-2xl font-bold text-[#1a365d] mb-2">
+            <h2 className="text-2xl font-bold text-[#1E3A5F] mb-2">
               {mode === 'login' ? 'Welcome Back' : 'Create Account'}
             </h2>
             <p className="text-gray-600 mb-6">
@@ -149,15 +149,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                     onClick={() => setUserType('dispatcher')}
                     className={`p-4 border-2 rounded-xl text-center transition-all ${
                       userType === 'dispatcher'
-                        ? 'border-[#ff6b35] bg-[#ff6b35]/5'
+                        ? 'border-[#3B82F6] bg-[#3B82F6]/5'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <Users className={`w-6 h-6 mx-auto mb-2 ${
-                      userType === 'dispatcher' ? 'text-[#ff6b35]' : 'text-gray-400'
+                      userType === 'dispatcher' ? 'text-[#3B82F6]' : 'text-gray-400'
                     }`} />
                     <span className={`text-sm font-semibold ${
-                      userType === 'dispatcher' ? 'text-[#1a365d]' : 'text-gray-600'
+                      userType === 'dispatcher' ? 'text-[#1E3A5F]' : 'text-gray-600'
                     }`}>Dispatcher</span>
                   </button>
                   <button
@@ -165,15 +165,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                     onClick={() => setUserType('carrier')}
                     className={`p-4 border-2 rounded-xl text-center transition-all ${
                       userType === 'carrier'
-                        ? 'border-[#ff6b35] bg-[#ff6b35]/5'
+                        ? 'border-[#3B82F6] bg-[#3B82F6]/5'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <Truck className={`w-6 h-6 mx-auto mb-2 ${
-                      userType === 'carrier' ? 'text-[#ff6b35]' : 'text-gray-400'
+                      userType === 'carrier' ? 'text-[#3B82F6]' : 'text-gray-400'
                     }`} />
                     <span className={`text-sm font-semibold ${
-                      userType === 'carrier' ? 'text-[#1a365d]' : 'text-gray-600'
+                      userType === 'carrier' ? 'text-[#1E3A5F]' : 'text-gray-600'
                     }`}>Carrier</span>
                   </button>
                   <button
@@ -181,15 +181,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                     onClick={() => setUserType('broker')}
                     className={`p-4 border-2 rounded-xl text-center transition-all ${
                       userType === 'broker'
-                        ? 'border-[#ff6b35] bg-[#ff6b35]/5'
+                        ? 'border-[#3B82F6] bg-[#3B82F6]/5'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <Building className={`w-6 h-6 mx-auto mb-2 ${
-                      userType === 'broker' ? 'text-[#ff6b35]' : 'text-gray-400'
+                      userType === 'broker' ? 'text-[#3B82F6]' : 'text-gray-400'
                     }`} />
                     <span className={`text-sm font-semibold ${
-                      userType === 'broker' ? 'text-[#1a365d]' : 'text-gray-600'
+                      userType === 'broker' ? 'text-[#1E3A5F]' : 'text-gray-600'
                     }`}>Broker</span>
                   </button>
                 </div>
@@ -209,7 +209,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                         placeholder="John"
                       />
                     </div>
@@ -221,7 +221,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                       placeholder="Doe"
                     />
                   </div>
@@ -239,7 +239,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                       name="companyName"
                       value={formData.companyName}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                       placeholder="Your Company LLC"
                     />
                   </div>
@@ -257,7 +257,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                       placeholder="(555) 123-4567"
                     />
                   </div>
@@ -274,7 +274,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                       name="dotNumber"
                       value={formData.dotNumber}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                       placeholder="DOT1234567"
                     />
                   </div>
@@ -285,7 +285,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                       name="mcNumber"
                       value={formData.mcNumber}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                       placeholder="MC987654"
                     />
                   </div>
@@ -302,7 +302,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -318,7 +318,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-12 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent outline-none"
+                    className="w-full pl-10 pr-12 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
                     placeholder="••••••••"
                   />
                   <button
@@ -340,10 +340,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                       name="agreeTerms"
                       checked={formData.agreeTerms}
                       onChange={handleInputChange}
-                      className="mt-1 w-4 h-4 text-[#ff6b35] border-gray-300 rounded focus:ring-[#ff6b35]"
+                      className="mt-1 w-4 h-4 text-[#3B82F6] border-gray-300 rounded focus:ring-[#3B82F6]"
                     />
                     <span className="text-sm text-gray-600">
-                      I agree to the <a href="#" className="text-[#ff6b35] hover:underline">Terms of Service</a> *
+                      I agree to the <a href="#" className="text-[#3B82F6] hover:underline">Terms of Service</a> *
                     </span>
                   </label>
                   <label className="flex items-start gap-3 cursor-pointer">
@@ -352,10 +352,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                       name="agreePrivacy"
                       checked={formData.agreePrivacy}
                       onChange={handleInputChange}
-                      className="mt-1 w-4 h-4 text-[#ff6b35] border-gray-300 rounded focus:ring-[#ff6b35]"
+                      className="mt-1 w-4 h-4 text-[#3B82F6] border-gray-300 rounded focus:ring-[#3B82F6]"
                     />
                     <span className="text-sm text-gray-600">
-                      I agree to the <a href="#" className="text-[#ff6b35] hover:underline">Privacy Policy</a> *
+                      I agree to the <a href="#" className="text-[#3B82F6] hover:underline">Privacy Policy</a> *
                     </span>
                   </label>
                 </div>
@@ -372,7 +372,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-[#ff6b35] text-white rounded-xl font-semibold hover:bg-[#e55a2b] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 bg-[#3B82F6] text-white rounded-xl font-semibold hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -389,7 +389,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                   Don't have an account?{' '}
                   <button
                     onClick={() => setMode('signup')}
-                    className="text-[#ff6b35] font-semibold hover:underline"
+                    className="text-[#3B82F6] font-semibold hover:underline"
                   >
                     Sign up
                   </button>
@@ -399,7 +399,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
                   Already have an account?{' '}
                   <button
                     onClick={() => setMode('login')}
-                    className="text-[#ff6b35] font-semibold hover:underline"
+                    className="text-[#3B82F6] font-semibold hover:underline"
                   >
                     Sign in
                   </button>

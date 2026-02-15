@@ -100,33 +100,14 @@ const AppLayout: React.FC = () => {
   };
 
   const handleViewCarrierProfile = (id: string) => {
-    const carrierData: Record<string, CarrierProfileData> = {
-      '1': { id: '1', name: 'Robert Thompson', company: 'Thompson Trucking LLC', dotNumber: '1234567', mcNumber: '987654' },
-      '2': { id: '2', name: 'Maria Garcia', company: 'Garcia Freight Services', dotNumber: '2345678', mcNumber: '876543' },
-      '3': { id: '3', name: 'William Anderson', company: 'Anderson Transport Inc', dotNumber: '3456789', mcNumber: '765432' },
-      '4': { id: '4', name: 'Jennifer Taylor', company: 'Taylor Logistics', dotNumber: '4567890', mcNumber: '654321' },
-      '5': { id: '5', name: 'Michael Wilson', company: 'Wilson Heavy Hauling', dotNumber: '5678901', mcNumber: '543210' },
-      '6': { id: '6', name: 'Amanda Moore', company: 'Moore Express Trucking', dotNumber: '6789012', mcNumber: '432109' },
-      '7': { id: '7', name: 'David Martinez', company: 'Martinez Freight LLC', dotNumber: '7890123', mcNumber: '321098' },
-      '8': { id: '8', name: 'Sarah Johnson', company: 'Johnson Carriers Inc', dotNumber: '8901234', mcNumber: '210987' },
-      '9': { id: '9', name: 'James Brown', company: 'Brown Transport Co', dotNumber: '9012345', mcNumber: '109876' },
-      '10': { id: '10', name: 'Emily Davis', company: 'Davis Trucking Services', dotNumber: '123456', mcNumber: '98765' },
-      '11': { id: '11', name: 'Christopher Lee', company: 'Lee Hauling LLC', dotNumber: '1234560', mcNumber: '987650' },
-      '12': { id: '12', name: 'Jessica Thomas', company: 'Thomas Logistics Corp', dotNumber: '2345670', mcNumber: '876540' },
-    };
+    const carrierData: Record<string, CarrierProfileData> = {};
 
     setSelectedCarrier(carrierData[id] || null);
     setCurrentView('carrier-profile');
   };
 
   const handleRequestMCPermission = (id: string) => {
-    const carrierNames: Record<string, { name: string; mc: string }> = {
-      '1': { name: 'Thompson Trucking LLC', mc: 'MC987654' },
-      '2': { name: 'Garcia Freight Services', mc: 'MC876543' },
-      '3': { name: 'Anderson Transport Inc', mc: 'MC765432' },
-    };
-
-    const carrier = carrierNames[id] || { name: 'Unknown Carrier', mc: 'MC000000' };
+    const carrier = { name: 'Unknown Carrier', mc: 'MC000000' };
     setMcPermissionModal({
       isOpen: true,
       carrierName: carrier.name,
@@ -156,7 +137,7 @@ const AppLayout: React.FC = () => {
               <p className="text-gray-500">Carrier not found</p>
               <button
                 onClick={() => setCurrentView('carriers')}
-                className="mt-4 px-4 py-2 bg-[#1a365d] text-white rounded-lg"
+                className="mt-4 px-4 py-2 bg-[#1E3A5F] text-white rounded-lg"
               >
                 Back to Carriers
               </button>
@@ -171,23 +152,23 @@ const AppLayout: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <button
             onClick={() => setCurrentView('carriers')}
-            className="flex items-center gap-2 text-[#1a365d] hover:text-[#ff6b35] mb-6 transition-colors"
+            className="flex items-center gap-2 text-[#1E3A5F] hover:text-[#3B82F6] mb-6 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             Back to Carrier Directory
           </button>
 
           <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
-            <div className="h-32 bg-gradient-to-r from-[#ff6b35] to-[#ff8c5a]" />
+            <div className="h-32 bg-gradient-to-r from-[#3B82F6] to-[#60A5FA]" />
             <div className="px-6 pb-6">
               <div className="flex items-end gap-4 -mt-12">
                 <div className="w-24 h-24 bg-white rounded-xl shadow-lg flex items-center justify-center border-4 border-white">
-                  <span className="text-3xl font-bold text-[#1a365d]">
+                  <span className="text-3xl font-bold text-[#1E3A5F]">
                     {selectedCarrier.company.charAt(0)}
                   </span>
                 </div>
                 <div className="pb-2">
-                  <h1 className="text-2xl font-bold text-[#1a365d]">{selectedCarrier.company}</h1>
+                  <h1 className="text-2xl font-bold text-[#1E3A5F]">{selectedCarrier.company}</h1>
                   <p className="text-gray-600">{selectedCarrier.name}</p>
                 </div>
               </div>
@@ -195,7 +176,7 @@ const AppLayout: React.FC = () => {
           </div>
 
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-[#1a365d] mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-[#1E3A5F] mb-4 flex items-center gap-2">
               <Shield className="w-5 h-5 text-green-600" />
               FMCSA Verified Information
             </h2>
@@ -206,24 +187,24 @@ const AppLayout: React.FC = () => {
           </div>
 
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="font-semibold text-[#1a365d] mb-4">Actions</h3>
+            <h3 className="font-semibold text-[#1E3A5F] mb-4">Actions</h3>
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => handleRequestMCPermission(selectedCarrier.id)}
-                className="px-6 py-3 bg-[#ff6b35] text-white rounded-lg font-medium hover:bg-[#e55a2b] transition-colors"
+                className="px-6 py-3 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors"
               >
                 Request MC# Permission
               </button>
               <button
                 onClick={() => setVerifyModalOpen(true)}
-                className="px-6 py-3 bg-[#1a365d] text-white rounded-lg font-medium hover:bg-[#2d4a6f] transition-colors flex items-center gap-2"
+                className="px-6 py-3 bg-[#1E3A5F] text-white rounded-lg font-medium hover:bg-[#1E3A5F]/80 transition-colors flex items-center gap-2"
               >
                 <Search className="w-5 h-5" />
                 Verify Another Carrier
               </button>
               <button
                 onClick={() => handleInviteToCarrierScout(selectedCarrier.company, `MC${selectedCarrier.mcNumber}`)}
-                className="px-6 py-3 border-2 border-[#ff6b35] text-[#ff6b35] rounded-lg font-medium hover:bg-[#ff6b35]/5 transition-colors flex items-center gap-2"
+                className="px-6 py-3 border-2 border-[#3B82F6] text-[#3B82F6] rounded-lg font-medium hover:bg-[#3B82F6]/5 transition-colors flex items-center gap-2"
               >
                 <Rocket className="w-5 h-5" />
                 Invite to CarrierScout

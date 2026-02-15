@@ -27,7 +27,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan, onCarrier
       ],
       highlighted: false,
       buttonText: 'Sign Up Free',
-      buttonStyle: 'bg-gray-100 text-[#1a365d] hover:bg-gray-200',
+      buttonStyle: 'bg-gray-100 text-[#1E3A5F] hover:bg-gray-200',
       isCarrier: true,
     },
     {
@@ -49,7 +49,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan, onCarrier
       ],
       highlighted: false,
       buttonText: 'Start Basic Plan',
-      buttonStyle: 'bg-[#1a365d] text-white hover:bg-[#2d4a6f]',
+      buttonStyle: 'bg-[#1E3A5F] text-white hover:bg-[#1E3A5F]/80',
       isCarrier: false,
     },
     {
@@ -75,7 +75,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan, onCarrier
       ],
       highlighted: true,
       buttonText: 'Start Premier Plan',
-      buttonStyle: 'bg-[#ff6b35] text-white hover:bg-[#e55a2b]',
+      buttonStyle: 'bg-[#3B82F6] text-white hover:bg-[#2563EB]',
       isCarrier: false,
     },
   ];
@@ -95,10 +95,10 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan, onCarrier
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <span className="inline-block px-4 py-1 bg-[#ff6b35]/10 text-[#ff6b35] rounded-full text-sm font-semibold mb-4">
+          <span className="inline-block px-4 py-1 bg-[#3B82F6]/10 text-[#3B82F6] rounded-full text-sm font-semibold mb-4">
             PRICING PLANS
           </span>
-          <h2 className="text-3xl lg:text-4xl font-bold text-[#1a365d] mb-4">
+          <h2 className="text-3xl lg:text-4xl font-bold text-[#1E3A5F] mb-4">
             Simple, Transparent Pricing
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -113,13 +113,13 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan, onCarrier
               key={plan.id}
               className={`relative rounded-2xl p-8 transition-all ${
                 plan.highlighted
-                  ? 'bg-[#1a365d] text-white shadow-2xl scale-105 border-2 border-[#ff6b35]'
-                  : 'bg-white text-[#1a365d] shadow-lg border border-gray-100 hover:shadow-xl'
+                  ? 'bg-[#1E3A5F] text-white shadow-2xl scale-105 border-2 border-[#3B82F6]'
+                  : 'bg-white text-[#1E3A5F] shadow-lg border border-gray-100 hover:shadow-xl'
               }`}
             >
               {plan.highlighted && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-[#ff6b35] text-white px-4 py-1 rounded-full text-sm font-semibold">
+                  <span className="bg-[#3B82F6] text-white px-4 py-1 rounded-full text-sm font-semibold">
                     Most Popular
                   </span>
                 </div>
@@ -128,9 +128,9 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan, onCarrier
               {/* Plan Header */}
               <div className="mb-6">
                 <div className={`inline-flex p-3 rounded-xl mb-4 ${
-                  plan.highlighted ? 'bg-[#ff6b35]/20' : 'bg-[#1a365d]/10'
+                  plan.highlighted ? 'bg-[#3B82F6]/20' : 'bg-[#1E3A5F]/10'
                 }`}>
-                  <span className={plan.highlighted ? 'text-[#ff6b35]' : 'text-[#1a365d]'}>
+                  <span className={plan.highlighted ? 'text-[#3B82F6]' : 'text-[#1E3A5F]'}>
                     {plan.icon}
                   </span>
                 </div>
@@ -157,7 +157,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPlan, onCarrier
                 {plan.features.map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
-                      plan.highlighted ? 'text-[#ff6b35]' : 'text-green-500'
+                      plan.highlighted ? 'text-[#3B82F6]' : 'text-green-500'
                     }`} />
                     <span className={`text-sm ${plan.highlighted ? 'text-gray-200' : 'text-gray-600'}`}>
                       {feature}

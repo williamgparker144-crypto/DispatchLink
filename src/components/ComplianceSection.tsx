@@ -133,7 +133,7 @@ const ComplianceSection: React.FC = () => {
           <span className="inline-block px-4 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold mb-4">
             LEGAL & COMPLIANCE
           </span>
-          <h2 className="text-3xl lg:text-4xl font-bold text-[#1a365d] mb-4">
+          <h2 className="text-3xl lg:text-4xl font-bold text-[#1E3A5F] mb-4">
             Built for Compliance
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -150,7 +150,7 @@ const ComplianceSection: React.FC = () => {
                 <CheckCircle className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <h3 className="font-bold text-[#1a365d]">FMCSA Verified</h3>
+                <h3 className="font-bold text-[#1E3A5F]">FMCSA Verified</h3>
                 <p className="text-sm text-gray-500">Real-time authority checks</p>
               </div>
             </div>
@@ -165,7 +165,7 @@ const ComplianceSection: React.FC = () => {
                 <Lock className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="font-bold text-[#1a365d]">Data Protected</h3>
+                <h3 className="font-bold text-[#1E3A5F]">Data Protected</h3>
                 <p className="text-sm text-gray-500">GDPR & CCPA compliant</p>
               </div>
             </div>
@@ -180,7 +180,7 @@ const ComplianceSection: React.FC = () => {
                 <Eye className="w-6 h-6 text-purple-600" />
               </div>
               <div>
-                <h3 className="font-bold text-[#1a365d]">Audit Trail</h3>
+                <h3 className="font-bold text-[#1E3A5F]">Audit Trail</h3>
                 <p className="text-sm text-gray-500">Complete transparency</p>
               </div>
             </div>
@@ -199,10 +199,10 @@ const ComplianceSection: React.FC = () => {
                 className="w-full px-6 py-5 flex items-center justify-between hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-4">
-                  <div className="p-2 bg-[#1a365d]/10 rounded-lg text-[#1a365d]">
+                  <div className="p-2 bg-[#1E3A5F]/10 rounded-lg text-[#1E3A5F]">
                     {area.icon}
                   </div>
-                  <span className="font-semibold text-[#1a365d]">{area.title}</span>
+                  <span className="font-semibold text-[#1E3A5F]">{area.title}</span>
                 </div>
                 {expandedSection === area.id ? (
                   <ChevronUp className="w-5 h-5 text-gray-400" />
@@ -216,7 +216,7 @@ const ComplianceSection: React.FC = () => {
                   <div className="grid md:grid-cols-2 gap-4 pl-12">
                     {area.content.map((item, index) => (
                       <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                        <h4 className="font-semibold text-[#1a365d] mb-2">{item.title}</h4>
+                        <h4 className="font-semibold text-[#1E3A5F] mb-2">{item.title}</h4>
                         <p className="text-sm text-gray-600">{item.description}</p>
                       </div>
                     ))}

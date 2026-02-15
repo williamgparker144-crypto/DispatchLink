@@ -44,11 +44,11 @@ const FAQSection: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-[#1a365d]/10 px-4 py-2 rounded-full mb-4">
-            <HelpCircle className="w-5 h-5 text-[#1a365d]" />
-            <span className="text-sm font-medium text-[#1a365d]">FAQ</span>
+          <div className="inline-flex items-center gap-2 bg-[#1E3A5F]/10 px-4 py-2 rounded-full mb-4">
+            <HelpCircle className="w-5 h-5 text-[#1E3A5F]" />
+            <span className="text-sm font-medium text-[#1E3A5F]">FAQ</span>
           </div>
-          <h2 className="text-3xl lg:text-4xl font-bold text-[#1a365d] mb-4">
+          <h2 className="text-3xl lg:text-4xl font-bold text-[#1E3A5F] mb-4">
             Frequently Asked Questions
           </h2>
           <p className="text-lg text-gray-600">
@@ -67,9 +67,9 @@ const FAQSection: React.FC = () => {
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
                 className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
               >
-                <span className="font-semibold text-[#1a365d] pr-4">{faq.question}</span>
+                <span className="font-semibold text-[#1E3A5F] pr-4">{faq.question}</span>
                 {openIndex === index ? (
-                  <ChevronUp className="w-5 h-5 text-[#ff6b35] flex-shrink-0" />
+                  <ChevronUp className="w-5 h-5 text-[#3B82F6] flex-shrink-0" />
                 ) : (
                   <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
                 )}
@@ -86,7 +86,7 @@ const FAQSection: React.FC = () => {
         {/* Contact CTA */}
         <div className="mt-12 text-center">
           <p className="text-gray-600 mb-4">Still have questions?</p>
-          <button className="px-6 py-3 bg-[#1a365d] text-white rounded-xl font-semibold hover:bg-[#2d4a6f] transition-colors">
+          <button className="px-6 py-3 bg-[#1E3A5F] text-white rounded-xl font-semibold hover:bg-[#1E3A5F]/80 transition-colors">
             Contact Support
           </button>
         </div>
