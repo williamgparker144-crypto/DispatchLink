@@ -26,6 +26,7 @@ import CarrierScoutComingSoon from './CarrierScoutComingSoon';
 import CarrierScoutPage from './CarrierScoutPage';
 import InviteToCarrierScout from './InviteToCarrierScout';
 import UserProfile from './UserProfile';
+import AdvertisingPage from './AdvertisingPage';
 import { ArrowLeft, Shield, Search, Rocket } from 'lucide-react';
 
 
@@ -228,7 +229,9 @@ const AppLayout: React.FC = () => {
       case 'profile':
         return <UserProfile onNavigate={handleNavigate} />;
       case 'feed':
-        return <SocialFeed />;
+        return <SocialFeed onNavigate={handleNavigate} />;
+      case 'advertising':
+        return <AdvertisingPage onNavigate={handleNavigate} />;
       case 'connections':
         return <ConnectionsList />;
       case 'messages':
