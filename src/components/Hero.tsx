@@ -8,10 +8,15 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
   return (
-    <section className="relative bg-gradient-to-br from-[#1E3A5F] via-[#1E3A5F] to-[#162d4a] overflow-hidden">
+    <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f2027 0%, #1E3A5F 30%, #203a5c 50%, #2c5282 70%, #1E3A5F 100%)' }}>
+      {/* Animated mesh gradient overlay */}
+      <div className="absolute inset-0" style={{
+        background: 'radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 60% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 50%)',
+      }} />
+
       {/* Background Image Overlay */}
       <div
-        className="absolute inset-0 opacity-15"
+        className="absolute inset-0 opacity-10"
         style={{
           backgroundImage: `url('https://d64gsuwffb70l.cloudfront.net/6967ea24d7d2122c9a86ad94_1768418456859_777c5f8f.jpg')`,
           backgroundSize: 'cover',
@@ -20,7 +25,7 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
       />
 
       {/* Animated dot grid pattern */}
-      <div className="absolute inset-0 dot-grid-bg opacity-40" />
+      <div className="absolute inset-0 dot-grid-bg opacity-30" />
 
       {/* Animated route lines */}
       <div className="route-lines">
@@ -31,28 +36,26 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
         </svg>
       </div>
 
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#1E3A5F]/95 to-[#1E3A5F]/75" />
-
-      {/* Decorative Elements */}
-      <div className="absolute top-20 right-10 w-72 h-72 bg-[#3B82F6]/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 left-10 w-96 h-96 bg-[#3B82F6]/5 rounded-full blur-3xl" />
+      {/* Decorative gradient orbs */}
+      <div className="absolute top-10 right-20 w-96 h-96 bg-gradient-to-br from-[#3B82F6]/20 to-[#8B5CF6]/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-10 left-20 w-80 h-80 bg-gradient-to-br from-cyan-500/10 to-[#3B82F6]/10 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#3B82F6]/5 rounded-full blur-3xl" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-36">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div className="text-white">
-            <div className="inline-flex items-center gap-2 bg-[#3B82F6]/20 px-4 py-2 rounded-full mb-6 animate-fade-in-up">
-              <Shield className="w-4 h-4 text-[#3B82F6]" />
-              <span className="text-sm font-medium text-[#3B82F6]">Free Professional Network</span>
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 animate-fade-in-up border border-white/10">
+              <Shield className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm font-semibold text-cyan-300">Free Professional Network</span>
             </div>
 
-            <h1 className="text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <h1 className="text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[1.1] mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
               The Trucking Industry's{' '}
-              <span className="text-[#3B82F6]">Professional Network</span>
+              <span className="bg-gradient-to-r from-[#3B82F6] via-cyan-400 to-[#8B5CF6] bg-clip-text text-transparent">Professional Network</span>
             </h1>
 
-            <p className="text-lg lg:text-xl text-gray-300 mb-8 max-w-xl leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <p className="text-lg lg:text-xl text-gray-300/90 mb-8 max-w-xl leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
               Connect with verified dispatchers, carriers, and brokers. Build your professional network,
               share opportunities, and grow your business — completely free.
             </p>
@@ -60,14 +63,14 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
             <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
               <button
                 onClick={onGetStarted}
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-[#3B82F6] text-white rounded-xl font-semibold text-lg hover:bg-[#2563EB] transition-all transform hover:scale-105 shadow-lg shadow-[#3B82F6]/30 animate-glow"
+                className="flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white rounded-xl font-bold text-lg hover:from-[#2563EB] hover:to-[#1d4ed8] transition-all transform hover:scale-105 shadow-xl shadow-blue-500/30"
               >
                 Join Free
                 <ChevronRight className="w-5 h-5" />
               </button>
               <button
                 onClick={onLearnMore}
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white rounded-xl font-semibold text-lg hover:bg-white/20 transition-all border border-white/20 backdrop-blur-sm"
+                className="flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white rounded-xl font-bold text-lg hover:bg-white/20 transition-all border border-white/20 backdrop-blur-sm"
               >
                 Browse Network
               </button>
@@ -75,30 +78,30 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
 
             {/* Trust Badges */}
             <div className="flex flex-wrap gap-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 bg-gradient-to-br from-green-500/30 to-emerald-500/20 rounded-xl flex items-center justify-center border border-green-500/20">
                   <Shield className="w-5 h-5 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">DOT Verified</p>
+                  <p className="text-sm font-bold text-white">DOT Verified</p>
                   <p className="text-xs text-gray-400">All carriers checked</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 bg-gradient-to-br from-blue-500/30 to-cyan-500/20 rounded-xl flex items-center justify-center border border-blue-500/20">
                   <Users className="w-5 h-5 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">Growing Network</p>
+                  <p className="text-sm font-bold text-white">Growing Network</p>
                   <p className="text-xs text-gray-400">Join our community</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-[#3B82F6]/20 rounded-full flex items-center justify-center">
-                  <Handshake className="w-5 h-5 text-[#3B82F6]" />
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 bg-gradient-to-br from-[#8B5CF6]/30 to-purple-500/20 rounded-xl flex items-center justify-center border border-purple-500/20">
+                  <Handshake className="w-5 h-5 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">100% Free</p>
+                  <p className="text-sm font-bold text-white">100% Free</p>
                   <p className="text-xs text-gray-400">No hidden fees</p>
                 </div>
               </div>
@@ -107,48 +110,45 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
 
           {/* Right Content - Search Card */}
           <div className="animate-slide-in-right" style={{ animationDelay: '0.2s' }}>
-            <div className="backdrop-blur-xl bg-white/95 rounded-2xl shadow-2xl shadow-black/20 p-6 lg:p-8 border border-white/50">
-              <h2 className="text-2xl font-bold text-[#1E3A5F] mb-6">Find Your Match</h2>
+            <div className="backdrop-blur-xl bg-white/95 rounded-2xl shadow-2xl shadow-black/30 p-6 lg:p-8 border border-white/60">
+              <h2 className="text-2xl font-extrabold text-[#1E3A5F] mb-6">Find Your Match</h2>
 
               <div className="space-y-4">
-                {/* User Type Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">I am a:</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">I am a:</label>
                   <div className="grid grid-cols-3 gap-3">
-                    <button className="p-4 border-2 border-[#3B82F6] bg-[#3B82F6]/5 rounded-xl text-center hover:bg-[#3B82F6]/10 transition-colors">
+                    <button className="p-4 border-2 border-[#3B82F6] bg-gradient-to-b from-[#3B82F6]/5 to-[#3B82F6]/10 rounded-xl text-center hover:from-[#3B82F6]/10 hover:to-[#3B82F6]/20 transition-all">
                       <Users className="w-6 h-6 text-[#3B82F6] mx-auto mb-2" />
-                      <span className="text-sm font-semibold text-[#1E3A5F]">Dispatcher</span>
+                      <span className="text-sm font-bold text-[#1E3A5F]">Dispatcher</span>
                     </button>
-                    <button className="p-4 border-2 border-gray-200 rounded-xl text-center hover:border-[#3B82F6] hover:bg-[#3B82F6]/5 transition-colors">
-                      <svg className="w-6 h-6 text-gray-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button className="p-4 border-2 border-gray-200 rounded-xl text-center hover:border-[#3B82F6] hover:bg-[#3B82F6]/5 transition-all">
+                      <svg className="w-6 h-6 text-gray-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                       </svg>
-                      <span className="text-sm font-semibold text-gray-600">Carrier</span>
+                      <span className="text-sm font-bold text-gray-500">Carrier</span>
                     </button>
-                    <button className="p-4 border-2 border-gray-200 rounded-xl text-center hover:border-[#3B82F6] hover:bg-[#3B82F6]/5 transition-colors">
-                      <Briefcase className="w-6 h-6 text-gray-500 mx-auto mb-2" />
-                      <span className="text-sm font-semibold text-gray-600">Broker</span>
+                    <button className="p-4 border-2 border-gray-200 rounded-xl text-center hover:border-[#3B82F6] hover:bg-[#3B82F6]/5 transition-all">
+                      <Briefcase className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                      <span className="text-sm font-bold text-gray-500">Broker</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Search Input */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Search by:</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Search by:</label>
                   <div className="relative">
                     <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
                       type="text"
                       placeholder="MC#, DOT#, Company name, or specialty..."
-                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none transition-all"
+                      className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none transition-all text-sm"
                     />
                   </div>
                 </div>
 
-                {/* Location */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Operating Region:</label>
-                  <select className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none transition-all bg-white">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Operating Region:</label>
+                  <select className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none transition-all bg-white text-sm">
                     <option value="">All Regions</option>
                     <option value="nationwide">Nationwide</option>
                     <option value="northeast">Northeast</option>
@@ -159,29 +159,27 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
                   </select>
                 </div>
 
-                {/* Search Button */}
                 <button
                   onClick={onGetStarted}
-                  className="w-full py-4 bg-[#1E3A5F] text-white rounded-xl font-semibold hover:bg-[#1E3A5F]/80 transition-all hover:shadow-lg flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-gradient-to-r from-[#1E3A5F] to-[#3B82F6] text-white rounded-xl font-bold hover:shadow-lg hover:shadow-blue-500/25 transition-all flex items-center justify-center gap-2 text-base"
                 >
                   <Search className="w-5 h-5" />
                   Search Network
                 </button>
               </div>
 
-              {/* Quick Stats */}
               <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <p className="text-lg font-bold text-[#1E3A5F]">Dispatchers</p>
-                  <p className="text-xs text-gray-500">Growing Network</p>
+                  <p className="text-lg font-extrabold text-[#1E3A5F]">Dispatchers</p>
+                  <p className="text-xs text-gray-400 font-medium">Growing Network</p>
                 </div>
                 <div>
-                  <p className="text-lg font-bold text-[#1E3A5F]">Carriers</p>
-                  <p className="text-xs text-gray-500">FMCSA Verified</p>
+                  <p className="text-lg font-extrabold text-[#1E3A5F]">Carriers</p>
+                  <p className="text-xs text-gray-400 font-medium">FMCSA Verified</p>
                 </div>
                 <div>
-                  <p className="text-lg font-bold text-[#3B82F6]">Free</p>
-                  <p className="text-xs text-gray-500">Always Free</p>
+                  <p className="text-lg font-extrabold bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] bg-clip-text text-transparent">Free</p>
+                  <p className="text-xs text-gray-400 font-medium">Always Free</p>
                 </div>
               </div>
             </div>

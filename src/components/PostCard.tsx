@@ -1,14 +1,27 @@
-import React, { useState } from 'react';
-import { MessageCircle, Share2, Shield, Send, MoreHorizontal, ExternalLink, ThumbsUp } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { MessageCircle, Share2, Shield, Send, MoreHorizontal, ExternalLink, ThumbsUp, Trash2, Flag, Bookmark } from 'lucide-react';
 import type { Post, PostComment } from '@/types';
 
 interface PostCardProps {
   post: Post;
+  onDelete?: (postId: string) => void;
 }
 
 const extractYouTubeId = (url: string): string | null => {
-  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  return match ? match[1] : null;
+  // Support: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID, youtube.com/v/ID, youtube.com/shorts/ID
+  // Also handles extra query params like &feature=shared, &t=123, etc.
+  const patterns = [
+    /(?:youtube\.com\/watch\?.*v=)([a-zA-Z0-9_-]{11})/,
+    /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
 };
 
 const getDomain = (url: string): string => {
@@ -19,7 +32,7 @@ const getDomain = (url: string): string => {
   }
 };
 
-const PostCard: React.FC<PostCardProps> = ({ post }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, onDelete }) => {
   const [liked, setLiked] = useState(post.liked_by_current_user);
   const [likesCount, setLikesCount] = useState(post.likes_count);
   const [showComments, setShowComments] = useState(false);
@@ -27,6 +40,19 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [comments, setComments] = useState<PostComment[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [imageExpanded, setImageExpanded] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   const handleLike = () => {
     if (liked) {
@@ -56,11 +82,11 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const getTypeBadge = (type: string) => {
     switch (type) {
       case 'dispatcher':
-        return <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs font-medium">Dispatcher</span>;
+        return <span className="px-2 py-0.5 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 text-blue-600 rounded-full text-xs font-semibold border border-blue-200/50">Dispatcher</span>;
       case 'carrier':
-        return <span className="px-2 py-0.5 bg-orange-50 text-orange-600 rounded text-xs font-medium">Carrier</span>;
+        return <span className="px-2 py-0.5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 text-orange-600 rounded-full text-xs font-semibold border border-orange-200/50">Carrier</span>;
       case 'broker':
-        return <span className="px-2 py-0.5 bg-purple-50 text-purple-600 rounded text-xs font-medium">Broker</span>;
+        return <span className="px-2 py-0.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-600 rounded-full text-xs font-semibold border border-purple-200/50">Broker</span>;
       default:
         return null;
     }
@@ -69,11 +95,11 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const getPostTypeBadge = (postType: string) => {
     switch (postType) {
       case 'looking_for':
-        return <span className="text-xs text-green-600 font-medium">Looking For</span>;
+        return <span className="text-xs text-emerald-500 font-semibold">Looking For</span>;
       case 'news':
-        return <span className="text-xs text-cyan-600 font-medium">Industry News</span>;
+        return <span className="text-xs text-cyan-500 font-semibold">Industry News</span>;
       case 'milestone':
-        return <span className="text-xs text-amber-600 font-medium">Milestone</span>;
+        return <span className="text-xs text-amber-500 font-semibold">Milestone</span>;
       default:
         return null;
     }
@@ -100,23 +126,27 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 overflow-hidden hover:shadow-md transition-shadow">
         {/* Author Info */}
         <div className="p-4 pb-0">
           <div className="flex items-start gap-3">
-            {/* Avatar - 48px */}
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1E3A5F] to-[#2d5a8e] flex items-center justify-center text-white font-bold text-lg flex-shrink-0 overflow-hidden">
-              {post.author_image ? (
-                <img src={post.author_image} alt={post.author_name} className="w-12 h-12 rounded-full object-cover" />
-              ) : (
-                post.author_name.charAt(0)
-              )}
+            {/* Avatar - 48px with gradient ring */}
+            <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] flex-shrink-0">
+              <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                {post.author_image ? (
+                  <img src={post.author_image} alt={post.author_name} className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center text-white font-bold text-lg">
+                    {post.author_name.charAt(0)}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="font-semibold text-gray-900 text-[15px] hover:text-[#3B82F6] hover:underline cursor-pointer">{post.author_name}</span>
                 {post.author_verified && (
-                  <Shield className="w-4 h-4 text-[#3B82F6] fill-[#3B82F6]/10" />
+                  <Shield className="w-4 h-4 text-[#3B82F6] fill-[#3B82F6]/20" />
                 )}
                 {getTypeBadge(post.author_type)}
               </div>
@@ -131,19 +161,60 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 )}
               </div>
             </div>
-            <button className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0">
-              <MoreHorizontal className="w-5 h-5" />
-            </button>
+
+            {/* 3-dot menu - WORKING dropdown */}
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+              >
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
+
+              {menuOpen && (
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-gray-200 py-1 z-30 animate-fade-in">
+                  <button
+                    onClick={() => { setMenuOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5"
+                  >
+                    <Bookmark className="w-4 h-4" />
+                    Save post
+                  </button>
+                  <button
+                    onClick={() => { setMenuOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5"
+                  >
+                    <Flag className="w-4 h-4" />
+                    Report post
+                  </button>
+                  {onDelete && (
+                    <>
+                      <div className="border-t border-gray-100 my-1" />
+                      <button
+                        onClick={() => {
+                          onDelete(post.id);
+                          setMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2.5"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete post
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Content */}
         <div className="px-4 pt-3 pb-2">
-          <p className="text-gray-800 text-[15px] leading-relaxed whitespace-pre-wrap">
+          <p className="text-gray-800 text-[15px] leading-[1.65] whitespace-pre-wrap">
             {contentTruncated ? `${post.content.substring(0, 280)}...` : post.content}
           </p>
           {post.content.length > 280 && !expanded && (
-            <button onClick={() => setExpanded(true)} className="text-gray-500 hover:text-[#3B82F6] text-sm font-medium mt-1">
+            <button onClick={() => setExpanded(true)} className="text-[#3B82F6] hover:text-[#2563EB] text-sm font-semibold mt-1">
               ...see more
             </button>
           )}
@@ -161,14 +232,15 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </div>
         )}
 
-        {/* YouTube Embed */}
+        {/* YouTube Embed - ACTUAL VIDEO PLAYER */}
         {videoId && (
-          <div className="mt-2">
-            <div className="video-embed-container mx-0">
+          <div className="mt-2 mx-4 mb-2">
+            <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px' }}>
               <iframe
-                src={`https://www.youtube.com/embed/${videoId}`}
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0, borderRadius: '12px' }}
+                src={`https://www.youtube.com/embed/${videoId}?rel=0`}
                 title="YouTube video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
               />
             </div>
@@ -181,16 +253,16 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             href={post.link_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="block mt-2 border-t border-b border-gray-200 hover:bg-gray-50 transition-colors"
+            className="block mx-4 mt-2 mb-2 rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
           >
             <div className="flex">
               {post.link_image && (
-                <div className="w-32 sm:w-48 flex-shrink-0">
+                <div className="w-32 sm:w-48 flex-shrink-0 bg-gray-100">
                   <img src={post.link_image} alt="" className="w-full h-full object-cover" />
                 </div>
               )}
               <div className="flex-1 p-3 min-w-0">
-                <p className="text-xs text-gray-500 uppercase tracking-wide">{getDomain(post.link_url)}</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">{getDomain(post.link_url)}</p>
                 {post.link_title && (
                   <p className="font-semibold text-gray-900 text-sm mt-1 line-clamp-2">{post.link_title}</p>
                 )}
@@ -209,28 +281,28 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         {(likesCount > 0 || totalComments > 0) && (
           <div className="px-4 py-2 flex items-center justify-between text-xs text-gray-500">
             {likesCount > 0 && (
-              <div className="flex items-center gap-1">
-                <div className="w-4 h-4 bg-[#3B82F6] rounded-full flex items-center justify-center">
-                  <ThumbsUp className="w-2.5 h-2.5 text-white" />
+              <div className="flex items-center gap-1.5">
+                <div className="w-5 h-5 bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] rounded-full flex items-center justify-center">
+                  <ThumbsUp className="w-3 h-3 text-white" />
                 </div>
-                <span>{likesCount}</span>
+                <span className="font-medium">{likesCount}</span>
               </div>
             )}
             {totalComments > 0 && (
-              <button onClick={() => setShowComments(!showComments)} className="hover:text-[#3B82F6] hover:underline">
+              <button onClick={() => setShowComments(!showComments)} className="hover:text-[#3B82F6] hover:underline font-medium">
                 {totalComments} comment{totalComments !== 1 ? 's' : ''}
               </button>
             )}
           </div>
         )}
 
-        {/* Action Bar - LinkedIn style */}
-        <div className="px-2 border-t border-gray-200">
+        {/* Action Bar */}
+        <div className="px-2 border-t border-gray-100">
           <div className="flex items-center">
             <button
               onClick={handleLike}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium rounded-lg transition-colors ${
-                liked ? 'text-[#3B82F6]' : 'text-gray-600 hover:bg-gray-100'
+              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold rounded-lg transition-all ${
+                liked ? 'text-[#3B82F6]' : 'text-gray-500 hover:bg-gray-50'
               }`}
             >
               <ThumbsUp className={`w-5 h-5 ${liked ? 'fill-[#3B82F6]' : ''}`} />
@@ -239,13 +311,13 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
             <button
               onClick={() => setShowComments(!showComments)}
-              className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 rounded-lg transition-all"
             >
               <MessageCircle className="w-5 h-5" />
               <span className="hidden sm:inline">Comment</span>
             </button>
 
-            <button className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+            <button className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 rounded-lg transition-all">
               <Share2 className="w-5 h-5" />
               <span className="hidden sm:inline">Share</span>
             </button>
@@ -257,8 +329,10 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           <div className="px-4 pb-4 border-t border-gray-100">
             {/* Comment input */}
             <div className="flex gap-2 pt-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#1E3A5F] to-[#2d5a8e] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                Y
+              <div className="w-8 h-8 rounded-full p-[1.5px] bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] flex-shrink-0">
+                <div className="w-full h-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  Y
+                </div>
               </div>
               <div className="flex-1 flex gap-2">
                 <input
@@ -267,7 +341,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
                   placeholder="Add a comment..."
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-full text-sm focus:ring-1 focus:ring-[#3B82F6] focus:border-[#3B82F6] outline-none bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-gray-200 rounded-full text-sm focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none bg-gray-50 hover:bg-white transition-colors"
                 />
                 {commentText.trim() && (
                   <button
@@ -285,14 +359,14 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               <div className="mt-3 space-y-3">
                 {comments.map(comment => (
                   <div key={comment.id} className="flex gap-2">
-                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
+                    <div className="w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 overflow-hidden">
                       {comment.author_image ? (
                         <img src={comment.author_image} alt={comment.author_name} className="w-8 h-8 rounded-full object-cover" />
                       ) : (
                         comment.author_name.charAt(0)
                       )}
                     </div>
-                    <div className="bg-gray-50 rounded-2xl px-3 py-2 flex-1">
+                    <div className="bg-gray-50 rounded-2xl px-4 py-2.5 flex-1">
                       <span className="text-sm font-semibold text-gray-900">{comment.author_name}</span>
                       <p className="text-sm text-gray-700 leading-relaxed">{comment.content}</p>
                     </div>
@@ -307,13 +381,13 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       {/* Image Lightbox */}
       {imageExpanded && post.image_url && (
         <div
-          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 cursor-pointer"
+          className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 cursor-pointer backdrop-blur-sm"
           onClick={() => setImageExpanded(false)}
         >
           <img
             src={post.image_url}
             alt="Post attachment"
-            className="max-w-full max-h-full object-contain rounded-lg"
+            className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
           />
         </div>
       )}
