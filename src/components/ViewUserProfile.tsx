@@ -1,6 +1,7 @@
 import React from 'react';
-import { ArrowLeft, MapPin, Briefcase, Shield, Globe, Users, MessageSquare, Award, Calendar } from 'lucide-react';
+import { ArrowLeft, MapPin, Briefcase, Shield, Globe, Users, MessageSquare, Award, Calendar, Clock, Sparkles } from 'lucide-react';
 import ConnectionButton from './ConnectionButton';
+import { computeVerificationTier, getVerificationBadgeInfo } from '@/lib/verification';
 import type { ViewableUser } from '@/types';
 
 const normalizeUrl = (url: string) => url.match(/^https?:\/\//) ? url : `https://${url}`;
@@ -176,6 +177,52 @@ const ViewUserProfile: React.FC<ViewUserProfileProps> = ({ user, onBack, onNavig
               </div>
             </div>
 
+            {/* Dispatcher Experience Section */}
+            {user.userType === 'dispatcher' && (user.yearsExperience !== undefined || (user.specialties && user.specialties.length > 0)) && (
+              <div>
+                <h3 className="font-semibold text-[#1E3A5F] mb-3 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Dispatch Experience
+                </h3>
+                <div className="space-y-3">
+                  {user.yearsExperience !== undefined && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <span className="text-gray-500 w-24">Experience</span>
+                      <span className="text-gray-800 font-medium">
+                        {user.yearsExperience === 0 ? 'Less than 1 year' : `${user.yearsExperience}+ years`}
+                      </span>
+                    </div>
+                  )}
+                  {user.specialties && user.specialties.length > 0 && (
+                    <div className="flex items-start gap-3 text-sm">
+                      <span className="text-gray-500 w-24 pt-0.5">Specialties</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {user.specialties.map(s => (
+                          <span key={s} className="px-2 py-0.5 bg-[#1E3A5F]/5 text-[#1E3A5F] text-xs font-medium rounded-lg">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {user.carriersWorkedWith && user.carriersWorkedWith.length > 0 && (
+                    <div className="flex items-start gap-3 text-sm">
+                      <span className="text-gray-500 w-24 pt-0.5">Carriers</span>
+                      <div className="space-y-1">
+                        {user.carriersWorkedWith.map((c, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <span className="text-gray-800">{c.carrierName}</span>
+                            <span className="text-xs text-gray-400">{c.mcNumber}</span>
+                            {c.verified && <Shield className="w-3 h-3 text-emerald-500" />}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {user.bio && (
               <div>
                 <h3 className="font-semibold text-[#1E3A5F] mb-3 flex items-center gap-2">
@@ -198,6 +245,16 @@ const ViewUserProfile: React.FC<ViewUserProfileProps> = ({ user, onBack, onNavig
                     Verified Member
                   </span>
                 )}
+                {user.userType === 'dispatcher' && (() => {
+                  const tier = user.verificationTier || computeVerificationTier(user);
+                  const badge = getVerificationBadgeInfo(tier);
+                  return (
+                    <span className={`px-3 py-1.5 ${badge.bgColor} ${badge.textColor} rounded-full text-xs font-semibold flex items-center gap-1.5 border ${badge.borderColor}`}>
+                      {tier === 'carrierscout_verified' ? <Sparkles className="w-3.5 h-3.5" /> : <Shield className="w-3.5 h-3.5" />}
+                      {badge.label}
+                    </span>
+                  );
+                })()}
                 <span className="px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1.5 border border-green-100">
                   <Calendar className="w-3.5 h-3.5" />
                   New Member

@@ -208,6 +208,11 @@ export interface ViewableUser {
   location?: string;
   website?: string;
   coverImage?: string;
+  yearsExperience?: number;
+  specialties?: string[];
+  carriersWorkedWith?: { carrierName: string; mcNumber: string; verified: boolean }[];
+  carrierScoutSubscribed?: boolean;
+  verificationTier?: 'carrierscout_verified' | 'experience_verified' | 'beginner' | 'unverified';
 }
 
 // CarrierScout Invitation

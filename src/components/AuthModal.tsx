@@ -10,7 +10,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) => {
-  const { setCurrentUser } = useAppContext();
+  const { setCurrentUser, registerUser } = useAppContext();
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [userType, setUserType] = useState<'dispatcher' | 'carrier' | 'broker'>('dispatcher');
   const [showPassword, setShowPassword] = useState(false);
@@ -61,14 +61,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
         // Demo mode: simulate account creation
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        setCurrentUser({
+        const newUser = {
           id: `user-${Date.now()}`,
           name: `${formData.firstName} ${formData.lastName}`,
           email: formData.email,
           company: formData.companyName,
           userType,
-          verified: true,
-        });
+          verified: false,
+          yearsExperience: undefined as number | undefined,
+          specialties: [] as string[],
+          carriersWorkedWith: [] as { carrierName: string; mcNumber: string; verified: boolean }[],
+          carrierScoutSubscribed: false,
+          ...(userType === 'carrier' ? { mcNumber: formData.mcNumber, dotNumber: formData.dotNumber } : {}),
+        };
+        setCurrentUser(newUser);
+        registerUser(newUser);
         setSuccess(true);
 
         subscribeToMailchimp({

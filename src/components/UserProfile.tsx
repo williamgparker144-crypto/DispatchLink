@@ -2,11 +2,24 @@ import React, { useState, useRef } from 'react';
 import {
   Camera, Edit3, MapPin, Briefcase, Shield, Users, MessageSquare, Eye, X, Check,
   ImageIcon, Globe, Link2, Palette, Upload, FileText, Heart, Share2, Bookmark,
-  Award, Star, Calendar, Mail, Sparkles
+  Award, Star, Calendar, Mail, Sparkles, Clock, Plus, Trash2
 } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
+import type { CarrierReference } from '@/contexts/AppContext';
+import { computeVerificationTier, getVerificationBadgeInfo } from '@/lib/verification';
 import PostCard from './PostCard';
 import type { Post, ViewableUser } from '@/types';
+
+const SPECIALTY_OPTIONS = ['Flatbed', 'Reefer', 'Dry Van', 'Hazmat', 'Tanker', 'Heavy Haul', 'Auto Transport', 'LTL', 'Expedited'];
+const EXPERIENCE_OPTIONS = [
+  { value: 0, label: 'Less than 1 year' },
+  { value: 1, label: '1 year' },
+  { value: 2, label: '2 years' },
+  { value: 3, label: '3 years' },
+  { value: 5, label: '5 years' },
+  { value: 7, label: '7+ years' },
+  { value: 10, label: '10+ years' },
+];
 
 const normalizeUrl = (url: string) => url.match(/^https?:\/\//) ? url : `https://${url}`;
 
@@ -46,6 +59,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
   const [editBio, setEditBio] = useState(currentUser?.bio || '');
   const [editLocation, setEditLocation] = useState(currentUser?.location || '');
   const [editWebsite, setEditWebsite] = useState(currentUser?.website || '');
+
+  // Experience questionnaire state (dispatcher only)
+  const [editYearsExperience, setEditYearsExperience] = useState<number>(currentUser?.yearsExperience ?? 0);
+  const [editSpecialties, setEditSpecialties] = useState<string[]>(currentUser?.specialties ?? []);
+  const [editCarriers, setEditCarriers] = useState<CarrierReference[]>(currentUser?.carriersWorkedWith ?? []);
+  const [editCarrierScout, setEditCarrierScout] = useState(currentUser?.carrierScoutSubscribed ?? false);
+  const [newCarrierName, setNewCarrierName] = useState('');
+  const [newCarrierMC, setNewCarrierMC] = useState('');
 
   // Photo preview
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -152,14 +173,38 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
   };
 
   const handleSaveProfile = () => {
-    updateProfile({
+    const updates: Record<string, any> = {
       name: editName,
       company: editCompany,
       bio: editBio,
       location: editLocation,
       website: editWebsite,
-    });
+    };
+    if (currentUser?.userType === 'dispatcher') {
+      updates.yearsExperience = editYearsExperience;
+      updates.specialties = editSpecialties;
+      updates.carriersWorkedWith = editCarriers;
+      updates.carrierScoutSubscribed = editCarrierScout;
+    }
+    updateProfile(updates);
     setEditModalOpen(false);
+  };
+
+  const handleAddCarrier = () => {
+    if (!newCarrierName.trim() || !newCarrierMC.trim()) return;
+    setEditCarriers(prev => [...prev, { carrierName: newCarrierName.trim(), mcNumber: newCarrierMC.trim().toUpperCase(), verified: false }]);
+    setNewCarrierName('');
+    setNewCarrierMC('');
+  };
+
+  const handleRemoveCarrier = (index: number) => {
+    setEditCarriers(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const toggleEditSpecialty = (specialty: string) => {
+    setEditSpecialties(prev =>
+      prev.includes(specialty) ? prev.filter(s => s !== specialty) : [...prev, specialty]
+    );
   };
 
   const handleCreatePost = () => {
@@ -343,6 +388,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                     setEditBio(currentUser.bio || '');
                     setEditLocation(currentUser.location || '');
                     setEditWebsite(currentUser.website || '');
+                    setEditYearsExperience(currentUser.yearsExperience ?? 0);
+                    setEditSpecialties(currentUser.specialties ?? []);
+                    setEditCarriers(currentUser.carriersWorkedWith ?? []);
+                    setEditCarrierScout(currentUser.carrierScoutSubscribed ?? false);
+                    setNewCarrierName('');
+                    setNewCarrierMC('');
                     setEditModalOpen(true);
                   }}
                   className="flex items-center gap-2 px-5 py-2.5 btn-glossy-outline rounded-xl text-sm transition-all flex-shrink-0"
@@ -471,6 +522,52 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                 </div>
               )}
 
+              {/* Dispatcher Experience Section */}
+              {currentUser.userType === 'dispatcher' && (currentUser.yearsExperience !== undefined || (currentUser.specialties && currentUser.specialties.length > 0)) && (
+                <div>
+                  <h3 className="font-semibold text-[#1E3A5F] mb-3 flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    Dispatch Experience
+                  </h3>
+                  <div className="space-y-3">
+                    {currentUser.yearsExperience !== undefined && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <span className="text-gray-500 w-24">Experience</span>
+                        <span className="text-gray-800 font-medium">
+                          {currentUser.yearsExperience === 0 ? 'Less than 1 year' : `${currentUser.yearsExperience}+ years`}
+                        </span>
+                      </div>
+                    )}
+                    {currentUser.specialties && currentUser.specialties.length > 0 && (
+                      <div className="flex items-start gap-3 text-sm">
+                        <span className="text-gray-500 w-24 pt-0.5">Specialties</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {currentUser.specialties.map(s => (
+                            <span key={s} className="px-2 py-0.5 bg-[#1E3A5F]/5 text-[#1E3A5F] text-xs font-medium rounded-lg">
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {currentUser.carriersWorkedWith && currentUser.carriersWorkedWith.length > 0 && (
+                      <div className="flex items-start gap-3 text-sm">
+                        <span className="text-gray-500 w-24 pt-0.5">Carriers</span>
+                        <div className="space-y-1">
+                          {currentUser.carriersWorkedWith.map((c, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                              <span className="text-gray-800">{c.carrierName}</span>
+                              <span className="text-xs text-gray-400">{c.mcNumber}</span>
+                              {c.verified && <Shield className="w-3 h-3 text-emerald-500" />}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <h3 className="font-semibold text-[#1E3A5F] mb-3 flex items-center gap-2">
                   <Award className="w-4 h-4" />
@@ -483,6 +580,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                       Verified Member
                     </span>
                   )}
+                  {currentUser.userType === 'dispatcher' && (() => {
+                    const tier = computeVerificationTier(currentUser);
+                    const badge = getVerificationBadgeInfo(tier);
+                    return (
+                      <span className={`px-3 py-1.5 ${badge.bgColor} ${badge.textColor} rounded-full text-xs font-semibold flex items-center gap-1.5 border ${badge.borderColor}`}>
+                        <Shield className="w-3.5 h-3.5" />
+                        {badge.label}
+                      </span>
+                    );
+                  })()}
                   <span className="px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1.5 border border-green-100">
                     <Calendar className="w-3.5 h-3.5" />
                     New Member
@@ -501,6 +608,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                       setEditBio(currentUser.bio || '');
                       setEditLocation(currentUser.location || '');
                       setEditWebsite(currentUser.website || '');
+                      setEditYearsExperience(currentUser.yearsExperience ?? 0);
+                      setEditSpecialties(currentUser.specialties ?? []);
+                      setEditCarriers(currentUser.carriersWorkedWith ?? []);
+                      setEditCarrierScout(currentUser.carrierScoutSubscribed ?? false);
+                      setNewCarrierName('');
+                      setNewCarrierMC('');
                       setEditModalOpen(true);
                     }}
                     className="px-4 py-2 btn-glossy-primary rounded-lg text-sm transition-all"
@@ -685,6 +798,105 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none resize-none"
                   />
                 </div>
+
+                {/* Dispatcher Experience Questionnaire */}
+                {currentUser.userType === 'dispatcher' && (
+                  <>
+                    <div className="pt-2 border-t border-gray-100">
+                      <h3 className="text-sm font-bold text-[#1E3A5F] mb-3 flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        Dispatch Experience
+                      </h3>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Years of Experience</label>
+                      <select
+                        value={editYearsExperience}
+                        onChange={(e) => setEditYearsExperience(Number(e.target.value))}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none bg-white"
+                      >
+                        {EXPERIENCE_OPTIONS.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Specialties</label>
+                      <div className="flex flex-wrap gap-2">
+                        {SPECIALTY_OPTIONS.map(s => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => toggleEditSpecialty(s)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                              editSpecialties.includes(s)
+                                ? 'bg-[#3B82F6] text-white'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }`}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Carriers Worked With</label>
+                      {editCarriers.length > 0 && (
+                        <div className="space-y-2 mb-3">
+                          {editCarriers.map((c, i) => (
+                            <div key={i} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                              <span className="text-sm text-gray-800 flex-1">{c.carrierName}</span>
+                              <span className="text-xs text-gray-500">{c.mcNumber}</span>
+                              <button type="button" onClick={() => handleRemoveCarrier(i)} className="text-red-400 hover:text-red-600">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={newCarrierName}
+                          onChange={(e) => setNewCarrierName(e.target.value)}
+                          placeholder="Carrier name"
+                          className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none"
+                        />
+                        <input
+                          type="text"
+                          value={newCarrierMC}
+                          onChange={(e) => setNewCarrierMC(e.target.value)}
+                          placeholder="MC#"
+                          className="w-28 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddCarrier}
+                          className="px-3 py-2 bg-[#1E3A5F] text-white rounded-lg hover:bg-[#1E3A5F]/80 transition-colors"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="text-sm font-semibold text-gray-700">CarrierScout Subscription</label>
+                        <p className="text-xs text-gray-400">Enables premium verification tier</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setEditCarrierScout(!editCarrierScout)}
+                        className={`relative w-11 h-6 rounded-full transition-colors ${editCarrierScout ? 'bg-[#10B981]' : 'bg-gray-300'}`}
+                      >
+                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${editCarrierScout ? 'translate-x-5' : ''}`} />
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="flex gap-3 mt-6">

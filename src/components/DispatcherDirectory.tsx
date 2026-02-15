@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Search, SlidersHorizontal, Grid, List, X } from 'lucide-react';
 import DispatcherCard from './DispatcherCard';
-
-const sampleDispatchers: any[] = [];
+import { useAppContext } from '@/contexts/AppContext';
+import { computeVerificationTier, crossReferenceCarriers } from '@/lib/verification';
 
 const specialtyOptions = ['Flatbed', 'Reefer', 'Dry Van', 'Hazmat', 'Tanker', 'Heavy Haul', 'Auto Transport', 'LTL', 'Expedited'];
 
@@ -12,23 +12,59 @@ interface DispatcherDirectoryProps {
 }
 
 const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile, onContact }) => {
+  const { registeredUsers } = useAppContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
-  const tierFilter = 'all';
   const [sortBy, setSortBy] = useState<'rating' | 'experience' | 'reviews'>('rating');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+  const [experienceFilter, setExperienceFilter] = useState<'all' | 'beginner' | 'intermediate' | 'experienced'>('all');
+  const [verificationFilter, setVerificationFilter] = useState<'all' | 'verified' | 'beginners'>('all');
+
+  // Build set of registered carrier MC#s for cross-referencing
+  const registeredCarrierMCs = useMemo(() => {
+    const mcs = new Set<string>();
+    registeredUsers.forEach(u => {
+      if (u.userType === 'carrier' && u.mcNumber) {
+        mcs.add(u.mcNumber.toUpperCase());
+      }
+    });
+    return mcs;
+  }, [registeredUsers]);
 
   const filteredDispatchers = useMemo(() => {
-    let results = [...sampleDispatchers];
+    // Only show dispatchers
+    let dispatchers = registeredUsers.filter(u => u.userType === 'dispatcher');
+
+    // Map to the shape DispatcherCard expects, with cross-referenced carriers
+    let results = dispatchers.map(d => {
+      const carriers = d.carriersWorkedWith
+        ? crossReferenceCarriers(d.carriersWorkedWith, registeredCarrierMCs)
+        : [];
+      const enriched = { ...d, carriersWorkedWith: carriers };
+      const tier = computeVerificationTier(enriched);
+      return {
+        id: d.id,
+        name: d.name,
+        company: d.company,
+        image: d.image || '',
+        rating: 0,
+        reviews: 0,
+        experience: d.yearsExperience ?? 0,
+        specialties: d.specialties || [],
+        tier: (d.carrierScoutSubscribed ? 'premier' : 'basic') as 'basic' | 'premier',
+        verified: d.verified,
+        verificationTier: tier,
+      };
+    });
 
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      results = results.filter(d => 
+      results = results.filter(d =>
         d.name.toLowerCase().includes(query) ||
         d.company.toLowerCase().includes(query) ||
-        d.specialties.some(s => s.toLowerCase().includes(query))
+        d.specialties.some((s: string) => s.toLowerCase().includes(query))
       );
     }
 
@@ -39,9 +75,27 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
       );
     }
 
-    // Tier filter
-    if (tierFilter !== 'all') {
-      results = results.filter(d => d.tier === tierFilter);
+    // Experience level filter
+    if (experienceFilter !== 'all') {
+      results = results.filter(d => {
+        switch (experienceFilter) {
+          case 'beginner': return d.experience <= 1;
+          case 'intermediate': return d.experience >= 2 && d.experience <= 4;
+          case 'experienced': return d.experience >= 5;
+          default: return true;
+        }
+      });
+    }
+
+    // Verification filter
+    if (verificationFilter !== 'all') {
+      results = results.filter(d => {
+        switch (verificationFilter) {
+          case 'verified': return d.verificationTier === 'carrierscout_verified' || d.verificationTier === 'experience_verified';
+          case 'beginners': return d.verificationTier === 'beginner';
+          default: return true;
+        }
+      });
     }
 
     // Sort
@@ -59,7 +113,7 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
     });
 
     return results;
-  }, [searchQuery, selectedSpecialties, sortBy]);
+  }, [registeredUsers, registeredCarrierMCs, searchQuery, selectedSpecialties, sortBy, experienceFilter, verificationFilter]);
 
   const toggleSpecialty = (specialty: string) => {
     setSelectedSpecialties(prev =>
@@ -68,6 +122,8 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
         : [...prev, specialty]
     );
   };
+
+  const hasActiveFilters = selectedSpecialties.length > 0 || experienceFilter !== 'all' || verificationFilter !== 'all';
 
   return (
     <section className="py-12 page-bg min-h-screen">
@@ -103,9 +159,9 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
               >
                 <SlidersHorizontal className="w-5 h-5" />
                 Filters
-                {selectedSpecialties.length > 0 && (
+                {hasActiveFilters && (
                   <span className="bg-[#3B82F6] text-white text-xs px-2 py-0.5 rounded-full">
-                    {selectedSpecialties.length}
+                    {selectedSpecialties.length + (experienceFilter !== 'all' ? 1 : 0) + (verificationFilter !== 'all' ? 1 : 0)}
                   </span>
                 )}
               </button>
@@ -140,7 +196,7 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
           {/* Expanded Filters */}
           {showFilters && (
             <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-3 gap-6">
                 {/* Specialty Filter */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Specialties</label>
@@ -161,14 +217,63 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
                   </div>
                 </div>
 
-                {/* Placeholder for future filters */}
+                {/* Experience Level Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Experience Level</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: 'all' as const, label: 'All Levels' },
+                      { value: 'beginner' as const, label: 'Beginner (0-1 yr)' },
+                      { value: 'intermediate' as const, label: 'Intermediate (2-4 yr)' },
+                      { value: 'experienced' as const, label: 'Experienced (5+ yr)' },
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setExperienceFilter(opt.value)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                          experienceFilter === opt.value
+                            ? 'bg-[#1E3A5F] text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Verification Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Verification Status</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: 'all' as const, label: 'All' },
+                      { value: 'verified' as const, label: 'Verified Only' },
+                      { value: 'beginners' as const, label: 'Beginners Welcome' },
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setVerificationFilter(opt.value)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                          verificationFilter === opt.value
+                            ? 'bg-[#1E3A5F] text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Clear Filters */}
-              {selectedSpecialties.length > 0 && (
+              {hasActiveFilters && (
                 <button
                   onClick={() => {
                     setSelectedSpecialties([]);
+                    setExperienceFilter('all');
+                    setVerificationFilter('all');
                   }}
                   className="mt-4 flex items-center gap-2 text-sm text-[#3B82F6] hover:text-[#2563EB]"
                 >
@@ -187,8 +292,8 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
 
         {/* Dispatcher Grid */}
         <div className={`grid gap-6 ${
-          viewMode === 'grid' 
-            ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+          viewMode === 'grid'
+            ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
             : 'grid-cols-1'
         }`}>
           {filteredDispatchers.map((dispatcher) => (
@@ -208,11 +313,13 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
               <Search className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">No dispatchers found</h3>
-            <p className="text-gray-500 mb-4">No dispatchers found yet.</p>
+            <p className="text-gray-500 mb-4">Try adjusting your search or filters.</p>
             <button
               onClick={() => {
                 setSearchQuery('');
                 setSelectedSpecialties([]);
+                setExperienceFilter('all');
+                setVerificationFilter('all');
               }}
               className="px-4 py-2 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors"
             >

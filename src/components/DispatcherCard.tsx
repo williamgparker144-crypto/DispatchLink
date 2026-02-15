@@ -1,5 +1,6 @@
 import React from 'react';
-import { Star, MapPin, Clock, Shield, MessageCircle, ChevronRight } from 'lucide-react';
+import { Star, Clock, Shield, MessageCircle, ChevronRight, Sparkles } from 'lucide-react';
+import { getVerificationBadgeInfo, type VerificationTier } from '@/lib/verification';
 
 interface DispatcherCardProps {
   dispatcher: {
@@ -13,12 +14,23 @@ interface DispatcherCardProps {
     specialties: string[];
     tier: 'basic' | 'premier';
     verified: boolean;
+    verificationTier?: VerificationTier;
   };
   onViewProfile: (id: string) => void;
   onContact: (id: string) => void;
 }
 
 const DispatcherCard: React.FC<DispatcherCardProps> = ({ dispatcher, onViewProfile, onContact }) => {
+  const initials = dispatcher.name
+    .split(' ')
+    .map(n => n.charAt(0))
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const tier = dispatcher.verificationTier || 'unverified';
+  const badgeInfo = getVerificationBadgeInfo(tier);
+
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all group">
       {/* Header with Image */}
@@ -26,19 +38,35 @@ const DispatcherCard: React.FC<DispatcherCardProps> = ({ dispatcher, onViewProfi
         <div className="h-32 bg-gradient-to-r from-[#1E3A5F] to-[#1E3A5F]/80" />
         <div className="absolute -bottom-10 left-6">
           <div className="relative">
-            <img
-              src={dispatcher.image}
-              alt={dispatcher.name}
-              className="w-20 h-20 rounded-xl object-cover border-4 border-white shadow-lg"
-            />
-            {dispatcher.verified && (
-              <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
+            {dispatcher.image ? (
+              <img
+                src={dispatcher.image}
+                alt={dispatcher.name}
+                className="w-20 h-20 rounded-xl object-cover border-4 border-white shadow-lg"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-xl border-4 border-white shadow-lg bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center">
+                <span className="text-white font-bold text-xl">{initials}</span>
+              </div>
+            )}
+            {(tier === 'carrierscout_verified' || tier === 'experience_verified') && (
+              <div className={`absolute -bottom-1 -right-1 rounded-full p-1 ${
+                tier === 'carrierscout_verified' ? 'bg-emerald-500' : 'bg-blue-500'
+              }`}>
                 <Shield className="w-3 h-3 text-white" />
               </div>
             )}
           </div>
         </div>
-        {/* Verified badge */}
+
+        {/* Verification tier badge on header */}
+        <div className="absolute top-3 right-3">
+          <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${badgeInfo.bgColor} ${badgeInfo.textColor} border ${badgeInfo.borderColor} flex items-center gap-1`}>
+            {tier === 'carrierscout_verified' && <Sparkles className="w-3 h-3" />}
+            {tier === 'experience_verified' && <Shield className="w-3 h-3" />}
+            {badgeInfo.label}
+          </span>
+        </div>
       </div>
 
       {/* Content */}
@@ -50,17 +78,25 @@ const DispatcherCard: React.FC<DispatcherCardProps> = ({ dispatcher, onViewProfi
             </h3>
             <p className="text-sm text-gray-500">{dispatcher.company}</p>
           </div>
-          <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-            <span className="text-sm font-semibold text-yellow-700">{dispatcher.rating}</span>
-            <span className="text-xs text-gray-400">({dispatcher.reviews})</span>
-          </div>
+          {dispatcher.rating > 0 ? (
+            <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
+              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+              <span className="text-sm font-semibold text-yellow-700">{dispatcher.rating}</span>
+              <span className="text-xs text-gray-400">({dispatcher.reviews})</span>
+            </div>
+          ) : (
+            <span className="text-xs font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">New</span>
+          )}
         </div>
 
         {/* Experience */}
         <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
           <Clock className="w-4 h-4 text-gray-400" />
-          <span>{dispatcher.experience} years experience</span>
+          <span>
+            {dispatcher.experience === 0
+              ? 'Less than 1 year experience'
+              : `${dispatcher.experience} year${dispatcher.experience !== 1 ? 's' : ''} experience`}
+          </span>
         </div>
 
         {/* Specialties */}

@@ -29,6 +29,7 @@ import UserProfile from './UserProfile';
 import ViewUserProfile from './ViewUserProfile';
 import AdvertisingPage from './AdvertisingPage';
 import { useAppContext } from '@/contexts/AppContext';
+import { computeVerificationTier, crossReferenceCarriers } from '@/lib/verification';
 import type { ViewableUser } from '@/types';
 import { ArrowLeft, Shield, Search, Rocket } from 'lucide-react';
 
@@ -59,7 +60,7 @@ const PREMIUM_FEATURE_NAMES: Record<string, string> = {
 };
 
 const AppLayout: React.FC = () => {
-  const { currentUser } = useAppContext();
+  const { currentUser, registeredUsers } = useAppContext();
   const [currentView, setCurrentView] = useState('home');
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
@@ -100,7 +101,42 @@ const AppLayout: React.FC = () => {
   };
 
   const handleViewDispatcherProfile = (id: string) => {
-    console.log('View dispatcher profile:', id);
+    const user = registeredUsers.find(u => u.id === id);
+    if (!user) return;
+
+    // Cross-reference carriers for verification tier
+    const carrierMCs = new Set<string>();
+    registeredUsers.forEach(u => {
+      if (u.userType === 'carrier' && u.mcNumber) {
+        carrierMCs.add(u.mcNumber.toUpperCase());
+      }
+    });
+
+    const carriers = user.carriersWorkedWith
+      ? crossReferenceCarriers(user.carriersWorkedWith, carrierMCs)
+      : [];
+    const enriched = { ...user, carriersWorkedWith: carriers };
+    const tier = computeVerificationTier(enriched);
+
+    const viewable: ViewableUser = {
+      id: user.id,
+      name: user.name,
+      company: user.company,
+      userType: user.userType,
+      image: user.image,
+      verified: user.verified,
+      bio: user.bio,
+      location: user.location,
+      website: user.website,
+      coverImage: user.coverImage,
+      yearsExperience: user.yearsExperience,
+      specialties: user.specialties,
+      carriersWorkedWith: carriers,
+      carrierScoutSubscribed: user.carrierScoutSubscribed,
+      verificationTier: tier,
+    };
+
+    handleViewUserProfile(viewable);
   };
 
   const handleContactDispatcher = (id: string) => {
