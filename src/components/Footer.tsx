@@ -1,5 +1,5 @@
 import React from 'react';
-import { Truck, Mail, MapPin, Facebook, Twitter, Linkedin, Instagram, ExternalLink } from 'lucide-react';
+import { Truck, Mail, MapPin, Facebook, Linkedin, ExternalLink } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (view: string) => void;
@@ -14,28 +14,21 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
       { label: 'Find Dispatchers', action: () => onNavigate('dispatchers') },
       { label: 'Find Carriers', action: () => onNavigate('carriers') },
       { label: 'Brokers', action: () => onNavigate('brokers') },
-      { label: 'Connections', action: () => onNavigate('connections') },
+      { label: 'Verify DOT/MC', action: () => onNavigate('verify') },
     ],
     resources: [
       { label: 'Compliance Guide', action: () => onNavigate('compliance') },
       { label: 'Carrier Packets', action: () => onNavigate('packets') },
       { label: 'FMCSA Resources', href: 'https://www.fmcsa.dot.gov' },
-      { label: 'Help Center', action: () => onNavigate('help') },
-      { label: 'API Documentation', action: () => onNavigate('api') },
+      { label: 'Advertise', action: () => onNavigate('advertising') },
     ],
     company: [
-      { label: 'About Us', action: () => onNavigate('about') },
-      { label: 'Careers', action: () => onNavigate('careers') },
-      { label: 'Press', action: () => onNavigate('press') },
-      { label: 'Contact', action: () => onNavigate('contact') },
-      { label: 'Partners', action: () => onNavigate('partners') },
+      { label: 'CarrierScout', action: () => onNavigate('carrierscout') },
+      { label: 'Contact', href: 'mailto:support@dispatchlinkpro.com' },
     ],
     legal: [
-      { label: 'Terms of Service', action: () => onNavigate('terms') },
-      { label: 'Privacy Policy', action: () => onNavigate('privacy') },
-      { label: 'Cookie Policy', action: () => onNavigate('cookies') },
-      { label: 'GDPR', action: () => onNavigate('gdpr') },
-      { label: 'CCPA', action: () => onNavigate('ccpa') },
+      { label: 'Terms of Service', href: 'mailto:support@dispatchlinkpro.com?subject=Terms%20of%20Service%20Request' },
+      { label: 'Privacy Policy', href: 'mailto:support@dispatchlinkpro.com?subject=Privacy%20Policy%20Request' },
     ],
   };
 
@@ -74,17 +67,14 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
             {/* Social Links */}
             <div className="flex gap-3 mt-6">
-              <a href="#" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
-                <Facebook className="w-5 h-5" />
+              <a href="mailto:support@dispatchlinkpro.com" title="Email Us" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
+                <Mail className="w-5 h-5" />
               </a>
-              <a href="#" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
+              <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
                 <Linkedin className="w-5 h-5" />
               </a>
-              <a href="#" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
-                <Instagram className="w-5 h-5" />
+              <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
+                <Facebook className="w-5 h-5" />
               </a>
             </div>
           </div>
@@ -141,12 +131,21 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <ul className="space-y-2">
               {footerLinks.company.map((link, index) => (
                 <li key={index}>
-                  <button
-                    onClick={link.action}
-                    className="text-gray-400 hover:text-white transition-colors text-sm"
-                  >
-                    {link.label}
-                  </button>
+                  {'href' in link ? (
+                    <a
+                      href={link.href}
+                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <button
+                      onClick={link.action}
+                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                    >
+                      {link.label}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -158,12 +157,21 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <ul className="space-y-2">
               {footerLinks.legal.map((link, index) => (
                 <li key={index}>
-                  <button
-                    onClick={link.action}
-                    className="text-gray-400 hover:text-white transition-colors text-sm"
-                  >
-                    {link.label}
-                  </button>
+                  {'href' in link ? (
+                    <a
+                      href={link.href}
+                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <button
+                      onClick={link.action}
+                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                    >
+                      {link.label}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

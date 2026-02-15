@@ -182,7 +182,7 @@ const MessagesView: React.FC = () => {
                       <button
                         onClick={handleSendMessage}
                         disabled={!messageInput.trim()}
-                        className="px-4 py-2.5 bg-[#3B82F6] text-white rounded-xl hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2.5 btn-glossy-primary rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Send className="w-5 h-5" />
                       </button>

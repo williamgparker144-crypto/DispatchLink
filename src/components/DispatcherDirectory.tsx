@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, SlidersHorizontal, Grid, List, X } from 'lucide-react';
+import { Search, SlidersHorizontal, Grid, List, X } from 'lucide-react';
 import DispatcherCard from './DispatcherCard';
 
 const sampleDispatchers: any[] = [];
@@ -211,7 +211,6 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
             <p className="text-gray-500 mb-4">No dispatchers found yet.</p>
             <button
               onClick={() => {
-                setSearchQuery('');
                 setSearchQuery('');
                 setSelectedSpecialties([]);
               }}

@@ -45,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
   ];
 
   return (
-    <header className="bg-[#1E3A5F] text-white sticky top-0 z-50 shadow-lg border-b border-white/10">
+    <header className="bg-[#1E3A5F]/95 backdrop-blur-md text-white sticky top-0 z-50 shadow-lg shadow-[#1E3A5F]/20 border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -142,7 +142,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                     <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden animate-fade-in">
                       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                         <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
-                        <span className="text-xs text-[#3B82F6] font-medium cursor-pointer hover:underline">Mark all read</span>
+                        <span onClick={() => setNotificationsOpen(false)} className="text-xs text-[#3B82F6] font-medium cursor-pointer hover:underline">Mark all read</span>
                       </div>
                       <div className="py-8 text-center">
                         <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
@@ -241,7 +241,10 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                         )}
                       </button>
                       <button
-                        onClick={() => setUserMenuOpen(false)}
+                        onClick={() => {
+                          setCurrentView('profile');
+                          setUserMenuOpen(false);
+                        }}
                         className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                       >
                         <Settings className="w-4 h-4" />
