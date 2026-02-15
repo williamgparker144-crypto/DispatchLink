@@ -52,7 +52,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </div>
               <div>
                 <span className="text-xl font-bold">DispatchLink</span>
-                <span className="text-xs block text-gray-400">Trucking Network</span>
+                <span className="text-xs block text-gray-400">CarrierScout Logistics</span>
               </div>
             </div>
             <p className="text-gray-400 text-sm mb-6 max-w-xs">

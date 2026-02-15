@@ -62,7 +62,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
             </span>
             <div>
               <span className="text-xl font-bold">DispatchLink</span>
-              <span className="text-xs block text-gray-300">Trucking Network</span>
+              <span className="text-xs block text-gray-300">CarrierScout Logistics</span>
             </div>
           </div>
 
@@ -172,13 +172,18 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                     }}
                     className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/10 transition-colors ml-1"
                   >
-                    {/* Avatar with image support */}
-                    <div className="w-8 h-8 rounded-full bg-[#3B82F6] flex items-center justify-center overflow-hidden">
-                      {currentUser?.image ? (
-                        <img src={currentUser.image} alt={userName} className="w-8 h-8 rounded-full object-cover" />
-                      ) : (
-                        <span className="text-white text-sm font-bold">{userName.charAt(0)}</span>
-                      )}
+                    {/* Avatar - LinkedIn/Facebook style */}
+                    <div className="relative">
+                      <div className="avatar-ring-sm w-8 h-8">
+                        <div className="w-full h-full rounded-full bg-[#3B82F6] flex items-center justify-center overflow-hidden">
+                          {currentUser?.image ? (
+                            <img src={currentUser.image} alt={userName} className="w-full h-full rounded-full object-cover" />
+                          ) : (
+                            <span className="text-white text-sm font-bold">{userName.charAt(0)}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#10B981] border-[1.5px] border-[#1E3A5F] rounded-full"></div>
                     </div>
                     <span className="text-sm font-medium max-w-[100px] truncate">{userName}</span>
                   </button>
@@ -344,12 +349,15 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
               {isLoggedIn ? (
                 <>
                   <div className="px-4 py-2 text-sm text-gray-300 flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-[#3B82F6] flex items-center justify-center overflow-hidden">
-                      {currentUser?.image ? (
-                        <img src={currentUser.image} alt={userName} className="w-6 h-6 rounded-full object-cover" />
-                      ) : (
-                        <span className="text-white text-xs font-bold">{userName.charAt(0)}</span>
-                      )}
+                    <div className="relative">
+                      <div className="w-6 h-6 rounded-full bg-[#3B82F6] flex items-center justify-center overflow-hidden">
+                        {currentUser?.image ? (
+                          <img src={currentUser.image} alt={userName} className="w-6 h-6 rounded-full object-cover" />
+                        ) : (
+                          <span className="text-white text-xs font-bold">{userName.charAt(0)}</span>
+                        )}
+                      </div>
+                      <div className="absolute bottom-0 right-0 w-2 h-2 bg-[#10B981] border-[1.5px] border-[#1E3A5F] rounded-full"></div>
                     </div>
                     <span className="font-medium text-white">{userName}</span>
                   </div>

@@ -261,6 +261,49 @@
   animation: routeDash 3s linear infinite;
 }
 
+/* Page background gradient - subtle version of home page */
+.page-bg {
+  background: linear-gradient(180deg, #f0f4ff 0%, #f5f7fa 30%, #f8fafc 60%, #f0f4ff 100%);
+}
+
+/* LinkedIn/Facebook style avatar */
+.avatar-ring {
+  padding: 2px;
+  background: linear-gradient(135deg, #3B82F6, #10B981, #F59E0B);
+  border-radius: 50%;
+}
+
+.avatar-ring-sm {
+  padding: 1.5px;
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  border-radius: 50%;
+}
+
+/* Online status indicator */
+.avatar-online::after {
+  content: '';
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 12px;
+  height: 12px;
+  background: #10B981;
+  border: 2.5px solid white;
+  border-radius: 50%;
+}
+
+.avatar-online-sm::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background: #10B981;
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
 /* Feature card hover accent */
 .feature-card-hover {
   border-bottom: 3px solid transparent;

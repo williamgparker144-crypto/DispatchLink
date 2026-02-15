@@ -131,7 +131,7 @@ const AppLayout: React.FC = () => {
   const renderCarrierProfile = () => {
     if (!selectedCarrier) {
       return (
-        <div className="py-12 bg-gray-50 min-h-screen">
+        <div className="py-12 page-bg min-h-screen">
           <div className="max-w-4xl mx-auto px-4">
             <div className="text-center py-12">
               <p className="text-gray-500">Carrier not found</p>

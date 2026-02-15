@@ -130,7 +130,7 @@ const CarrierScoutPage: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white">
+    <div className="page-bg">
       {/* Hero */}
       <section className="relative bg-gradient-to-br from-[#1E3A5F] via-[#1E3A5F] to-emerald-700 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDE4YzEuNjU2IDAgMyAxLjM0NCAzIDNzLTEuMzQ0IDMtMyAzLTMtMS4zNDQtMy0zIDEuMzQ0LTMgMy0zeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />

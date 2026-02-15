@@ -130,17 +130,20 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete }) => {
         {/* Author Info */}
         <div className="p-4 pb-0">
           <div className="flex items-start gap-3">
-            {/* Avatar - 48px with gradient ring */}
-            <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] flex-shrink-0">
-              <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-                {post.author_image ? (
-                  <img src={post.author_image} alt={post.author_name} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center text-white font-bold text-lg">
-                    {post.author_name.charAt(0)}
-                  </div>
-                )}
+            {/* Avatar - LinkedIn/Facebook style with online indicator */}
+            <div className="relative flex-shrink-0">
+              <div className="avatar-ring w-12 h-12">
+                <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                  {post.author_image ? (
+                    <img src={post.author_image} alt={post.author_name} className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center text-white font-bold text-lg">
+                      {post.author_name.charAt(0)}
+                    </div>
+                  )}
+                </div>
               </div>
+              <div className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-[#10B981] border-2 border-white rounded-full"></div>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">

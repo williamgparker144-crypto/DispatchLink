@@ -14,15 +14,10 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
         background: 'radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 60% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 50%)',
       }} />
 
-      {/* Background Image Overlay */}
-      <div
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: `url('https://d64gsuwffb70l.cloudfront.net/6967ea24d7d2122c9a86ad94_1768418456859_777c5f8f.jpg')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      />
+      {/* Geometric mesh overlay */}
+      <div className="absolute inset-0 opacity-[0.04]" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+      }} />
 
       {/* Animated dot grid pattern */}
       <div className="absolute inset-0 dot-grid-bg opacity-30" />
@@ -47,7 +42,7 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
           <div className="text-white">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 animate-fade-in-up border border-white/10">
               <Shield className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm font-semibold text-cyan-300">Free Professional Network</span>
+              <span className="text-sm font-semibold text-cyan-300">CarrierScout Logistics</span>
             </div>
 
             <h1 className="text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[1.1] mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
@@ -79,8 +74,8 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
             {/* Trust Badges */}
             <div className="flex flex-wrap gap-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 bg-gradient-to-br from-green-500/30 to-emerald-500/20 rounded-xl flex items-center justify-center border border-green-500/20">
-                  <Shield className="w-5 h-5 text-green-400" />
+                <div className="w-11 h-11 bg-gradient-to-br from-[#10B981]/30 to-emerald-500/20 rounded-xl flex items-center justify-center border border-[#10B981]/30">
+                  <Shield className="w-5 h-5 text-[#10B981]" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white">DOT Verified</p>
@@ -88,8 +83,8 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 bg-gradient-to-br from-blue-500/30 to-cyan-500/20 rounded-xl flex items-center justify-center border border-blue-500/20">
-                  <Users className="w-5 h-5 text-blue-400" />
+                <div className="w-11 h-11 bg-gradient-to-br from-[#3B82F6]/30 to-cyan-500/20 rounded-xl flex items-center justify-center border border-[#3B82F6]/30">
+                  <Users className="w-5 h-5 text-[#3B82F6]" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white">Growing Network</p>
@@ -97,8 +92,8 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 bg-gradient-to-br from-[#8B5CF6]/30 to-purple-500/20 rounded-xl flex items-center justify-center border border-purple-500/20">
-                  <Handshake className="w-5 h-5 text-purple-400" />
+                <div className="w-11 h-11 bg-gradient-to-br from-[#F59E0B]/30 to-amber-500/20 rounded-xl flex items-center justify-center border border-[#F59E0B]/30">
+                  <Handshake className="w-5 h-5 text-[#F59E0B]" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white">100% Free</p>
@@ -170,15 +165,15 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore }) => {
 
               <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <p className="text-lg font-extrabold text-[#1E3A5F]">Dispatchers</p>
+                  <p className="text-lg font-extrabold text-[#3B82F6]">Dispatchers</p>
                   <p className="text-xs text-gray-400 font-medium">Growing Network</p>
                 </div>
                 <div>
-                  <p className="text-lg font-extrabold text-[#1E3A5F]">Carriers</p>
+                  <p className="text-lg font-extrabold text-[#10B981]">Carriers</p>
                   <p className="text-xs text-gray-400 font-medium">FMCSA Verified</p>
                 </div>
                 <div>
-                  <p className="text-lg font-extrabold bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] bg-clip-text text-transparent">Free</p>
+                  <p className="text-lg font-extrabold text-[#F59E0B]">Brokers</p>
                   <p className="text-xs text-gray-400 font-medium">Always Free</p>
                 </div>
               </div>

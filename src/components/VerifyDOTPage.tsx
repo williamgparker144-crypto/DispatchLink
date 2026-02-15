@@ -216,7 +216,7 @@ const VerifyDOTPage: React.FC = () => {
   const carrier = result?.carrier;
 
   return (
-    <div className="py-12 bg-gray-50 min-h-screen print:bg-white print:py-4">
+    <div className="py-12 page-bg min-h-screen print:bg-white print:py-4">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8 print:mb-4">

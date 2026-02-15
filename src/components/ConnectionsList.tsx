@@ -46,12 +46,17 @@ const ConnectionsList: React.FC = () => {
 
   const renderConnectionCard = (entry: ConnectionEntry, variant: 'connection' | 'pending' | 'sent') => (
     <div key={entry.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
-      <div className="w-14 h-14 bg-gradient-to-br from-[#1E3A5F] to-[#1E3A5F]/80 rounded-xl flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
-        {entry.image ? (
-          <img src={entry.image} alt={entry.name} className="w-14 h-14 rounded-xl object-cover" />
-        ) : (
-          entry.name.charAt(0)
-        )}
+      <div className="relative flex-shrink-0">
+        <div className="avatar-ring w-14 h-14">
+          <div className="w-full h-full rounded-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center text-white font-bold text-xl overflow-hidden">
+            {entry.image ? (
+              <img src={entry.image} alt={entry.name} className="w-full h-full rounded-full object-cover" />
+            ) : (
+              entry.name.charAt(0)
+            )}
+          </div>
+        </div>
+        <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-[#10B981] border-2 border-white rounded-full"></div>
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
@@ -79,7 +84,7 @@ const ConnectionsList: React.FC = () => {
   );
 
   return (
-    <section className="py-8 bg-gray-50 min-h-screen">
+    <section className="py-8 page-bg min-h-screen">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="mb-6">

@@ -83,7 +83,7 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen page-bg">
       {/* Dashboard Header */}
       <div className="bg-gradient-to-r from-[#1E3A5F] to-[#1E3A5F]/80 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

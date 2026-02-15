@@ -129,25 +129,33 @@ const FeaturesSection: React.FC = () => {
         </div>
 
         {/* Bottom CTA */}
-        <div className="mt-20 text-center animate-fade-in-up">
-          <div className="inline-flex flex-col sm:flex-row gap-6 items-center">
-            <img
-              src="https://d64gsuwffb70l.cloudfront.net/6967ea24d7d2122c9a86ad94_1768418545509_88fd7451.jpg"
-              alt="Platform Network"
-              className="w-full max-w-md rounded-2xl shadow-xl"
-            />
-            <div className="text-left max-w-md">
-              <h3 className="text-2xl font-bold text-[#1E3A5F] mb-4">
-                Your Professional Trucking Network
-              </h3>
-              <p className="text-gray-600 mb-4 leading-relaxed">
-                Build your network, share opportunities, and connect with verified professionals.
-                Your DispatchLink connections and verified badges carry over when premium features launch on CarrierScout.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1 bg-[#1E3A5F]/10 text-[#1E3A5F] rounded-full text-sm font-medium">Dispatchers</span>
-                <span className="px-3 py-1 bg-[#1E3A5F]/10 text-[#1E3A5F] rounded-full text-sm font-medium">Carriers</span>
-                <span className="px-3 py-1 bg-[#1E3A5F]/10 text-[#1E3A5F] rounded-full text-sm font-medium">Brokers</span>
+        <div className="mt-20 animate-fade-in-up">
+          <div className="relative bg-gradient-to-br from-[#1E3A5F] via-[#1E3A5F] to-[#2c5282] rounded-2xl p-8 lg:p-12 overflow-hidden">
+            <div className="absolute inset-0 opacity-10" style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }} />
+            <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-[#10B981]/20 to-[#3B82F6]/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-60 h-60 bg-gradient-to-br from-[#F59E0B]/10 to-[#8B5CF6]/10 rounded-full blur-3xl" />
+            <div className="relative flex flex-col lg:flex-row items-center gap-8">
+              <div className="flex-shrink-0 text-center">
+                <div className="w-24 h-24 mx-auto bg-gradient-to-br from-[#3B82F6] via-[#10B981] to-[#F59E0B] rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-500/30 mb-3">
+                  <span className="text-4xl font-black text-white">CS</span>
+                </div>
+                <p className="text-sm font-bold bg-gradient-to-r from-[#10B981] to-[#3B82F6] bg-clip-text text-transparent">CarrierScout Logistics</p>
+              </div>
+              <div className="text-center lg:text-left">
+                <h3 className="text-2xl lg:text-3xl font-bold text-white mb-3">
+                  Your Professional Trucking Network
+                </h3>
+                <p className="text-blue-200/80 mb-5 leading-relaxed max-w-lg">
+                  Build your network, share opportunities, and connect with verified professionals.
+                  Your DispatchLink connections and verified badges carry over when premium features launch on CarrierScout.
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+                  <span className="px-3 py-1.5 bg-[#3B82F6]/20 text-[#3B82F6] rounded-full text-sm font-semibold border border-[#3B82F6]/30">Dispatchers</span>
+                  <span className="px-3 py-1.5 bg-[#10B981]/20 text-[#10B981] rounded-full text-sm font-semibold border border-[#10B981]/30">Carriers</span>
+                  <span className="px-3 py-1.5 bg-[#F59E0B]/20 text-[#F59E0B] rounded-full text-sm font-semibold border border-[#F59E0B]/30">Brokers</span>
+                </div>
               </div>
             </div>
           </div>

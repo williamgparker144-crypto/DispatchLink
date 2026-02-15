@@ -153,20 +153,23 @@ const SocialFeed: React.FC = () => {
     <section className="py-6 min-h-screen" style={{ background: 'linear-gradient(180deg, #f0f4ff 0%, #f8fafc 40%, #f0f4ff 100%)' }}>
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
         {/* Post Composer */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 mb-5 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 mb-5">
           <div className="p-4">
             <div className="flex gap-3">
-              {/* User Avatar with gradient ring */}
-              <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] flex-shrink-0">
-                <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-                  {currentUser?.image ? (
-                    <img src={currentUser.image} alt={currentUser.name} className="w-full h-full rounded-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center text-white font-bold text-lg">
-                      {userInitial}
-                    </div>
-                  )}
+              {/* User Avatar - LinkedIn/Facebook style */}
+              <div className="relative flex-shrink-0">
+                <div className="avatar-ring w-12 h-12">
+                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                    {currentUser?.image ? (
+                      <img src={currentUser.image} alt={currentUser.name} className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center text-white font-bold text-lg">
+                        {userInitial}
+                      </div>
+                    )}
+                  </div>
                 </div>
+                <div className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-[#10B981] border-2 border-white rounded-full"></div>
               </div>
               <div className="flex-1">
                 <textarea
@@ -296,7 +299,7 @@ const SocialFeed: React.FC = () => {
           </div>
 
           {/* Bottom toolbar */}
-          <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between bg-gray-50/30">
+          <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between bg-gray-50/30 rounded-b-xl">
             <div className="flex items-center gap-1">
               <button
                 onClick={() => { setShowImageInput(!showImageInput); setShowVideoInput(false); setShowLinkInput(false); }}
