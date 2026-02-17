@@ -37,7 +37,7 @@ const DispatcherCard: React.FC<DispatcherCardProps> = ({ dispatcher, onViewProfi
       <div className="relative">
         <div className="h-32 bg-gradient-to-r from-[#1E3A5F] to-[#1E3A5F]/80" />
         <div className="absolute -bottom-10 left-6">
-          <div className="relative">
+          <div className="relative cursor-pointer" onClick={() => onViewProfile(dispatcher.id)}>
             {dispatcher.image ? (
               <img
                 src={dispatcher.image}
@@ -73,10 +73,18 @@ const DispatcherCard: React.FC<DispatcherCardProps> = ({ dispatcher, onViewProfi
       <div className="pt-12 p-6">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="font-bold text-[#1E3A5F] text-lg group-hover:text-[#3B82F6] transition-colors">
+            <h3
+              className="font-bold text-[#1E3A5F] text-lg group-hover:text-[#3B82F6] transition-colors cursor-pointer hover:underline"
+              onClick={() => onViewProfile(dispatcher.id)}
+            >
               {dispatcher.name}
             </h3>
-            <p className="text-sm text-gray-500">{dispatcher.company}</p>
+            <p
+              className="text-sm text-gray-500 cursor-pointer hover:underline"
+              onClick={() => onViewProfile(dispatcher.id)}
+            >
+              {dispatcher.company}
+            </p>
           </div>
           {dispatcher.rating > 0 ? (
             <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">

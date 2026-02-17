@@ -20,7 +20,7 @@ const faqs = [
   },
   {
     question: 'Is DispatchLink FMCSA compliant?',
-    answer: 'Yes, our platform is designed with FMCSA compliance in mind. We verify all carrier DOT and MC numbers, provide compliance resources and templates, and include broker authority disclaimers. However, users are responsible for maintaining their own regulatory compliance.',
+    answer: 'Yes, our platform is designed with FMCSA compliance in mind. We verify all carrier DOT and MC numbers against the FMCSA SAFER database, support dispatch agreement uploads between dispatchers and carriers, and provide compliance resources. Dispatchers operate as agents for carriers under written agreements, while brokers maintain their own FMCSA broker authority. Users are responsible for maintaining their own regulatory compliance.',
   },
   {
     question: 'Who can join DispatchLink?',

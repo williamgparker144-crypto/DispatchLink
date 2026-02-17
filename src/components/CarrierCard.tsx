@@ -29,7 +29,7 @@ const CarrierCard: React.FC<CarrierCardProps> = ({ carrier, onViewProfile, onReq
       <div className="relative">
         <div className="h-28 bg-gradient-to-r from-[#3B82F6] to-[#60A5FA]" />
         <div className="absolute -bottom-10 left-6">
-          <div className="relative">
+          <div className="relative cursor-pointer" onClick={() => onViewProfile(carrier.id)}>
             <img
               src={carrier.image}
               alt={carrier.company}
@@ -56,10 +56,18 @@ const CarrierCard: React.FC<CarrierCardProps> = ({ carrier, onViewProfile, onReq
       <div className="pt-12 p-6">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="font-bold text-[#1E3A5F] text-lg group-hover:text-[#3B82F6] transition-colors">
+            <h3
+              className="font-bold text-[#1E3A5F] text-lg group-hover:text-[#3B82F6] transition-colors cursor-pointer hover:underline"
+              onClick={() => onViewProfile(carrier.id)}
+            >
               {carrier.company}
             </h3>
-            <p className="text-sm text-gray-500">{carrier.name}</p>
+            <p
+              className="text-sm text-gray-500 cursor-pointer hover:underline"
+              onClick={() => onViewProfile(carrier.id)}
+            >
+              {carrier.name}
+            </p>
           </div>
           <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
             <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
@@ -112,7 +120,7 @@ const CarrierCard: React.FC<CarrierCardProps> = ({ carrier, onViewProfile, onReq
             View Profile
             <ChevronRight className="w-4 h-4" />
           </button>
-          <ConnectionButton status="none" onConnect={() => {}} size="sm" />
+          <ConnectionButton targetUserId={carrier.id} size="sm" />
         </div>
       </div>
     </div>

@@ -1,19 +1,73 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, SlidersHorizontal, Grid, List, X, MapPin } from 'lucide-react';
+import { Search, SlidersHorizontal, Grid, List, X, MapPin, Loader2 } from 'lucide-react';
 import BrokerCard from './BrokerCard';
-
-const sampleBrokers: any[] = [];
+import CarrierScoutIncentiveBanner from './CarrierScoutIncentiveBanner';
+import { getUsersByType } from '@/lib/api';
 
 const specialtyOptions = ['Heavy Haul', 'Reefer', 'Dry Van', 'Flatbed', 'Hazmat', 'Intermodal', 'Auto Transport', 'LTL'];
 const regionOptions = ['Nationwide', 'Northeast', 'Southeast', 'Midwest', 'Southwest', 'West Coast'];
 
-interface BrokerDirectoryProps {
-  initialSearchQuery?: string;
+interface BrokerItem {
+  id: string;
+  name: string;
+  company: string;
+  image?: string;
+  rating: number;
+  reviews: number;
+  mcNumber: string;
+  specialties: string[];
+  regions: string[];
+  verified: boolean;
+  yearsInBusiness: number;
 }
 
-const BrokerDirectory: React.FC<BrokerDirectoryProps> = ({ initialSearchQuery = '' }) => {
+interface BrokerDirectoryProps {
+  initialSearchQuery?: string;
+  onViewProfile?: (id: string) => void;
+  onVerifyBroker?: (dot: string, mc: string) => void;
+}
+
+const BrokerDirectory: React.FC<BrokerDirectoryProps> = ({ initialSearchQuery = '', onViewProfile, onVerifyBroker }) => {
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   useEffect(() => { setSearchQuery(initialSearchQuery); }, [initialSearchQuery]);
+  const [brokers, setBrokers] = useState<BrokerItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch brokers from Supabase on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getUsersByType('broker');
+        if (!cancelled && data) {
+          const mapped: BrokerItem[] = data.map((row: any) => {
+            const profile = Array.isArray(row.broker_profiles)
+              ? row.broker_profiles[0]
+              : row.broker_profiles;
+            return {
+              id: row.id,
+              name: `${row.first_name} ${row.last_name}`,
+              company: row.company_name || `${row.first_name} ${row.last_name}`,
+              image: row.profile_image_url || undefined,
+              rating: 0,
+              reviews: 0,
+              mcNumber: profile?.mc_number || '',
+              specialties: profile?.specialties || [],
+              regions: profile?.operating_regions || [],
+              verified: row.verified || false,
+              yearsInBusiness: 0,
+            };
+          });
+          setBrokers(mapped);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch brokers from Supabase:', err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'rating' | 'yearsInBusiness' | 'reviews'>('rating');
@@ -21,7 +75,7 @@ const BrokerDirectory: React.FC<BrokerDirectoryProps> = ({ initialSearchQuery = 
   const [showFilters, setShowFilters] = useState(false);
 
   const filteredBrokers = useMemo(() => {
-    let results = [...sampleBrokers];
+    let results = [...brokers];
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -55,7 +109,28 @@ const BrokerDirectory: React.FC<BrokerDirectoryProps> = ({ initialSearchQuery = 
     });
 
     return results;
-  }, [searchQuery, selectedSpecialties, selectedRegions, sortBy]);
+  }, [brokers, searchQuery, selectedSpecialties, selectedRegions, sortBy]);
+
+  const handleFMCSASearch = () => {
+    if (!searchQuery.trim() || !onVerifyBroker) return;
+    const digits = searchQuery.replace(/[^0-9]/g, '');
+    if (digits.length >= 7) {
+      onVerifyBroker(digits, '');
+    } else if (digits.length >= 4) {
+      onVerifyBroker('', digits);
+    } else if (searchQuery.trim()) {
+      onVerifyBroker('', '');
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      const digits = searchQuery.replace(/[^0-9]/g, '');
+      if (digits.length >= 4 && onVerifyBroker) {
+        handleFMCSASearch();
+      }
+    }
+  };
 
   const toggleSpecialty = (specialty: string) => {
     setSelectedSpecialties(prev =>
@@ -78,6 +153,11 @@ const BrokerDirectory: React.FC<BrokerDirectoryProps> = ({ initialSearchQuery = 
           <p className="text-gray-600">Browse verified freight brokers and connect with them directly</p>
         </div>
 
+        {/* Broker Incentive Banner */}
+        <div className="mb-6">
+          <CarrierScoutIncentiveBanner userType="broker" />
+        </div>
+
         {/* Search and Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6 glass-light">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -87,12 +167,22 @@ const BrokerDirectory: React.FC<BrokerDirectoryProps> = ({ initialSearchQuery = 
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
                 placeholder="Search by company, MC#, or specialty..."
                 className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
               />
             </div>
 
             <div className="flex gap-3">
+              {onVerifyBroker && searchQuery.trim() && (
+                <button
+                  onClick={handleFMCSASearch}
+                  className="flex items-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors whitespace-nowrap"
+                >
+                  <Search className="w-5 h-5" />
+                  Verify FMCSA
+                </button>
+              )}
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center gap-2 px-4 py-3 border rounded-lg transition-colors ${
@@ -191,7 +281,14 @@ const BrokerDirectory: React.FC<BrokerDirectoryProps> = ({ initialSearchQuery = 
         </div>
 
         <div className="mb-4 text-sm text-gray-600">
-          Showing {filteredBrokers.length} broker{filteredBrokers.length !== 1 ? 's' : ''}
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading brokers...
+            </span>
+          ) : (
+            `Showing ${filteredBrokers.length} broker${filteredBrokers.length !== 1 ? 's' : ''}`
+          )}
         </div>
 
         <div className={`grid gap-6 ${
@@ -203,12 +300,12 @@ const BrokerDirectory: React.FC<BrokerDirectoryProps> = ({ initialSearchQuery = 
             <BrokerCard
               key={broker.id}
               broker={broker}
-              onViewProfile={(id) => console.log('View broker profile:', id)}
+              onViewProfile={(id) => onViewProfile?.(id)}
             />
           ))}
         </div>
 
-        {filteredBrokers.length === 0 && (
+        {!loading && filteredBrokers.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="w-8 h-8 text-gray-400" />

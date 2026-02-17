@@ -1,86 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Megaphone, TrendingUp, Users, Target, BarChart3, DollarSign,
-  CheckCircle, ArrowRight, Mail, Eye, Zap, Shield, MapPin
+  CheckCircle, ArrowRight, Eye, Zap, Shield, MapPin, LogIn, UserPlus
 } from 'lucide-react';
 
 interface AdvertisingPageProps {
   onNavigate: (view: string) => void;
+  onOpenAdvertiserAuth?: (mode: 'login' | 'signup') => void;
 }
 
-const AdvertisingPage: React.FC<AdvertisingPageProps> = ({ onNavigate }) => {
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactName, setContactName] = useState('');
-  const [contactCompany, setContactCompany] = useState('');
-  const [selectedTier, setSelectedTier] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (contactEmail.trim() && contactName.trim()) {
-      setSubmitted(true);
-    }
-  };
-
-  const tiers = [
-    {
-      id: 'starter',
-      name: 'Feed Post',
-      price: '$1',
-      period: '/day',
-      description: 'Promoted post in the community feed. Appears alongside organic content.',
-      features: [
-        'Appears in user feeds',
-        'Branded "Sponsored" label',
-        'Like & comment enabled',
-        'Link to your website',
-        'Basic impression tracking',
-      ],
-      color: 'from-[#3B82F6] to-[#2563EB]',
-      borderColor: 'border-[#3B82F6]',
-      bgColor: 'bg-blue-50',
-      popular: false,
-    },
-    {
-      id: 'professional',
-      name: 'Directory Spotlight',
-      price: '$3',
-      period: '/day',
-      description: 'Featured listing at the top of carrier or dispatcher directories.',
-      features: [
-        'Top position in directory',
-        'Highlighted card with badge',
-        'Priority in search results',
-        'Company logo display',
-        'Click-through analytics',
-        'Target by region',
-      ],
-      color: 'from-[#F59E0B] to-[#D97706]',
-      borderColor: 'border-[#F59E0B]',
-      bgColor: 'bg-amber-50',
-      popular: true,
-    },
-    {
-      id: 'enterprise',
-      name: 'Premium Banner',
-      price: '$5',
-      period: '/day',
-      description: 'High-visibility banner placement across key pages of the platform.',
-      features: [
-        'Banner on Feed & Directory pages',
-        'Custom image creative',
-        'Click-through to any URL',
-        'Target by user type & region',
-        'Detailed performance dashboard',
-        'Priority support',
-      ],
-      color: 'from-[#1E3A5F] to-[#2c5282]',
-      borderColor: 'border-[#1E3A5F]',
-      bgColor: 'bg-slate-50',
-      popular: false,
-    },
-  ];
-
+const AdvertisingPage: React.FC<AdvertisingPageProps> = ({ onNavigate, onOpenAdvertiserAuth }) => {
   const stats = [
     { icon: Users, label: 'Active Users', value: 'Growing Community', desc: 'Dispatchers, carriers & brokers' },
     { icon: Eye, label: 'Feed Views', value: 'High Engagement', desc: 'Daily active feed impressions' },
@@ -107,21 +36,22 @@ const AdvertisingPage: React.FC<AdvertisingPageProps> = ({ onNavigate }) => {
           </h1>
           <p className="text-lg text-blue-200/90 max-w-2xl mx-auto mb-8 leading-relaxed">
             Put your business in front of verified dispatchers, carriers, and brokers.
-            Targeted advertising starting at just <strong className="text-white">$1.00/day</strong>.
+            Custom solutions for every budget.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-8 py-4 btn-glossy-primary rounded-xl text-lg transition-all hover:scale-105 inline-flex items-center justify-center gap-2"
+              onClick={() => onOpenAdvertiserAuth?.('signup')}
+              className="px-8 py-4 bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-white rounded-xl text-lg font-bold transition-all hover:scale-105 inline-flex items-center justify-center gap-2 shadow-lg"
             >
-              View Pricing
-              <ArrowRight className="w-5 h-5" />
+              <UserPlus className="w-5 h-5" />
+              Sign Up as Advertiser
             </button>
             <button
-              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-8 py-4 bg-white/10 text-white rounded-xl font-bold text-lg hover:bg-white/20 transition-all border border-white/20"
+              onClick={() => onOpenAdvertiserAuth?.('login')}
+              className="px-8 py-4 bg-white/10 text-white rounded-xl font-bold text-lg hover:bg-white/20 transition-all border border-white/20 inline-flex items-center justify-center gap-2"
             >
-              Contact Sales
+              <LogIn className="w-5 h-5" />
+              Sign In to Advertiser Portal
             </button>
           </div>
         </div>
@@ -159,9 +89,9 @@ const AdvertisingPage: React.FC<AdvertisingPageProps> = ({ onNavigate }) => {
             <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mb-4">
               <DollarSign className="w-6 h-6 text-[#F59E0B]" />
             </div>
-            <h3 className="font-bold text-[#1E3A5F] mb-2">Budget-Friendly</h3>
+            <h3 className="font-bold text-[#1E3A5F] mb-2">Flexible Pricing</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Start with as little as $1/day. No long-term contracts, no minimum spend. Scale up or pause anytime with full control over your budget.
+              We work with you to create a tailored advertising package that fits your budget. No long-term contracts. Scale up or pause anytime.
             </p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
@@ -175,72 +105,49 @@ const AdvertisingPage: React.FC<AdvertisingPageProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Pricing Tiers */}
+        {/* Custom Pricing Card */}
         <div id="pricing" className="mb-16 scroll-mt-8">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-extrabold text-[#1E3A5F] mb-3">Simple, Transparent Pricing</h2>
-            <p className="text-gray-600">No contracts. No hidden fees. Cancel anytime.</p>
+            <h2 className="text-2xl font-extrabold text-[#1E3A5F] mb-3">Custom Pricing</h2>
+            <p className="text-gray-600">Tailored packages designed for your business goals.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {tiers.map(tier => (
-              <div
-                key={tier.id}
-                className={`relative bg-white rounded-2xl border-2 ${
-                  selectedTier === tier.id ? tier.borderColor : 'border-gray-200'
-                } p-6 shadow-sm hover:shadow-lg transition-all cursor-pointer ${
-                  tier.popular ? 'ring-2 ring-[#F59E0B]/30' : ''
-                }`}
-                onClick={() => setSelectedTier(tier.id)}
-              >
-                {tier.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-white text-xs font-bold rounded-full shadow-md">
-                    Most Popular
-                  </div>
-                )}
-
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${tier.color} flex items-center justify-center mb-4 shadow-md`}>
-                  <Megaphone className="w-6 h-6 text-white" />
-                </div>
-
-                <h3 className="text-lg font-bold text-[#1E3A5F] mb-1">{tier.name}</h3>
-                <p className="text-sm text-gray-500 mb-4">{tier.description}</p>
-
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-4xl font-extrabold text-[#1E3A5F]">{tier.price}</span>
-                  <span className="text-gray-500 font-medium">{tier.period}</span>
-                </div>
-
-                <ul className="space-y-3 mb-6">
-                  {tier.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                      <CheckCircle className="w-4 h-4 text-[#10B981] mt-0.5 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedTier(tier.id);
-                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className={`w-full py-3 rounded-xl font-semibold transition-all text-sm ${
-                    tier.popular
-                      ? 'btn-glossy-primary'
-                      : 'btn-glossy-outline'
-                  }`}
-                >
-                  Get Started
-                </button>
+          <div className="max-w-lg mx-auto">
+            <div className="bg-white rounded-2xl border-2 border-[#F59E0B] p-8 shadow-lg ring-2 ring-[#F59E0B]/20">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F59E0B] to-[#D97706] flex items-center justify-center mb-5 shadow-md mx-auto">
+                <Megaphone className="w-8 h-8 text-white" />
               </div>
-            ))}
+              <h3 className="text-xl font-bold text-[#1E3A5F] text-center mb-2">Advertise on DispatchLink</h3>
+              <p className="text-gray-600 text-center text-sm mb-6 leading-relaxed">
+                Contact our team to discuss a tailored advertising package. We offer feed posts, directory spotlights, and banner placements with flexible pricing.
+              </p>
+              <ul className="space-y-3 mb-6">
+                {[
+                  'Promoted feed posts to your target audience',
+                  'Directory spotlight placements',
+                  'Banner ads across key pages',
+                  'User type & region targeting',
+                  'Real-time impression & click analytics',
+                  'Dedicated account support',
+                ].map((feature, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <CheckCircle className="w-4 h-4 text-[#10B981] mt-0.5 flex-shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => onOpenAdvertiserAuth?.('signup')}
+                className="w-full py-3 bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-white rounded-xl font-bold text-base transition-all hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                <UserPlus className="w-5 h-5" />
+                Get Started
+              </button>
+              <p className="text-center text-xs text-gray-400 mt-3">
+                No commitment required. Our team will reach out to discuss pricing.
+              </p>
+            </div>
           </div>
-
-          <p className="text-center text-xs text-gray-400 mt-4">
-            All prices in USD. Billed daily while active. You set your own daily budget and can pause or cancel at any time.
-          </p>
         </div>
 
         {/* Ad Formats */}
@@ -258,7 +165,7 @@ const AdvertisingPage: React.FC<AdvertisingPageProps> = ({ onNavigate }) => {
               </h3>
               <p className="text-sm text-gray-600 mb-4">
                 Your message appears directly in user feeds, styled like organic content with a subtle "Sponsored" label.
-                Users can like, comment, and engage with your post.
+                Users can engage with your post.
               </p>
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
                 <div className="flex items-center gap-2 mb-2">
@@ -324,109 +231,26 @@ const AdvertisingPage: React.FC<AdvertisingPageProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Contact / Get Started Form */}
+        {/* CTA Section */}
         <div id="contact" className="scroll-mt-8">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="bg-gradient-to-r from-[#1E3A5F] to-[#2c5282] p-6 text-white">
-              <h2 className="text-xl font-bold mb-1">Get Started with Advertising</h2>
-              <p className="text-sm text-blue-200">Fill out the form below and our team will reach out within 24 hours.</p>
-            </div>
-
-            <div className="p-6">
-              {submitted ? (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-8 h-8 text-green-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-[#1E3A5F] mb-2">Request Submitted</h3>
-                  <p className="text-gray-600 mb-2">
-                    We've received your advertising inquiry{selectedTier ? ` for the ${tiers.find(t => t.id === selectedTier)?.name} plan` : ''}.
-                  </p>
-                  <p className="text-sm text-gray-500 mb-6">Our advertising team will contact you at <strong>{contactEmail}</strong> within 24 hours.</p>
-                  <button
-                    onClick={() => onNavigate('feed')}
-                    className="px-6 py-3 btn-glossy-navy rounded-xl transition-all"
-                  >
-                    Back to Feed
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {selectedTier && (
-                    <div className="p-3 bg-blue-50 rounded-xl border border-blue-100 text-sm">
-                      <span className="font-semibold text-[#1E3A5F]">Selected plan: </span>
-                      <span className="text-gray-700">{tiers.find(t => t.id === selectedTier)?.name} — {tiers.find(t => t.id === selectedTier)?.price}{tiers.find(t => t.id === selectedTier)?.period}</span>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name *</label>
-                      <input
-                        type="text"
-                        value={contactName}
-                        onChange={(e) => setContactName(e.target.value)}
-                        placeholder="John Doe"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none text-sm"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Company Name</label>
-                      <input
-                        type="text"
-                        value={contactCompany}
-                        onChange={(e) => setContactCompany(e.target.value)}
-                        placeholder="Your Company LLC"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address *</label>
-                    <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input
-                        type="email"
-                        value={contactEmail}
-                        onChange={(e) => setContactEmail(e.target.value)}
-                        placeholder="you@company.com"
-                        className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none text-sm"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {!selectedTier && (
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Interested In</label>
-                      <select
-                        value={selectedTier}
-                        onChange={(e) => setSelectedTier(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none text-sm bg-white"
-                      >
-                        <option value="">Select a plan...</option>
-                        {tiers.map(t => (
-                          <option key={t.id} value={t.id}>{t.name} — {t.price}{t.period}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 btn-glossy-primary rounded-xl transition-all flex items-center justify-center gap-2 text-base"
-                  >
-                    <Megaphone className="w-5 h-5" />
-                    Submit Advertising Request
-                  </button>
-
-                  <p className="text-xs text-gray-400 text-center">
-                    By submitting, you agree to be contacted about DispatchLink advertising. No commitment required.
-                  </p>
-                </form>
-              )}
+          <div className="bg-gradient-to-r from-[#1E3A5F] to-[#2c5282] rounded-2xl p-8 text-center text-white">
+            <h2 className="text-2xl font-bold mb-2">Ready to Reach Trucking Professionals?</h2>
+            <p className="text-blue-200 mb-6 max-w-lg mx-auto text-sm">Create your advertiser account and start building campaigns. Our team will work with you to find the right pricing.</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => onOpenAdvertiserAuth?.('signup')}
+                className="px-8 py-3 bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-white rounded-xl font-bold transition-all hover:scale-105 inline-flex items-center justify-center gap-2 shadow-lg"
+              >
+                <UserPlus className="w-5 h-5" />
+                Sign Up as Advertiser
+              </button>
+              <button
+                onClick={() => onOpenAdvertiserAuth?.('login')}
+                className="px-8 py-3 bg-white/10 text-white rounded-xl font-bold hover:bg-white/20 transition-all border border-white/20 inline-flex items-center justify-center gap-2"
+              >
+                <LogIn className="w-5 h-5" />
+                Sign In to Portal
+              </button>
             </div>
           </div>
         </div>

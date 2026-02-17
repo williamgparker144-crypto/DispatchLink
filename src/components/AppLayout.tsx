@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import Hero from './Hero';
 import FeaturesSection from './FeaturesSection';
@@ -16,6 +16,7 @@ import MCPermissionModal from './MCPermissionModal';
 import VerifyDOTModal from './VerifyDOTModal';
 import VerifiedCarrierProfile from './VerifiedCarrierProfile';
 import VerifyDOTPage from './VerifyDOTPage';
+import SettingsPage from './SettingsPage';
 import CarrierRegistration from './CarrierRegistration';
 import DispatcherDashboard from './DispatcherDashboard';
 import SocialFeed from './SocialFeed';
@@ -27,9 +28,17 @@ import CarrierScoutPage from './CarrierScoutPage';
 import InviteToCarrierScout from './InviteToCarrierScout';
 import UserProfile from './UserProfile';
 import ViewUserProfile from './ViewUserProfile';
+import BrowseNetworkPage from './BrowseNetworkPage';
 import AdvertisingPage from './AdvertisingPage';
+import AdvertiserAuthModal from './AdvertiserAuthModal';
+import CarrierScoutWelcomeModal from './CarrierScoutWelcomeModal';
+import AdvertiserDashboard from './AdvertiserDashboard';
+import PrivacyPolicyPage from './PrivacyPolicyPage';
+import TermsOfServicePage from './TermsOfServicePage';
 import { useAppContext } from '@/contexts/AppContext';
 import { computeVerificationTier, crossReferenceCarriers } from '@/lib/verification';
+import { getUserById, getOrCreateConversation } from '@/lib/api';
+import { dbUserToCurrentUser } from '@/lib/mappers';
 import type { ViewableUser } from '@/types';
 import { ArrowLeft, Shield, Search, Rocket } from 'lucide-react';
 
@@ -60,7 +69,7 @@ const PREMIUM_FEATURE_NAMES: Record<string, string> = {
 };
 
 const AppLayout: React.FC = () => {
-  const { currentUser, registeredUsers } = useAppContext();
+  const { currentUser, registeredUsers, pendingAuthResult, clearPendingAuthResult } = useAppContext();
   const [currentView, setCurrentView] = useState('home');
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
@@ -82,16 +91,49 @@ const AppLayout: React.FC = () => {
   }>({ isOpen: false, carrierName: '', mcNumber: '' });
   const [initialSearchQuery, setInitialSearchQuery] = useState('');
   const [searchKey, setSearchKey] = useState(0);
+  const [advertiserAuthOpen, setAdvertiserAuthOpen] = useState(false);
+  const [advertiserAuthMode, setAdvertiserAuthMode] = useState<'login' | 'signup'>('login');
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [carrierWelcomeOpen, setCarrierWelcomeOpen] = useState(false);
+  const [verifyInitialDOT, setVerifyInitialDOT] = useState('');
+  const [verifyInitialMC, setVerifyInitialMC] = useState('');
+
+  // Auto-open AuthModal for new Google/Phone users who need to complete profile
+  useEffect(() => {
+    if (pendingAuthResult) {
+      setAuthMode('signup');
+      setAuthModalOpen(true);
+    }
+  }, [pendingAuthResult]);
+
+  const handleOpenAdvertiserAuth = (mode: 'login' | 'signup') => {
+    setAdvertiserAuthMode(mode);
+    setAdvertiserAuthOpen(true);
+  };
 
   const handleNavigate = (view: string) => {
+    // Logged-in dispatchers: redirect load search to their dashboard Find Loads tab
+    if ((view === 'loadboards' || view === 'carrier-loads') && currentUser?.userType === 'dispatcher') {
+      setCurrentView('dashboard');
+      return;
+    }
     if (PREMIUM_VIEWS.has(view)) {
       setCarrierScoutFeature(PREMIUM_FEATURE_NAMES[view] || 'This Feature');
       setCarrierScoutModalOpen(true);
       return;
     }
+    // Redirect advertisers to their dashboard when they hit the advertising page
+    if (view === 'advertising' && currentUser?.userType === 'advertiser') {
+      setCurrentView('advertiser-dashboard');
+      return;
+    }
     // Clear search query when navigating away from search results
     if (view !== 'dispatchers' && view !== 'carriers' && view !== 'brokers') {
       setInitialSearchQuery('');
+    }
+    // Clear conversation ID when navigating away from messages
+    if (view !== 'messages') {
+      setSelectedConversationId(null);
     }
     setCurrentView(view);
   };
@@ -107,20 +149,46 @@ const AppLayout: React.FC = () => {
   };
 
   const handleHeroSearch = (query: string, role: string, _region: string) => {
+    // Carrier/Broker searches go to FMCSA verification
+    if (role === 'carrier' || role === 'broker') {
+      const digits = query.replace(/[^0-9]/g, '');
+      // Determine if query looks like a DOT# (7+ digits) or MC# (4-8 digits) or just a name
+      if (digits.length >= 7) {
+        // Likely a DOT number
+        setVerifyInitialDOT(digits);
+        setVerifyInitialMC('');
+      } else if (digits.length >= 4) {
+        // Likely an MC number
+        setVerifyInitialDOT('');
+        setVerifyInitialMC(digits);
+      } else {
+        // Non-numeric or short — still send to verify page, user can enter manually
+        setVerifyInitialDOT('');
+        setVerifyInitialMC('');
+      }
+      setSearchKey(k => k + 1);
+      setCurrentView('verify');
+      return;
+    }
+    // Dispatcher searches go to dispatcher directory
     setInitialSearchQuery(query);
     setSearchKey(k => k + 1);
-    if (role === 'carrier') {
-      setCurrentView('carriers');
-    } else if (role === 'broker') {
-      setCurrentView('brokers');
-    } else {
-      setCurrentView('dispatchers');
-    }
+    setCurrentView('dispatchers');
   };
 
-  const handleViewDispatcherProfile = (id: string) => {
-    const user = registeredUsers.find(u => u.id === id);
-    if (!user) return;
+  const handleViewDispatcherProfile = async (id: string) => {
+    let user = registeredUsers.find(u => u.id === id);
+
+    // If not found locally, fetch from Supabase
+    if (!user) {
+      try {
+        const dbUser = await getUserById(id);
+        if (!dbUser) return;
+        user = dbUserToCurrentUser(dbUser as any);
+      } catch {
+        return;
+      }
+    }
 
     // Cross-reference carriers for verification tier
     const carrierMCs = new Set<string>();
@@ -157,15 +225,50 @@ const AppLayout: React.FC = () => {
     handleViewUserProfile(viewable);
   };
 
-  const handleContactDispatcher = (id: string) => {
-    console.log('Contact dispatcher:', id);
+  const handleContactDispatcher = async (id: string) => {
+    if (!currentUser) {
+      // Not logged in — open signup
+      handleSignup();
+      return;
+    }
+    try {
+      const conv = await getOrCreateConversation(currentUser.id, id);
+      setSelectedConversationId(conv.id);
+      setCurrentView('messages');
+    } catch {
+      // Fallback: just navigate to messages
+      setCurrentView('messages');
+    }
   };
 
-  const handleViewCarrierProfile = (id: string) => {
-    const carrierData: Record<string, CarrierProfileData> = {};
+  const handleViewCarrierProfile = async (id: string) => {
+    let user = registeredUsers.find(u => u.id === id);
 
-    setSelectedCarrier(carrierData[id] || null);
-    setCurrentView('carrier-profile');
+    // If not found locally, fetch from Supabase
+    if (!user) {
+      try {
+        const dbUser = await getUserById(id);
+        if (!dbUser) return;
+        user = dbUserToCurrentUser(dbUser as any);
+      } catch {
+        return;
+      }
+    }
+
+    const viewable: ViewableUser = {
+      id: user.id,
+      name: user.name,
+      company: user.company,
+      userType: user.userType,
+      image: user.image,
+      verified: user.verified,
+      bio: user.bio,
+      location: user.location,
+      website: user.website,
+      coverImage: user.coverImage,
+    };
+
+    handleViewUserProfile(viewable);
   };
 
   const handleRequestMCPermission = (id: string) => {
@@ -298,6 +401,8 @@ const AppLayout: React.FC = () => {
         );
       case 'profile':
         return <UserProfile onNavigate={handleNavigate} onViewProfile={handleViewUserProfile} />;
+      case 'settings':
+        return <SettingsPage onNavigate={handleNavigate} />;
       case 'view-user':
         return viewingUser ? (
           <ViewUserProfile
@@ -307,18 +412,39 @@ const AppLayout: React.FC = () => {
               setViewingUser(null);
             }}
             onNavigate={handleNavigate}
+            currentUserId={currentUser?.id}
+            onOpenConversation={(convId) => {
+              setSelectedConversationId(convId);
+              setCurrentView('messages');
+            }}
           />
         ) : null;
       case 'feed':
         return <SocialFeed onNavigate={handleNavigate} onViewProfile={handleViewUserProfile} />;
+      case 'advertiser-dashboard':
+        return <AdvertiserDashboard />;
       case 'advertising':
-        return <AdvertisingPage onNavigate={handleNavigate} />;
+        return <AdvertisingPage onNavigate={handleNavigate} onOpenAdvertiserAuth={handleOpenAdvertiserAuth} />;
       case 'connections':
         return <ConnectionsList onViewProfile={handleViewUserProfile} />;
       case 'messages':
-        return <MessagesView />;
+        return <MessagesView initialConversationId={selectedConversationId} />;
+      case 'browse-network':
+        return <BrowseNetworkPage onViewProfile={handleViewDispatcherProfile} onNavigate={handleNavigate} onSignup={handleSignup} />;
       case 'brokers':
-        return <BrokerDirectory key={searchKey} initialSearchQuery={initialSearchQuery} />;
+        return (
+          <BrokerDirectory
+            key={searchKey}
+            initialSearchQuery={initialSearchQuery}
+            onViewProfile={handleViewCarrierProfile}
+            onVerifyBroker={(dot, mc) => {
+              setVerifyInitialDOT(dot);
+              setVerifyInitialMC(mc);
+              setSearchKey(Date.now());
+              setCurrentView('verify');
+            }}
+          />
+        );
       case 'dispatchers':
         return (
           <DispatcherDirectory
@@ -334,6 +460,12 @@ const AppLayout: React.FC = () => {
             key={searchKey}
             onViewProfile={handleViewCarrierProfile}
             onRequestPermission={handleRequestMCPermission}
+            onVerifyCarrier={(dot, mc) => {
+              setVerifyInitialDOT(dot);
+              setVerifyInitialMC(mc);
+              setSearchKey(Date.now());
+              setCurrentView('verify');
+            }}
             initialSearchQuery={initialSearchQuery}
           />
         );
@@ -344,7 +476,7 @@ const AppLayout: React.FC = () => {
       case 'packets':
         return <OnboardingPacket onComplete={() => setCurrentView('home')} />;
       case 'verify':
-        return <VerifyDOTPage />;
+        return <VerifyDOTPage key={searchKey} initialDOT={verifyInitialDOT} initialMC={verifyInitialMC} />;
       case 'carrier-register':
         return (
           <CarrierRegistration
@@ -354,12 +486,16 @@ const AppLayout: React.FC = () => {
         );
       case 'carrierscout':
         return <CarrierScoutPage />;
+      case 'privacy':
+        return <PrivacyPolicyPage />;
+      case 'terms':
+        return <TermsOfServicePage />;
       default:
         return (
           <>
             <Hero
               onGetStarted={handleSignup}
-              onLearnMore={() => setCurrentView('dispatchers')}
+              onLearnMore={() => setCurrentView('browse-network')}
               onSearch={handleHeroSearch}
               onViewProfile={handleViewDispatcherProfile}
             />
@@ -392,11 +528,32 @@ const AppLayout: React.FC = () => {
         isOpen={authModalOpen}
         onClose={() => {
           setAuthModalOpen(false);
+          clearPendingAuthResult();
           if (currentUser) {
             setCurrentView('dashboard');
+            // Show CarrierScout welcome modal for new carriers (once per device)
+            if (currentUser.userType === 'carrier') {
+              const shown = localStorage.getItem('dispatchlink_carrier_welcome_shown');
+              if (!shown) {
+                setCarrierWelcomeOpen(true);
+                localStorage.setItem('dispatchlink_carrier_welcome_shown', 'true');
+              }
+            }
           }
         }}
         initialMode={authMode}
+        pendingAuth={pendingAuthResult}
+      />
+
+      <AdvertiserAuthModal
+        isOpen={advertiserAuthOpen}
+        onClose={() => {
+          setAdvertiserAuthOpen(false);
+          if (currentUser?.userType === 'advertiser') {
+            setCurrentView('advertiser-dashboard');
+          }
+        }}
+        initialMode={advertiserAuthMode}
       />
 
       <MCPermissionModal
@@ -427,6 +584,11 @@ const AppLayout: React.FC = () => {
         isOpen={carrierScoutModalOpen}
         onClose={() => setCarrierScoutModalOpen(false)}
         featureName={carrierScoutFeature}
+      />
+
+      <CarrierScoutWelcomeModal
+        isOpen={carrierWelcomeOpen}
+        onClose={() => setCarrierWelcomeOpen(false)}
       />
     </div>
   );

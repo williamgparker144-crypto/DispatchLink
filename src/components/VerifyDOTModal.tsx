@@ -88,62 +88,109 @@ const VerifyDOTModal: React.FC<VerifyDOTModalProps> = ({ isOpen, onClose, onVeri
     setResult(null);
     setShowDetails(false);
 
-    // Demo mode: simulate FMCSA SAFER lookup
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const params = new URLSearchParams();
+      if (dotNumber) params.set('dot', dotNumber);
+      if (mcNumber) params.set('mc', mcNumber);
 
-    const sampleCarrier: CarrierData = {
-      dotNumber: dotNumber || '2233541',
-      legalName: 'Verified Carrier LLC',
-      dbaName: '',
-      carrierOperation: 'Interstate',
-      hqAddress: { street: '123 Transport Blvd', city: 'Dallas', state: 'TX', zipCode: '75201', country: 'US' },
-      mailingAddress: { street: '123 Transport Blvd', city: 'Dallas', state: 'TX', zipCode: '75201', country: 'US' },
-      phone: '(214) 555-0100',
-      fax: '',
-      email: 'dispatch@carrier.com',
-      mcNumber: mcNumber || '987654',
-      mxNumber: '',
-      statusCode: 'A',
-      commonAuthorityStatus: 'A',
-      contractAuthorityStatus: 'A',
-      brokerAuthorityStatus: 'N',
-      bondInsuranceOnFile: 'N',
-      bondInsuranceRequired: 'N',
-      bipdInsuranceOnFile: 'Y',
-      bipdInsuranceRequired: 'Y',
-      cargoInsuranceOnFile: 'Y',
-      cargoInsuranceRequired: 'Y',
-      safetyRating: 'S',
-      safetyRatingDate: '2024-03-15',
-      safetyReviewDate: '2024-03-15',
-      safetyReviewType: 'Compliance Review',
-      oosDate: '',
-      totalDrivers: 12,
-      totalPowerUnits: 15,
-      driverInsp: 8,
-      driverOosInsp: 0,
-      driverOosRate: 0,
-      vehicleInsp: 14,
-      vehicleOosInsp: 1,
-      vehicleOosRate: 7.1,
-      hazmatInsp: 0,
-      hazmatOosInsp: 0,
-      hazmatOosRate: 0,
-      crashTotal: 0,
-      fatalCrash: 0,
-      injCrash: 0,
-      towCrash: 0,
-    };
+      const res = await fetch(`/api/verify-carrier?${params.toString()}`, {
+        signal: AbortSignal.timeout(15000),
+      });
 
-    const data = {
-      verified: true,
-      status: 'active',
-      carrier: sampleCarrier,
-      message: 'Carrier authority is active and in good standing.',
-    };
+      if (!res.ok) {
+        throw new Error('Verification service unavailable');
+      }
 
-    setResult(data);
-    setShowDetails(true);
+      const apiData = await res.json();
+
+      if (apiData.error && !apiData.found) {
+        setError(apiData.error === 'Verification service temporarily unavailable'
+          ? apiData.error
+          : 'Could not verify this carrier. Please check the number and try again.');
+        setLoading(false);
+        return;
+      }
+
+      if (!apiData.found) {
+        setResult({
+          verified: false,
+          status: 'not_found',
+          message: 'No carrier found with the provided DOT/MC number.',
+        });
+        setLoading(false);
+        return;
+      }
+
+      const carrier: CarrierData = {
+        dotNumber: apiData.dotNumber || dotNumber || '',
+        legalName: apiData.legalName || '',
+        dbaName: apiData.dbaName || '',
+        carrierOperation: apiData.carrierOperation || '',
+        hqAddress: apiData.physicalAddress
+          ? { street: apiData.physicalAddress.street, city: apiData.physicalAddress.city, state: apiData.physicalAddress.state, zipCode: apiData.physicalAddress.zip, country: 'US' }
+          : { street: '', city: '', state: '', zipCode: '', country: '' },
+        mailingAddress: apiData.mailingAddress
+          ? { street: apiData.mailingAddress.street, city: apiData.mailingAddress.city, state: apiData.mailingAddress.state, zipCode: apiData.mailingAddress.zip, country: 'US' }
+          : { street: '', city: '', state: '', zipCode: '', country: '' },
+        phone: apiData.phone || '',
+        fax: '',
+        email: '',
+        mcNumber: apiData.mcNumber?.replace('MC', '') || mcNumber || '',
+        mxNumber: '',
+        statusCode: apiData.statusCode || '',
+        commonAuthorityStatus: apiData.commonAuthorityStatus || 'N',
+        contractAuthorityStatus: 'N',
+        brokerAuthorityStatus: 'N',
+        bondInsuranceOnFile: 'N',
+        bondInsuranceRequired: 'N',
+        bipdInsuranceOnFile: 'N',
+        bipdInsuranceRequired: 'Y',
+        cargoInsuranceOnFile: 'N',
+        cargoInsuranceRequired: 'Y',
+        safetyRating: apiData.safetyRating || '',
+        safetyRatingDate: apiData.safetyRatingDate || '',
+        safetyReviewDate: apiData.safetyReviewDate || '',
+        safetyReviewType: apiData.safetyReviewType || '',
+        oosDate: apiData.oosDate || '',
+        totalDrivers: apiData.totalDrivers || 0,
+        totalPowerUnits: apiData.totalPowerUnits || 0,
+        driverInsp: apiData.driverInsp || 0,
+        driverOosInsp: apiData.driverOosInsp || 0,
+        driverOosRate: apiData.driverOosRate || 0,
+        vehicleInsp: apiData.vehicleInsp || 0,
+        vehicleOosInsp: apiData.vehicleOosInsp || 0,
+        vehicleOosRate: apiData.vehicleOosRate || 0,
+        hazmatInsp: apiData.hazmatInsp || 0,
+        hazmatOosInsp: apiData.hazmatOosInsp || 0,
+        hazmatOosRate: apiData.hazmatOosRate || 0,
+        crashTotal: apiData.crashTotal || 0,
+        fatalCrash: apiData.fatalCrash || 0,
+        injCrash: apiData.injCrash || 0,
+        towCrash: apiData.towCrash || 0,
+      };
+
+      const authText = (apiData.operatingAuthorityStatus || '').toUpperCase();
+      if (authText.includes('AUTHORIZED FOR')) {
+        carrier.commonAuthorityStatus = 'A';
+      }
+
+      const isActive = apiData.active;
+      const hasOOS = !!carrier.oosDate;
+
+      setResult({
+        verified: isActive && !hasOOS,
+        status: isActive ? 'active' : 'inactive',
+        carrier,
+        message: hasOOS
+          ? 'Carrier is under an Out of Service order.'
+          : isActive
+            ? 'Carrier authority is active and in good standing.'
+            : 'Carrier authority is not currently active.',
+      });
+      setShowDetails(true);
+    } catch {
+      setError('Unable to reach FMCSA verification service. Please try again in a moment.');
+    }
     setLoading(false);
   };
 

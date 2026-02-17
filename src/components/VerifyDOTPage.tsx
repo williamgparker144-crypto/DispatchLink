@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, Shield, CheckCircle, AlertCircle, Loader2, Truck, Users, 
   FileCheck, AlertTriangle, MapPin, Phone, Mail, Building2, TrendingUp, 
@@ -70,13 +70,27 @@ interface VerificationResult {
   warnings?: string[];
 }
 
-const VerifyDOTPage: React.FC = () => {
-  const [dotNumber, setDotNumber] = useState('');
-  const [mcNumber, setMcNumber] = useState('');
+interface VerifyDOTPageProps {
+  initialDOT?: string;
+  initialMC?: string;
+}
+
+const VerifyDOTPage: React.FC<VerifyDOTPageProps> = ({ initialDOT, initialMC }) => {
+  const [dotNumber, setDotNumber] = useState(initialDOT || '');
+  const [mcNumber, setMcNumber] = useState(initialMC || '');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [error, setError] = useState('');
   const [verifiedAt, setVerifiedAt] = useState<Date | null>(null);
+  const [autoVerified, setAutoVerified] = useState(false);
+
+  // Auto-verify when initial values are provided
+  useEffect(() => {
+    if (!autoVerified && (initialDOT || initialMC)) {
+      setAutoVerified(true);
+      handleVerify();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleVerify = async () => {
     if (!dotNumber && !mcNumber) {
@@ -88,60 +102,117 @@ const VerifyDOTPage: React.FC = () => {
     setError('');
     setResult(null);
 
-    // Demo mode: simulate FMCSA SAFER lookup with sample data
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      // Build query params — support DOT, MC, or both
+      const params = new URLSearchParams();
+      if (dotNumber) params.set('dot', dotNumber);
+      if (mcNumber) params.set('mc', mcNumber);
 
-    const sampleCarrier: CarrierData = {
-      dotNumber: dotNumber || '2233541',
-      legalName: dotNumber === '1234567' ? 'Thompson Trucking LLC' : 'Verified Carrier LLC',
-      dbaName: dotNumber === '1234567' ? 'Thompson Express' : '',
-      carrierOperation: 'Interstate',
-      hqAddress: { street: '123 Transport Blvd', city: 'Dallas', state: 'TX', zipCode: '75201', country: 'US' },
-      mailingAddress: { street: '123 Transport Blvd', city: 'Dallas', state: 'TX', zipCode: '75201', country: 'US' },
-      phone: '(214) 555-0100',
-      fax: '',
-      email: 'dispatch@carrier.com',
-      mcNumber: mcNumber || '987654',
-      mxNumber: '',
-      statusCode: 'A',
-      commonAuthorityStatus: 'A',
-      contractAuthorityStatus: 'A',
-      brokerAuthorityStatus: 'N',
-      bondInsuranceOnFile: 'N',
-      bondInsuranceRequired: 'N',
-      bipdInsuranceOnFile: 'Y',
-      bipdInsuranceRequired: 'Y',
-      cargoInsuranceOnFile: 'Y',
-      cargoInsuranceRequired: 'Y',
-      safetyRating: 'S',
-      safetyRatingDate: '2024-03-15',
-      safetyReviewDate: '2024-03-15',
-      safetyReviewType: 'Compliance Review',
-      oosDate: '',
-      totalDrivers: 12,
-      totalPowerUnits: 15,
-      driverInsp: 8,
-      driverOosInsp: 0,
-      driverOosRate: 0,
-      vehicleInsp: 14,
-      vehicleOosInsp: 1,
-      vehicleOosRate: 7.1,
-      hazmatInsp: 2,
-      hazmatOosInsp: 0,
-      hazmatOosRate: 0,
-      crashTotal: 1,
-      fatalCrash: 0,
-      injCrash: 0,
-      towCrash: 1,
-    };
+      const res = await fetch(`/api/verify-carrier?${params.toString()}`, {
+        signal: AbortSignal.timeout(15000),
+      });
 
-    setResult({
-      verified: true,
-      status: 'active',
-      carrier: sampleCarrier,
-      message: 'Carrier authority is active and in good standing.',
-    });
-    setVerifiedAt(new Date());
+      if (!res.ok) {
+        throw new Error('Verification service unavailable');
+      }
+
+      const data = await res.json();
+
+      if (data.error && !data.found) {
+        setError(data.error === 'Verification service temporarily unavailable'
+          ? data.error
+          : 'Could not verify this carrier. Please check the number and try again.');
+        setLoading(false);
+        return;
+      }
+
+      if (!data.found) {
+        setResult({
+          verified: false,
+          status: 'not_found',
+          message: 'No carrier found with the provided DOT/MC number. Please verify the number and try again.',
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Map API response to CarrierData
+      const carrier: CarrierData = {
+        dotNumber: data.dotNumber || dotNumber || '',
+        legalName: data.legalName || '',
+        dbaName: data.dbaName || '',
+        carrierOperation: data.carrierOperation || '',
+        hqAddress: data.physicalAddress
+          ? { street: data.physicalAddress.street, city: data.physicalAddress.city, state: data.physicalAddress.state, zipCode: data.physicalAddress.zip, country: 'US' }
+          : { street: '', city: '', state: '', zipCode: '', country: '' },
+        mailingAddress: data.mailingAddress
+          ? { street: data.mailingAddress.street, city: data.mailingAddress.city, state: data.mailingAddress.state, zipCode: data.mailingAddress.zip, country: 'US' }
+          : { street: '', city: '', state: '', zipCode: '', country: '' },
+        phone: data.phone || '',
+        fax: '',
+        email: '',
+        mcNumber: data.mcNumber?.replace('MC', '') || mcNumber || '',
+        mxNumber: '',
+        statusCode: data.statusCode || '',
+        commonAuthorityStatus: data.commonAuthorityStatus || 'N',
+        contractAuthorityStatus: 'N',
+        brokerAuthorityStatus: 'N',
+        bondInsuranceOnFile: 'N',
+        bondInsuranceRequired: 'N',
+        bipdInsuranceOnFile: 'N',
+        bipdInsuranceRequired: 'Y',
+        cargoInsuranceOnFile: 'N',
+        cargoInsuranceRequired: 'Y',
+        safetyRating: data.safetyRating || '',
+        safetyRatingDate: data.safetyRatingDate || '',
+        safetyReviewDate: data.safetyReviewDate || '',
+        safetyReviewType: data.safetyReviewType || '',
+        oosDate: data.oosDate || '',
+        totalDrivers: data.totalDrivers || 0,
+        totalPowerUnits: data.totalPowerUnits || 0,
+        driverInsp: data.driverInsp || 0,
+        driverOosInsp: data.driverOosInsp || 0,
+        driverOosRate: data.driverOosRate || 0,
+        vehicleInsp: data.vehicleInsp || 0,
+        vehicleOosInsp: data.vehicleOosInsp || 0,
+        vehicleOosRate: data.vehicleOosRate || 0,
+        hazmatInsp: data.hazmatInsp || 0,
+        hazmatOosInsp: data.hazmatOosInsp || 0,
+        hazmatOosRate: data.hazmatOosRate || 0,
+        crashTotal: data.crashTotal || 0,
+        fatalCrash: data.fatalCrash || 0,
+        injCrash: data.injCrash || 0,
+        towCrash: data.towCrash || 0,
+      };
+
+      // Determine authority status from operating authority text
+      const authText = (data.operatingAuthorityStatus || '').toUpperCase();
+      if (authText.includes('AUTHORIZED FOR')) {
+        carrier.commonAuthorityStatus = 'A';
+      }
+
+      const isActive = data.active;
+      const hasOOS = !!carrier.oosDate;
+      let message = '';
+      if (hasOOS) {
+        message = 'Carrier is under an Out of Service order and is not authorized to operate.';
+      } else if (isActive) {
+        message = 'Carrier authority is active and in good standing.';
+      } else {
+        message = 'Carrier authority is not currently active.';
+      }
+
+      setResult({
+        verified: isActive && !hasOOS,
+        status: isActive ? 'active' : 'inactive',
+        carrier,
+        message,
+        warnings: hasOOS ? ['This carrier has an active Out of Service order.'] : undefined,
+      });
+      setVerifiedAt(new Date());
+    } catch (err) {
+      setError('Unable to reach FMCSA verification service. Please try again in a moment.');
+    }
     setLoading(false);
   };
 

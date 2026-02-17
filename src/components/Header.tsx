@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, X, User, LogIn, Settings, LayoutDashboard, Bell, MessageSquare, Users, UserPlus } from 'lucide-react';
+import { Menu, X, User, LogIn, Settings, LayoutDashboard, Bell, MessageSquare, Users, UserPlus, Megaphone, Trash2, AlertTriangle, FileText } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
+import { deleteUserAccount, getPendingConnectionRequests, getUserById, acceptConnection, rejectConnection, getConnectionFeedNotifications } from '@/lib/api';
 
 interface HeaderProps {
   onLoginClick: () => void;
@@ -15,7 +16,134 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
-  const { currentUser, logout, unreadMessages, pendingConnections } = useAppContext();
+  const { currentUser, logout, unreadMessages, pendingConnections, setPendingConnections, feedNotifications, setFeedNotifications } = useAppContext();
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // Notification items for bell dropdown
+  interface NotifItem {
+    connectionId: string;
+    userId: string;
+    name: string;
+    company: string;
+    userType: string;
+    image?: string;
+    createdAt: string;
+  }
+  const [notifItems, setNotifItems] = useState<NotifItem[]>([]);
+  const [notifLoading, setNotifLoading] = useState(false);
+
+  // Feed post notifications
+  interface FeedNotifItem {
+    postId: string;
+    authorName: string;
+    authorCompany: string;
+    authorType: string;
+    authorImage: string;
+    content: string;
+    postType: string;
+    createdAt: string;
+  }
+  const [feedNotifItems, setFeedNotifItems] = useState<FeedNotifItem[]>([]);
+
+  // Fetch pending connection requests + feed notifications when dropdown opens
+  useEffect(() => {
+    if (!notificationsOpen || !currentUser?.id) return;
+    let cancelled = false;
+    (async () => {
+      setNotifLoading(true);
+      try {
+        const lastSeen = localStorage.getItem('dispatchlink_feed_last_seen') || new Date(0).toISOString();
+
+        const [pendingReqs, feedPosts] = await Promise.all([
+          getPendingConnectionRequests(currentUser.id),
+          getConnectionFeedNotifications(currentUser.id, lastSeen).catch(() => []),
+        ]);
+
+        if (cancelled) return;
+
+        // Map connection requests
+        const items: NotifItem[] = [];
+        for (const req of (pendingReqs || [])) {
+          try {
+            const user = await getUserById(req.requester_id);
+            if (user) {
+              items.push({
+                connectionId: req.id,
+                userId: user.id,
+                name: `${user.first_name} ${user.last_name}`,
+                company: user.company_name || '',
+                userType: user.user_type || '',
+                image: user.profile_image_url || undefined,
+                createdAt: req.created_at,
+              });
+            }
+          } catch { /* skip */ }
+        }
+        if (!cancelled) {
+          setNotifItems(items);
+          setFeedNotifItems(feedPosts.map((p: any) => ({
+            postId: p.id,
+            authorName: p.authorName,
+            authorCompany: p.authorCompany,
+            authorType: p.authorType,
+            authorImage: p.authorImage,
+            content: p.content,
+            postType: p.postType,
+            createdAt: p.createdAt,
+          })));
+        }
+      } catch {
+        if (!cancelled) {
+          setNotifItems([]);
+          setFeedNotifItems([]);
+        }
+      } finally {
+        if (!cancelled) setNotifLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [notificationsOpen, currentUser?.id]);
+
+  const handleAcceptConnection = async (connectionId: string) => {
+    try {
+      await acceptConnection(connectionId);
+      setNotifItems(prev => prev.filter(n => n.connectionId !== connectionId));
+      setPendingConnections(Math.max(0, pendingConnections - 1));
+    } catch (err) {
+      console.warn('Failed to accept connection:', err);
+    }
+  };
+
+  const handleRejectConnection = async (connectionId: string) => {
+    try {
+      await rejectConnection(connectionId);
+      setNotifItems(prev => prev.filter(n => n.connectionId !== connectionId));
+      setPendingConnections(Math.max(0, pendingConnections - 1));
+    } catch (err) {
+      console.warn('Failed to reject connection:', err);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!currentUser?.id) return;
+    setDeleting(true);
+    try {
+      await deleteUserAccount(currentUser.id);
+      // Clear all local storage to fully remove traces
+      localStorage.removeItem('dispatchlink_session');
+      localStorage.removeItem('dispatchlink_users');
+      logout();
+      setCurrentView('home');
+      setDeleteConfirmOpen(false);
+      setUserMenuOpen(false);
+    } catch (err) {
+      console.error('Failed to delete account:', err);
+      alert('Failed to delete account. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -100,6 +228,22 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                 )}
               </button>
             )}
+            {isLoggedIn && userType === 'advertiser' && (
+              <button
+                onClick={() => setCurrentView('advertiser-dashboard')}
+                className={`relative px-3 py-2 text-sm font-medium transition-colors rounded-md flex items-center gap-1 ${
+                  currentView === 'advertiser-dashboard'
+                    ? 'text-white'
+                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Megaphone className="w-4 h-4" />
+                Ad Dashboard
+                {currentView === 'advertiser-dashboard' && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 h-0.5 bg-[#F59E0B] rounded-full" />
+                )}
+              </button>
+            )}
           </nav>
 
           {/* Auth Buttons / User Menu */}
@@ -129,9 +273,9 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                     className="p-2 rounded-lg hover:bg-white/10 transition-colors relative"
                   >
                     <Bell className="w-5 h-5" />
-                    {pendingConnections > 0 && (
+                    {(pendingConnections + feedNotifications) > 0 && (
                       <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#3B82F6] rounded-full text-[10px] flex items-center justify-center font-bold">
-                        {pendingConnections}
+                        {pendingConnections + feedNotifications}
                       </span>
                     )}
                   </button>
@@ -140,13 +284,113 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                     <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden animate-fade-in">
                       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                         <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
-                        <span onClick={() => setNotificationsOpen(false)} className="text-xs text-[#3B82F6] font-medium cursor-pointer hover:underline">Mark all read</span>
+                        {(notifItems.length + feedNotifItems.length) > 0 && (
+                          <span className="text-xs text-gray-400">{notifItems.length + feedNotifItems.length} new</span>
+                        )}
                       </div>
-                      <div className="py-8 text-center">
-                        <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                        <p className="text-sm text-gray-500">No notifications yet</p>
+                      <div className="max-h-96 overflow-y-auto">
+                        {notifLoading ? (
+                          <div className="py-8 text-center">
+                            <div className="w-5 h-5 border-2 border-gray-300 border-t-[#3B82F6] rounded-full animate-spin mx-auto mb-2" />
+                            <p className="text-sm text-gray-500">Loading...</p>
+                          </div>
+                        ) : (notifItems.length === 0 && feedNotifItems.length === 0) ? (
+                          <div className="py-8 text-center">
+                            <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                            <p className="text-sm text-gray-500">No notifications yet</p>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Connection requests */}
+                            {notifItems.length > 0 && (
+                              <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
+                                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Connection Requests</p>
+                              </div>
+                            )}
+                            {notifItems.map(item => (
+                              <div key={item.connectionId} className="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                <div className="flex items-start gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden">
+                                    {item.image ? (
+                                      <img src={item.image} alt={item.name} className="w-full h-full rounded-full object-cover" />
+                                    ) : (
+                                      item.name.charAt(0)
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-gray-900">
+                                      <span className="font-semibold">{item.name}</span>
+                                      <span className="text-gray-500"> wants to connect</span>
+                                    </p>
+                                    <p className="text-xs text-gray-400 mt-0.5">
+                                      {item.company && `${item.company} · `}
+                                      <span className="capitalize">{item.userType}</span>
+                                    </p>
+                                    <div className="flex gap-2 mt-2">
+                                      <button
+                                        onClick={() => handleAcceptConnection(item.connectionId)}
+                                        className="px-3 py-1 bg-[#1E3A5F] text-white text-xs font-medium rounded-lg hover:bg-[#1E3A5F]/80 transition-colors"
+                                      >
+                                        Accept
+                                      </button>
+                                      <button
+                                        onClick={() => handleRejectConnection(item.connectionId)}
+                                        className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                                      >
+                                        Decline
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+
+                            {/* Feed activity notifications */}
+                            {feedNotifItems.length > 0 && (
+                              <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
+                                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Feed Activity</p>
+                              </div>
+                            )}
+                            {feedNotifItems.map(item => (
+                              <div
+                                key={item.postId}
+                                className="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                                onClick={() => {
+                                  // Mark feed as seen and navigate to feed
+                                  localStorage.setItem('dispatchlink_feed_last_seen', new Date().toISOString());
+                                  setFeedNotifications(0);
+                                  setFeedNotifItems([]);
+                                  setNotificationsOpen(false);
+                                  setCurrentView('feed');
+                                }}
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#10B981] to-[#3B82F6] flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden">
+                                    {item.authorImage ? (
+                                      <img src={item.authorImage} alt={item.authorName} className="w-full h-full rounded-full object-cover" />
+                                    ) : (
+                                      item.authorName.charAt(0)
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-gray-900">
+                                      <span className="font-semibold">{item.authorName}</span>
+                                      <span className="text-gray-500"> shared a {item.postType === 'looking_for' ? 'request' : item.postType}</span>
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{item.content}</p>
+                                    <p className="text-[10px] text-gray-400 mt-1">
+                                      {item.authorCompany && `${item.authorCompany} · `}
+                                      {new Date(item.createdAt).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                  <div className="w-2 h-2 rounded-full bg-[#3B82F6] flex-shrink-0 mt-2" />
+                                </div>
+                              </div>
+                            ))}
+                          </>
+                        )}
                       </div>
-                      <div className="px-4 py-3 border-t border-gray-100 text-center">
+                      <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
                         <button
                           onClick={() => {
                             setNotificationsOpen(false);
@@ -154,8 +398,22 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                           }}
                           className="text-xs text-[#1E3A5F] font-medium hover:underline"
                         >
-                          View All Notifications
+                          View Connections
                         </button>
+                        {feedNotifItems.length > 0 && (
+                          <button
+                            onClick={() => {
+                              localStorage.setItem('dispatchlink_feed_last_seen', new Date().toISOString());
+                              setFeedNotifications(0);
+                              setFeedNotifItems([]);
+                              setNotificationsOpen(false);
+                              setCurrentView('feed');
+                            }}
+                            className="text-xs text-[#3B82F6] font-medium hover:underline"
+                          >
+                            View Feed
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
@@ -215,6 +473,18 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                           Dashboard
                         </button>
                       )}
+                      {userType === 'advertiser' && (
+                        <button
+                          onClick={() => {
+                            setCurrentView('advertiser-dashboard');
+                            setUserMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <Megaphone className="w-4 h-4" />
+                          Ad Dashboard
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           setCurrentView('connections');
@@ -240,7 +510,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                       </button>
                       <button
                         onClick={() => {
-                          setCurrentView('profile');
+                          setCurrentView('settings');
                           setUserMenuOpen(false);
                         }}
                         className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
@@ -250,6 +520,16 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                       </button>
 
                       <div className="border-t border-gray-100 mt-1 pt-1">
+                        <button
+                          onClick={() => {
+                            setDeleteConfirmOpen(true);
+                            setUserMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete Account
+                        </button>
                         <button
                           onClick={() => {
                             logout();
@@ -348,6 +628,22 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                     Dashboard
                   </button>
                 )}
+                {userType === 'advertiser' && (
+                  <button
+                    onClick={() => {
+                      setCurrentView('advertiser-dashboard');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                      currentView === 'advertiser-dashboard'
+                        ? 'bg-[#F59E0B] text-white'
+                        : 'text-gray-200 hover:bg-white/10'
+                    }`}
+                  >
+                    <Megaphone className="w-4 h-4" />
+                    Ad Dashboard
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setCurrentView('connections');
@@ -392,6 +688,16 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                   </div>
                   <button
                     onClick={() => {
+                      setDeleteConfirmOpen(true);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-center px-4 py-2.5 bg-red-500/10 text-red-300 rounded-lg text-sm font-medium hover:bg-red-500/20 flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete Account
+                  </button>
+                  <button
+                    onClick={() => {
                       logout();
                       setCurrentView('home');
                       setMobileMenuOpen(false);
@@ -423,6 +729,51 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
                   </button>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Delete Account Confirmation Modal */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 animate-fade-in">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Delete Account</h3>
+                <p className="text-sm text-gray-500">This action cannot be undone</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to permanently delete your account? This will remove your profile, connections, messages, and all associated data from DispatchLink.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteConfirmOpen(false)}
+                disabled={deleting}
+                className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                className="px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Delete My Account
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

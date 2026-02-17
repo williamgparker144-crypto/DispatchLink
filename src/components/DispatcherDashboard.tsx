@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Users,
   TrendingUp,
@@ -24,6 +24,10 @@ import {
 } from 'lucide-react';
 import CarrierScoutUpgradeCTA from './CarrierScoutUpgradeCTA';
 import PendingInvitesCard from './PendingInvitesCard';
+import FindLoadsPanel from './FindLoadsPanel';
+import { useAppContext } from '@/contexts/AppContext';
+import { getConnections, getDispatcherMCPermissions, getProfileViewCount } from '@/lib/api';
+import type { MCPermissionWithCarrier } from '@/types';
 
 interface DispatcherDashboardProps {
   onNavigate: (view: string) => void;
@@ -43,18 +47,49 @@ interface MCPermissionRequest {
 // Sample data — matches the pattern used throughout the app
 const sampleMcPermissions: MCPermissionRequest[] = [];
 
-const sampleAnalytics = {
-  profileViews: 0,
-  contactRequests: 0,
-  connections: 0,
-  responseRate: 0,
-};
-
 const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'permissions'>('overview');
+  const { currentUser, pendingConnections, unreadMessages } = useAppContext();
+  const [activeTab, setActiveTab] = useState<'overview' | 'find-loads' | 'permissions'>('overview');
   const [permissionFilter, setPermissionFilter] = useState<'all' | 'sent' | 'received'>('all');
   const [mcPermissions] = useState<MCPermissionRequest[]>(sampleMcPermissions);
-  const [analytics] = useState(sampleAnalytics);
+  const [connectionCount, setConnectionCount] = useState(0);
+  const [activePermissionCount, setActivePermissionCount] = useState(0);
+  const [profileViewCount, setProfileViewCount] = useState(0);
+
+  // Fetch real connection count, MC permissions, and profile views from Supabase
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const isSupabaseId = !currentUser.id.startsWith('user-') && !currentUser.id.startsWith('seed-');
+    if (!isSupabaseId) return;
+
+    (async () => {
+      try {
+        const accepted = await getConnections(currentUser.id);
+        setConnectionCount(accepted?.length || 0);
+      } catch {
+        // Keep at 0
+      }
+    })();
+
+    (async () => {
+      try {
+        const perms = await getDispatcherMCPermissions(currentUser.id);
+        const active = (perms || []).filter((p: MCPermissionWithCarrier) => p.status === 'active');
+        setActivePermissionCount(active.length);
+      } catch {
+        // Keep at 0
+      }
+    })();
+
+    getProfileViewCount(currentUser.id).then(c => setProfileViewCount(c)).catch(() => {});
+  }, [currentUser?.id]);
+
+  const analytics = {
+    profileViews: profileViewCount,
+    contactRequests: pendingConnections,
+    connections: connectionCount,
+    responseRate: 0,
+  };
 
   const engagementMetrics = [
     { label: 'Profile Views', value: analytics.profileViews, change: 0, icon: <Eye className="w-5 h-5" />, color: 'bg-blue-500' },
@@ -118,6 +153,7 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
           <nav className="flex gap-8 overflow-x-auto">
             {[
               { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-4 h-4" /> },
+              { id: 'find-loads', label: 'Find Loads', icon: <Truck className="w-4 h-4" />, count: activePermissionCount },
               { id: 'permissions', label: 'MC Permissions', icon: <Shield className="w-4 h-4" />, count: mcPermissions.filter(p => p.status === 'approved').length },
             ].map(tab => (
               <button
@@ -204,6 +240,13 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400" />
                   </button>
+                  <button onClick={() => setActiveTab('find-loads')} className="w-full flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100">
+                    <div className="flex items-center gap-3">
+                      <Truck className="w-5 h-5 text-[#3B82F6]" />
+                      <span className="font-medium text-[#3B82F6]">Find Loads for Carriers</span>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-[#3B82F6]" />
+                  </button>
                   <button onClick={() => onNavigate('carriers')} className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <div className="flex items-center gap-3">
                       <Search className="w-5 h-5 text-orange-500" />
@@ -219,11 +262,32 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
                 {/* Pending Invites */}
                 <PendingInvitesCard />
 
-                {/* CarrierScout Upgrade CTA */}
-                <CarrierScoutUpgradeCTA
-                  featureName="Load Board & Rate Negotiations"
-                  onGetNotified={() => onNavigate('loadboards')}
-                />
+                {/* CarrierScout Dispatcher Trial CTA */}
+                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-5 text-white">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-white/10 rounded-xl flex-shrink-0">
+                      <Rocket className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-semibold text-lg">14-Day Free Trial on CarrierScout.vip</h4>
+                        <span className="px-2 py-0.5 bg-white/20 rounded-full text-xs font-medium">Coming Soon</span>
+                      </div>
+                      <p className="text-emerald-100 text-sm mb-3">
+                        Access AI rate intelligence, unified load boards, and workflow automation tools.
+                        Solidify your carrier connections with an enhanced dispatcher dashboard.
+                      </p>
+                      <a
+                        href="https://carrierscout.vip"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-white text-emerald-700 rounded-lg font-medium text-sm hover:bg-emerald-50 transition-colors"
+                      >
+                        Join the Waitlist <ArrowUpRight className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
 
                 {/* MC Permission Summary */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -267,6 +331,11 @@ const DispatcherDashboard: React.FC<DispatcherDashboardProps> = ({ onNavigate })
               </div>
             </div>
           </div>
+        )}
+
+        {/* Find Loads Tab */}
+        {activeTab === 'find-loads' && (
+          <FindLoadsPanel onNavigate={onNavigate} />
         )}
 
         {/* MC Permissions Tab */}

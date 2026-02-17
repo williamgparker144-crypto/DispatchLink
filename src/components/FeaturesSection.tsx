@@ -59,7 +59,7 @@ const FeaturesSection: React.FC = () => {
     {
       icon: <Lock className="w-6 h-6" />,
       title: 'FMCSA Compliance',
-      description: 'Built-in compliance tools, broker authority disclaimers, and regulatory guidance.',
+      description: 'Built-in compliance tools, dispatch agreement tracking, carrier authority verification, and regulatory guidance.',
       color: 'bg-red-500',
       accentColor: '#EF4444',
     },

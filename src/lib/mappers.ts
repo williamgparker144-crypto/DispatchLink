@@ -20,8 +20,17 @@ interface CarrierProfileRow {
 }
 
 interface BrokerProfileRow {
+  dot_number?: string;
   mc_number?: string;
   specialties?: string[];
+  verified?: boolean;
+}
+
+interface AdvertiserProfileRow {
+  business_name?: string;
+  business_website?: string;
+  industry?: string;
+  contact_phone?: string;
   verified?: boolean;
 }
 
@@ -29,7 +38,7 @@ interface BrokerProfileRow {
 interface DbUser {
   id: string;
   email: string;
-  user_type: 'dispatcher' | 'carrier' | 'broker';
+  user_type: 'dispatcher' | 'carrier' | 'broker' | 'advertiser';
   first_name: string;
   last_name: string;
   phone?: string;
@@ -43,6 +52,7 @@ interface DbUser {
   dispatcher_profiles?: DispatcherProfileRow | DispatcherProfileRow[] | null;
   carrier_profiles?: CarrierProfileRow | CarrierProfileRow[] | null;
   broker_profiles?: BrokerProfileRow | BrokerProfileRow[] | null;
+  advertiser_profiles?: AdvertiserProfileRow | AdvertiserProfileRow[] | null;
 }
 
 // Helper: Supabase returns object for unique FK joins, array for non-unique
@@ -71,6 +81,7 @@ export function dbUserToCurrentUser(
   const dispatcherProfile = unwrapJoin(dbUser.dispatcher_profiles);
   const carrierProfile = unwrapJoin(dbUser.carrier_profiles);
   const brokerProfile = unwrapJoin(dbUser.broker_profiles);
+  const advertiserProfile = unwrapJoin(dbUser.advertiser_profiles);
 
   const carriersWorkedWith: CarrierReference[] | undefined = carrierRefs?.map(ref => ({
     carrierName: ref.carrier_name,
@@ -99,7 +110,11 @@ export function dbUserToCurrentUser(
     carriersWorkedWith,
     // Carrier-specific
     mcNumber: carrierProfile?.mc_number || brokerProfile?.mc_number,
-    dotNumber: carrierProfile?.dot_number,
+    dotNumber: carrierProfile?.dot_number || brokerProfile?.dot_number,
+    // Advertiser-specific
+    businessName: advertiserProfile?.business_name,
+    businessWebsite: advertiserProfile?.business_website,
+    industry: advertiserProfile?.industry,
   };
 }
 
@@ -109,9 +124,11 @@ export function dbUserToCurrentUser(
 export function currentUserToDbFields(updates: Partial<CurrentUser>): {
   userFields: Record<string, unknown>;
   dispatcherFields: Record<string, unknown>;
+  advertiserFields: Record<string, unknown>;
 } {
   const userFields: Record<string, unknown> = {};
   const dispatcherFields: Record<string, unknown> = {};
+  const advertiserFields: Record<string, unknown> = {};
 
   if (updates.name !== undefined) {
     const parts = updates.name.split(' ');
@@ -129,5 +146,9 @@ export function currentUserToDbFields(updates: Partial<CurrentUser>): {
   if (updates.specialties !== undefined) dispatcherFields.specialties = updates.specialties;
   if (updates.carrierScoutSubscribed !== undefined) dispatcherFields.carrier_scout_subscribed = updates.carrierScoutSubscribed;
 
-  return { userFields, dispatcherFields };
+  if (updates.businessName !== undefined) advertiserFields.business_name = updates.businessName;
+  if (updates.businessWebsite !== undefined) advertiserFields.business_website = updates.businessWebsite;
+  if (updates.industry !== undefined) advertiserFields.industry = updates.industry;
+
+  return { userFields, dispatcherFields, advertiserFields };
 }

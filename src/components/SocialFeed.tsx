@@ -1,8 +1,10 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { PenSquare, ImageIcon, Video, Link2, X, Play, FileText, Upload, Megaphone, Star, ArrowRight } from 'lucide-react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { PenSquare, ImageIcon, Video, Link2, X, Play, FileText, Upload, Megaphone, Star, ArrowRight, Loader2 } from 'lucide-react';
 import PostCard from './PostCard';
+import SponsoredPostCard from './SponsoredPostCard';
 import { useAppContext } from '@/contexts/AppContext';
-import type { Post, ViewableUser } from '@/types';
+import { getActiveAdsForFeed, getPosts, createPost, deletePost as deletePostApi, uploadPostImage, uploadPostDocument } from '@/lib/api';
+import type { Post, ViewableUser, SponsoredPost } from '@/types';
 
 const postTypes = [
   { id: 'update', label: 'Update' },
@@ -34,6 +36,8 @@ interface SocialFeedProps {
 const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate, onViewProfile }) => {
   const { currentUser } = useAppContext();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
+  const [posting, setPosting] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
   const [selectedPostType, setSelectedPostType] = useState('update');
   const [filterType, setFilterType] = useState<string>('all');
@@ -44,11 +48,58 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate, onViewProfile }) =>
 
   // Rich media state
   const [attachedImage, setAttachedImage] = useState('');
+  const [attachedImageFile, setAttachedImageFile] = useState<Blob | null>(null);
   const [attachedVideo, setAttachedVideo] = useState('');
   const [attachedLink, setAttachedLink] = useState('');
   const [attachedLinkTitle, setAttachedLinkTitle] = useState('');
   const [attachedLinkDesc, setAttachedLinkDesc] = useState('');
+  const [attachedLinkImage, setAttachedLinkImage] = useState('');
+  const [unfurling, setUnfurling] = useState(false);
+  const unfurlCacheRef = useRef<Set<string>>(new Set());
   const [attachedDoc, setAttachedDoc] = useState<{ name: string; url: string } | null>(null);
+  const [attachedDocFile, setAttachedDocFile] = useState<File | null>(null);
+
+  // Sponsored ads
+  const [sponsoredPosts, setSponsoredPosts] = useState<SponsoredPost[]>([]);
+
+  // Load posts from Supabase on mount
+  useEffect(() => {
+    (async () => {
+      setLoadingPosts(true);
+      try {
+        const data = await getPosts(currentUser?.id);
+        setPosts(data || []);
+      } catch (err) {
+        console.warn('Failed to load posts:', err);
+      } finally {
+        setLoadingPosts(false);
+      }
+    })();
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const ads = await getActiveAdsForFeed(currentUser?.userType);
+        if (ads && ads.length > 0) {
+          const mapped: SponsoredPost[] = ads
+            .filter((ad: any) => ad.ad_creatives && ad.ad_creatives.length > 0)
+            .map((ad: any) => ({
+              type: 'sponsored' as const,
+              campaign: ad,
+              creative: ad.ad_creatives[0],
+              advertiserName: ad.advertiser
+                ? `${ad.advertiser.first_name || ''} ${ad.advertiser.last_name || ''}`.trim() || ad.advertiser.company_name || 'Advertiser'
+                : 'Advertiser',
+              advertiserImage: ad.advertiser?.profile_image_url,
+            }));
+          setSponsoredPosts(mapped);
+        }
+      } catch {
+        // Silent fail — no ads to show
+      }
+    })();
+  }, [currentUser?.userType]);
 
   // UI state for media input panels
   const [showVideoInput, setShowVideoInput] = useState(false);
@@ -61,6 +112,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate, onViewProfile }) =>
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setAttachedImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
       setAttachedImage(reader.result as string);
@@ -71,59 +123,113 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate, onViewProfile }) =>
   const handleDocUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setAttachedDoc({ name: file.name, url: reader.result as string });
-    };
-    reader.readAsDataURL(file);
+    setAttachedDocFile(file);
+    setAttachedDoc({ name: file.name, url: '' });
   };
 
-  const handleCreatePost = () => {
+  const handleCreatePost = async () => {
     if (!newPostContent.trim() && !attachedImage && !attachedVideo && !attachedLink && !attachedDoc) return;
+    if (!currentUser?.id) return;
 
-    const newPost: Post = {
-      id: `post-${Date.now()}`,
-      author_id: currentUser?.id || 'demo-user-1',
-      author_name: currentUser?.name || 'You',
-      author_company: currentUser?.company || '',
-      author_type: currentUser?.userType || 'dispatcher',
-      author_image: currentUser?.image,
-      author_verified: currentUser?.verified ?? true,
-      content: newPostContent,
-      post_type: selectedPostType as Post['post_type'],
-      likes_count: 0,
-      comments_count: 0,
-      liked_by_current_user: false,
-      created_at: new Date().toISOString(),
-      image_url: attachedImage || undefined,
-      video_url: attachedVideo || undefined,
-      link_url: attachedLink || undefined,
-      link_title: attachedLinkTitle || undefined,
-      link_description: attachedLinkDesc || undefined,
-    };
+    setPosting(true);
+    try {
+      // Upload image to Supabase Storage if present
+      let imageUrl: string | undefined;
+      if (attachedImageFile) {
+        try {
+          imageUrl = await uploadPostImage(currentUser.id, attachedImageFile);
+        } catch (err) {
+          console.warn('Image upload failed:', err);
+        }
+      }
 
-    setPosts(prev => [newPost, ...prev]);
-    setNewPostContent('');
-    setSelectedPostType('update');
-    clearAttachments();
+      // Upload document to Supabase Storage if present
+      let documentUrl: string | undefined;
+      let documentName: string | undefined;
+      if (attachedDocFile && attachedDoc) {
+        try {
+          documentUrl = await uploadPostDocument(currentUser.id, attachedDocFile);
+          documentName = attachedDoc.name;
+        } catch (err) {
+          console.warn('Document upload failed:', err);
+        }
+      }
+
+      const dbPost = await createPost({
+        author_id: currentUser.id,
+        content: newPostContent,
+        post_type: selectedPostType,
+        image_url: imageUrl,
+        video_url: attachedVideo || undefined,
+        link_url: attachedLink || undefined,
+        link_title: attachedLinkTitle || undefined,
+        link_description: attachedLinkDesc || undefined,
+        link_image: attachedLinkImage || undefined,
+        document_url: documentUrl,
+        document_name: documentName,
+      });
+
+      // Build the full Post object for local state
+      const newPost: Post = {
+        id: dbPost.id,
+        author_id: currentUser.id,
+        author_name: currentUser.name || 'You',
+        author_company: currentUser.company || '',
+        author_type: currentUser.userType || 'dispatcher',
+        author_image: currentUser.image,
+        author_verified: currentUser.verified ?? false,
+        content: newPostContent,
+        post_type: selectedPostType as Post['post_type'],
+        likes_count: 0,
+        comments_count: 0,
+        liked_by_current_user: false,
+        created_at: dbPost.created_at,
+        image_url: imageUrl,
+        video_url: attachedVideo || undefined,
+        link_url: attachedLink || undefined,
+        link_title: attachedLinkTitle || undefined,
+        link_description: attachedLinkDesc || undefined,
+        link_image: attachedLinkImage || undefined,
+        document_url: documentUrl,
+        document_name: documentName,
+      };
+
+      setPosts(prev => [newPost, ...prev]);
+      setNewPostContent('');
+      setSelectedPostType('update');
+      clearAttachments();
+    } catch (err) {
+      console.warn('Failed to create post:', err);
+    } finally {
+      setPosting(false);
+    }
   };
 
-  const handleDeletePost = (postId: string) => {
+  const handleDeletePost = async (postId: string) => {
+    try {
+      await deletePostApi(postId);
+    } catch (err) {
+      console.warn('Failed to delete post:', err);
+    }
     setPosts(prev => prev.filter(p => p.id !== postId));
   };
 
   const clearAttachments = () => {
     setAttachedImage('');
+    setAttachedImageFile(null);
     setAttachedVideo('');
     setAttachedLink('');
     setAttachedLinkTitle('');
     setAttachedLinkDesc('');
+    setAttachedLinkImage('');
+    setUnfurling(false);
+    unfurlCacheRef.current.clear();
     setAttachedDoc(null);
+    setAttachedDocFile(null);
     setShowVideoInput(false);
     setShowLinkInput(false);
     setVideoInputValue('');
     setLinkInputValue('');
-    setLinkTitleValue('');
     setLinkDescValue('');
   };
 
@@ -136,18 +242,34 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate, onViewProfile }) =>
 
   const handleAddLink = () => {
     if (linkInputValue.trim()) {
-      setAttachedLink(linkInputValue.trim());
+      let url = linkInputValue.trim();
+      if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
+      setAttachedLink(url);
       setAttachedLinkTitle(linkTitleValue.trim());
       setAttachedLinkDesc(linkDescValue.trim());
       setShowLinkInput(false);
+      // Auto-unfurl if no title/desc provided
+      if (!linkTitleValue.trim() && !linkDescValue.trim()) {
+        setUnfurling(true);
+        fetch(`/api/unfurl-url?url=${encodeURIComponent(url)}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.title) setAttachedLinkTitle(data.title);
+            if (data.description) setAttachedLinkDesc(data.description);
+            if (data.image) setAttachedLinkImage(data.image);
+          })
+          .catch(() => {})
+          .finally(() => setUnfurling(false));
+      }
     }
   };
 
-  // Auto-detect YouTube URLs in content
+  // Auto-detect URLs in content (YouTube + general links with OG unfurl)
   const handleContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setNewPostContent(value);
 
+    // YouTube detection
     if (!attachedVideo) {
       const ytPatterns = [
         /(https?:\/\/(?:www\.)?youtube\.com\/watch\?[^\s]*v=[a-zA-Z0-9_-]{11})/,
@@ -158,11 +280,40 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate, onViewProfile }) =>
         const match = value.match(pattern);
         if (match) {
           setAttachedVideo(match[1]);
-          break;
+          return;
         }
       }
     }
-  }, [attachedVideo]);
+
+    // General URL detection — auto-unfurl OG metadata
+    // Supports: https://..., http://..., www.domain.com/..., domain.com/path
+    if (!attachedLink && !attachedVideo) {
+      const urlMatch = value.match(/(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.(com|org|net|io|gov|co|us|info|biz|edu)(\/[^\s]*)?)/i);
+      if (urlMatch) {
+        let detectedUrl = urlMatch[0];
+        // Normalize: prepend https:// if missing
+        if (!/^https?:\/\//i.test(detectedUrl)) {
+          detectedUrl = `https://${detectedUrl}`;
+        }
+        // Skip YouTube URLs (handled above) and already unfurled URLs
+        const isYouTube = /youtube\.com|youtu\.be/.test(detectedUrl);
+        if (!isYouTube && !unfurlCacheRef.current.has(detectedUrl)) {
+          unfurlCacheRef.current.add(detectedUrl);
+          setAttachedLink(detectedUrl);
+          setUnfurling(true);
+          fetch(`/api/unfurl-url?url=${encodeURIComponent(detectedUrl)}`)
+            .then(r => r.json())
+            .then(data => {
+              if (data.title) setAttachedLinkTitle(data.title);
+              if (data.description) setAttachedLinkDesc(data.description);
+              if (data.image) setAttachedLinkImage(data.image);
+            })
+            .catch(() => {})
+            .finally(() => setUnfurling(false));
+        }
+      }
+    }
+  }, [attachedVideo, attachedLink]);
 
   const hasContent = newPostContent.trim() || attachedImage || attachedVideo || attachedLink || attachedDoc;
   const filteredPosts = filterType === 'all' ? posts : posts.filter(p => p.post_type === filterType);
@@ -235,12 +386,32 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate, onViewProfile }) =>
                   </div>
                 )}
                 {attachedLink && !videoId && (
-                  <div className="relative inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/60 rounded-xl px-3 py-2">
-                    <Link2 className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm text-gray-700 max-w-[250px] truncate font-medium">{attachedLinkTitle || attachedLink}</span>
+                  <div className="relative border border-gray-200 rounded-xl overflow-hidden bg-white">
+                    {unfurling && (
+                      <div className="flex items-center gap-2 px-3 py-2 text-xs text-gray-500">
+                        <Loader2 className="w-3 h-3 animate-spin" /> Fetching preview...
+                      </div>
+                    )}
+                    {attachedLinkImage && !unfurling && (
+                      <img src={attachedLinkImage} alt="" className="w-full h-32 object-cover" />
+                    )}
+                    <div className="px-3 py-2">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">
+                        {(() => { try { return new URL(attachedLink).hostname; } catch { return attachedLink; } })()}
+                      </p>
+                      {attachedLinkTitle && (
+                        <p className="text-sm font-semibold text-gray-800 line-clamp-1">{attachedLinkTitle}</p>
+                      )}
+                      {attachedLinkDesc && (
+                        <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">{attachedLinkDesc}</p>
+                      )}
+                      {!attachedLinkTitle && !unfurling && (
+                        <p className="text-sm text-blue-600 truncate">{attachedLink}</p>
+                      )}
+                    </div>
                     <button
-                      onClick={() => { setAttachedLink(''); setAttachedLinkTitle(''); setAttachedLinkDesc(''); }}
-                      className="ml-1 w-5 h-5 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-red-500 transition-colors shadow-lg"
+                      onClick={() => { setAttachedLink(''); setAttachedLinkTitle(''); setAttachedLinkDesc(''); setAttachedLinkImage(''); unfurlCacheRef.current.clear(); }}
+                      className="absolute top-2 right-2 w-5 h-5 bg-gray-900/70 text-white rounded-full flex items-center justify-center hover:bg-red-500 transition-colors shadow-lg"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -368,10 +539,11 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate, onViewProfile }) =>
 
               <button
                 onClick={handleCreatePost}
-                disabled={!hasContent}
-                className="ml-auto px-5 py-2 btn-glossy-navy rounded-full text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                disabled={!hasContent || posting}
+                className="ml-auto px-5 py-2 btn-glossy-navy rounded-full text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0 flex items-center gap-2"
               >
-                Post
+                {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {posting ? 'Posting...' : 'Post'}
               </button>
             </div>
           </div>
@@ -400,34 +572,40 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate, onViewProfile }) =>
           ))}
         </div>
 
-        {/* Promoted Ad Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 overflow-hidden mb-4">
-          <div className="px-4 py-2 flex items-center justify-between bg-amber-50/50 border-b border-amber-100/50">
-            <span className="text-xs font-semibold text-amber-600 flex items-center gap-1.5">
-              <Megaphone className="w-3.5 h-3.5" />
-              Sponsored
-            </span>
-            <span className="text-[10px] text-gray-400 font-medium">Ad</span>
+        {/* Sponsored Ads */}
+        {sponsoredPosts.length > 0 ? (
+          <div className="mb-4">
+            <SponsoredPostCard sponsoredPost={sponsoredPosts[0]} />
           </div>
-          <div className="p-4">
-            <div className="flex items-start gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#F59E0B] to-[#D97706] rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
-                <Megaphone className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-gray-900 text-sm">Advertise on DispatchLink</h4>
-                <p className="text-sm text-gray-600 mt-1 leading-relaxed">Promote your services to dispatchers, carriers, and brokers. Ads start at $1/day.</p>
-                <button
-                  onClick={() => onNavigate?.('advertising')}
-                  className="mt-3 px-4 py-2 btn-glossy-primary rounded-lg text-xs transition-all inline-flex items-center gap-1.5"
-                >
-                  View Ad Options
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+        ) : (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 overflow-hidden mb-4">
+            <div className="px-4 py-2 flex items-center justify-between bg-amber-50/50 border-b border-amber-100/50">
+              <span className="text-xs font-semibold text-amber-600 flex items-center gap-1.5">
+                <Megaphone className="w-3.5 h-3.5" />
+                Sponsored
+              </span>
+              <span className="text-[10px] text-gray-400 font-medium">Ad</span>
+            </div>
+            <div className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#F59E0B] to-[#D97706] rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                  <Megaphone className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-gray-900 text-sm">Advertise on DispatchLink</h4>
+                  <p className="text-sm text-gray-600 mt-1 leading-relaxed">Promote your services to dispatchers, carriers, and brokers.</p>
+                  <button
+                    onClick={() => onNavigate?.('advertising')}
+                    className="mt-3 px-4 py-2 btn-glossy-primary rounded-lg text-xs transition-all inline-flex items-center gap-1.5"
+                  >
+                    View Ad Options
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Industry Resources */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 overflow-hidden mb-4">
@@ -458,14 +636,28 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate, onViewProfile }) =>
           </div>
         </div>
 
-        {/* Posts */}
+        {/* Posts with interleaved sponsored content */}
         <div className="space-y-4">
-          {filteredPosts.map(post => (
-            <PostCard key={post.id} post={post} onDelete={handleDeletePost} onViewProfile={onViewProfile} />
+          {filteredPosts.map((post, index) => (
+            <React.Fragment key={post.id}>
+              <PostCard post={post} onDelete={handleDeletePost} onViewProfile={onViewProfile} />
+              {/* Inject a sponsored post every 5th position */}
+              {sponsoredPosts.length > 0 && (index + 1) % 5 === 0 && (
+                <SponsoredPostCard
+                  key={`sponsored-${index}`}
+                  sponsoredPost={sponsoredPosts[(Math.floor(index / 5)) % sponsoredPosts.length]}
+                />
+              )}
+            </React.Fragment>
           ))}
         </div>
 
-        {filteredPosts.length === 0 && (
+        {loadingPosts ? (
+          <div className="text-center py-20 bg-white rounded-xl border border-gray-200/80 shadow-sm">
+            <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin mx-auto mb-3" />
+            <p className="text-sm text-gray-500">Loading feed...</p>
+          </div>
+        ) : filteredPosts.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-xl border border-gray-200/80 shadow-sm">
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
               <PenSquare className="w-7 h-7 text-gray-400" />
@@ -473,7 +665,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ onNavigate, onViewProfile }) =>
             <h3 className="text-lg font-semibold text-gray-700 mb-1">No posts yet</h3>
             <p className="text-sm text-gray-400">Be the first to share an update with the network.</p>
           </div>
-        )}
+        ) : null}
       </div>
     </section>
   );

@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, SlidersHorizontal, Grid, List, X, MapPin } from 'lucide-react';
+import { Search, SlidersHorizontal, Grid, List, X, MapPin, Loader2 } from 'lucide-react';
 import CarrierCard from './CarrierCard';
 import CarrierScoutUpgradeCTA from './CarrierScoutUpgradeCTA';
-
-const sampleCarriers: any[] = [];
+import { getUsersByType } from '@/lib/api';
 
 const equipmentOptions = ['Flatbed', 'Reefer', 'Dry Van', 'Tanker', 'Hazmat', 'Heavy Haul', 'Auto Transport', 'LTL', 'Intermodal'];
 const regionOptions = ['Nationwide', 'Northeast', 'Southeast', 'Midwest', 'Southwest', 'West Coast'];
@@ -11,20 +10,77 @@ const regionOptions = ['Nationwide', 'Northeast', 'Southeast', 'Midwest', 'South
 interface CarrierDirectoryProps {
   onViewProfile: (id: string) => void;
   onRequestPermission: (id: string) => void;
+  onVerifyCarrier?: (dot: string, mc: string) => void;
   initialSearchQuery?: string;
 }
 
-const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRequestPermission, initialSearchQuery = '' }) => {
+interface CarrierItem {
+  id: string;
+  name: string;
+  company: string;
+  image: string;
+  rating: number;
+  reviews: number;
+  dotNumber: string;
+  mcNumber: string;
+  fleetSize: number;
+  equipmentTypes: string[];
+  regions: string[];
+  verified: boolean;
+  insuranceVerified: boolean;
+}
+
+const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRequestPermission, onVerifyCarrier, initialSearchQuery = '' }) => {
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   useEffect(() => { setSearchQuery(initialSearchQuery); }, [initialSearchQuery]);
+  const [carriers, setCarriers] = useState<CarrierItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
+
+  // Fetch carriers from Supabase on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getUsersByType('carrier');
+        if (!cancelled && data) {
+          const mapped: CarrierItem[] = data.map((row: any) => {
+            const profile = Array.isArray(row.carrier_profiles)
+              ? row.carrier_profiles[0]
+              : row.carrier_profiles;
+            return {
+              id: row.id,
+              name: `${row.first_name} ${row.last_name}`,
+              company: row.company_name || `${row.first_name} ${row.last_name}`,
+              image: row.profile_image_url || '',
+              rating: 0,
+              reviews: 0,
+              dotNumber: profile?.dot_number || '',
+              mcNumber: profile?.mc_number || '',
+              fleetSize: profile?.fleet_size || 1,
+              equipmentTypes: profile?.equipment_types || [],
+              regions: profile?.operating_regions || [],
+              verified: row.verified || false,
+              insuranceVerified: false,
+            };
+          });
+          setCarriers(mapped);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch carriers from Supabase:', err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'rating' | 'fleetSize' | 'reviews'>('rating');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
 
   const filteredCarriers = useMemo(() => {
-    let results = [...sampleCarriers];
+    let results = [...carriers];
 
     // Search filter
     if (searchQuery) {
@@ -67,7 +123,33 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
     });
 
     return results;
-  }, [searchQuery, selectedEquipment, selectedRegions, sortBy]);
+  }, [carriers, searchQuery, selectedEquipment, selectedRegions, sortBy]);
+
+  // FMCSA lookup: when query looks like a DOT/MC number, navigate to verify page
+  const handleFMCSASearch = () => {
+    if (!searchQuery.trim() || !onVerifyCarrier) return;
+    const digits = searchQuery.replace(/[^0-9]/g, '');
+    if (digits.length >= 7) {
+      // Likely DOT number
+      onVerifyCarrier(digits, '');
+    } else if (digits.length >= 4) {
+      // Likely MC number
+      onVerifyCarrier('', digits);
+    } else if (searchQuery.trim()) {
+      // Non-numeric — still send to verify to let user refine
+      onVerifyCarrier('', '');
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      const digits = searchQuery.replace(/[^0-9]/g, '');
+      // If it's a number (DOT/MC), trigger FMCSA verification
+      if (digits.length >= 4 && onVerifyCarrier) {
+        handleFMCSASearch();
+      }
+    }
+  };
 
   const toggleEquipment = (equipment: string) => {
     setSelectedEquipment(prev =>
@@ -104,13 +186,23 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
                 placeholder="Search by company, DOT#, MC#, or equipment type..."
                 className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
               />
             </div>
 
-            {/* Filter Controls */}
+            {/* Search & Filter Controls */}
             <div className="flex gap-3">
+              {onVerifyCarrier && searchQuery.trim() && (
+                <button
+                  onClick={handleFMCSASearch}
+                  className="flex items-center gap-2 px-4 py-3 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors whitespace-nowrap"
+                >
+                  <Search className="w-5 h-5" />
+                  Verify FMCSA
+                </button>
+              )}
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center gap-2 px-4 py-3 border rounded-lg transition-colors ${
@@ -218,7 +310,14 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
 
         {/* Results Count */}
         <div className="mb-4 text-sm text-gray-600">
-          Showing {filteredCarriers.length} carrier{filteredCarriers.length !== 1 ? 's' : ''}
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading carriers...
+            </span>
+          ) : (
+            `Showing ${filteredCarriers.length} carrier${filteredCarriers.length !== 1 ? 's' : ''}`
+          )}
         </div>
 
         {/* Carrier Grid */}
@@ -246,7 +345,7 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
         </div>
 
         {/* No Results */}
-        {filteredCarriers.length === 0 && (
+        {!loading && filteredCarriers.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="w-8 h-8 text-gray-400" />

@@ -1,8 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, SlidersHorizontal, Grid, List, X } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Search, SlidersHorizontal, Grid, List, X, Loader2 } from 'lucide-react';
 import DispatcherCard from './DispatcherCard';
-import { useAppContext } from '@/contexts/AppContext';
+import { useAppContext, type CurrentUser } from '@/contexts/AppContext';
 import { computeVerificationTier, crossReferenceCarriers } from '@/lib/verification';
+import { getUsersByType } from '@/lib/api';
+import { dbUserToCurrentUser } from '@/lib/mappers';
 
 const specialtyOptions = ['Flatbed', 'Reefer', 'Dry Van', 'Hazmat', 'Tanker', 'Heavy Haul', 'Auto Transport', 'LTL', 'Expedited'];
 
@@ -16,12 +18,67 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
   const { registeredUsers } = useAppContext();
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   useEffect(() => { setSearchQuery(initialSearchQuery); }, [initialSearchQuery]);
+  const [supabaseUsers, setSupabaseUsers] = useState<CurrentUser[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch dispatchers from Supabase on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getUsersByType('dispatcher');
+        if (!cancelled && data) {
+          const mapped = data.map((row: any) => dbUserToCurrentUser(row));
+          setSupabaseUsers(mapped);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch dispatchers from Supabase:', err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Merge Supabase users with local registeredUsers (Supabase takes priority, dedup by ID)
+  const allDispatchers = useMemo(() => {
+    const byId = new Map<string, CurrentUser>();
+    // Local users first
+    registeredUsers
+      .filter(u => u.userType === 'dispatcher')
+      .forEach(u => byId.set(u.id, u));
+    // Supabase users override local
+    supabaseUsers.forEach(u => byId.set(u.id, u));
+    return Array.from(byId.values());
+  }, [registeredUsers, supabaseUsers]);
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'rating' | 'experience' | 'reviews'>('rating');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [experienceFilter, setExperienceFilter] = useState<'all' | 'beginner' | 'intermediate' | 'experienced'>('all');
   const [verificationFilter, setVerificationFilter] = useState<'all' | 'verified' | 'beginners'>('all');
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const autocompleteRef = useRef<HTMLDivElement>(null);
+
+  // Close autocomplete on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (autocompleteRef.current && !autocompleteRef.current.contains(e.target as Node)) {
+        setShowAutocomplete(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Autocomplete matches
+  const autocompleteResults = useMemo(() => {
+    if (searchQuery.length < 2) return [];
+    const q = searchQuery.toLowerCase();
+    return allDispatchers
+      .filter(d => d.name.toLowerCase().includes(q) || d.company.toLowerCase().includes(q))
+      .slice(0, 6);
+  }, [allDispatchers, searchQuery]);
 
   // Build set of registered carrier MC#s for cross-referencing
   const registeredCarrierMCs = useMemo(() => {
@@ -35,11 +92,8 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
   }, [registeredUsers]);
 
   const filteredDispatchers = useMemo(() => {
-    // Only show dispatchers
-    let dispatchers = registeredUsers.filter(u => u.userType === 'dispatcher');
-
     // Map to the shape DispatcherCard expects, with cross-referenced carriers
-    let results = dispatchers.map(d => {
+    let results = allDispatchers.map(d => {
       const carriers = d.carriersWorkedWith
         ? crossReferenceCarriers(d.carriersWorkedWith, registeredCarrierMCs)
         : [];
@@ -65,7 +119,7 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
       const query = searchQuery.toLowerCase();
       results = results.filter(d => {
         // Also search the raw dispatcher's carriersWorkedWith MC#s
-        const raw = dispatchers.find(u => u.id === d.id);
+        const raw = allDispatchers.find(u => u.id === d.id);
         const mcMatch = raw?.carriersWorkedWith?.some(
           c => c.mcNumber.toLowerCase().includes(query)
         ) ?? false;
@@ -123,7 +177,7 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
     });
 
     return results;
-  }, [registeredUsers, registeredCarrierMCs, searchQuery, selectedSpecialties, sortBy, experienceFilter, verificationFilter]);
+  }, [allDispatchers, registeredCarrierMCs, searchQuery, selectedSpecialties, sortBy, experienceFilter, verificationFilter]);
 
   const toggleSpecialty = (specialty: string) => {
     setSelectedSpecialties(prev =>
@@ -147,16 +201,46 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
         {/* Search and Filters Bar */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6 glass-light">
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Input */}
-            <div className="flex-1 relative">
+            {/* Search Input with Autocomplete */}
+            <div className="flex-1 relative" ref={autocompleteRef}>
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowAutocomplete(e.target.value.length >= 2);
+                }}
+                onFocus={() => searchQuery.length >= 2 && setShowAutocomplete(true)}
                 placeholder="Search by name, company, or specialty..."
                 className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none"
               />
+              {showAutocomplete && autocompleteResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
+                  {autocompleteResults.map(d => (
+                    <button
+                      key={d.id}
+                      onClick={() => {
+                        setShowAutocomplete(false);
+                        onViewProfile(d.id);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden">
+                        {d.image ? (
+                          <img src={d.image} alt={d.name} className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                          d.name.charAt(0)
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{d.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{d.company}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Filter Controls */}
@@ -297,7 +381,14 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
 
         {/* Results Count */}
         <div className="mb-4 text-sm text-gray-600">
-          Showing {filteredDispatchers.length} dispatcher{filteredDispatchers.length !== 1 ? 's' : ''}
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading dispatchers...
+            </span>
+          ) : (
+            `Showing ${filteredDispatchers.length} dispatcher${filteredDispatchers.length !== 1 ? 's' : ''}`
+          )}
         </div>
 
         {/* Dispatcher Grid */}
@@ -317,7 +408,7 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
         </div>
 
         {/* No Results */}
-        {filteredDispatchers.length === 0 && (
+        {!loading && filteredDispatchers.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="w-8 h-8 text-gray-400" />

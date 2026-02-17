@@ -2,5 +2,11 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/" }]
+  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/" }],
+  "crons": [
+    {
+      "path": "/api/inject-ads",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }

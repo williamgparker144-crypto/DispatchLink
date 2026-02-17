@@ -30,7 +30,21 @@ async function fetchFromServer(mc: string): Promise<FMCSACarrierResult | null> {
     });
     if (!res.ok) return null;
     const data = await res.json();
-    // If the server returned an error field, treat as unavailable
+    if (data.error && !data.found) return null;
+    return { ...data, liveVerified: true };
+  } catch {
+    return null;
+  }
+}
+
+async function fetchFromServerByDOT(dot: string): Promise<FMCSACarrierResult | null> {
+  try {
+    const cleanDOT = dot.replace(/[^0-9]/g, '');
+    const res = await fetch(`/api/verify-carrier?dot=${encodeURIComponent(cleanDOT)}`, {
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
     if (data.error && !data.found) return null;
     return { ...data, liveVerified: true };
   } catch {
@@ -76,7 +90,7 @@ function demoLookup(mc: string): FMCSACarrierResult | null {
   return null;
 }
 
-// ── Exported entry point ─────────────────────────────────────────────
+// ── Exported entry points ────────────────────────────────────────────
 export async function verifyCarrierMC(mcNumber: string): Promise<FMCSACarrierResult> {
   // Try live verification via our serverless function
   const live = await fetchFromServer(mcNumber);
@@ -95,6 +109,23 @@ export async function verifyCarrierMC(mcNumber: string): Promise<FMCSACarrierRes
     legalName: '',
     mcNumber: normalized,
     dotNumber: '',
+    statusCode: '',
+    liveVerified: false,
+    error: 'unable_to_verify',
+  };
+}
+
+export async function verifyCarrierDOT(dotNumber: string): Promise<FMCSACarrierResult> {
+  const live = await fetchFromServerByDOT(dotNumber);
+  if (live) return live;
+
+  const cleanDOT = dotNumber.replace(/[^0-9]/g, '');
+  return {
+    found: false,
+    active: false,
+    legalName: '',
+    mcNumber: '',
+    dotNumber: cleanDOT ? `DOT${cleanDOT}` : dotNumber.toUpperCase(),
     statusCode: '',
     liveVerified: false,
     error: 'unable_to_verify',

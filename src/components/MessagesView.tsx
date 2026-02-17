@@ -1,35 +1,169 @@
-import React, { useState } from 'react';
-import { Send, Search, MessageSquare, Shield } from 'lucide-react';
-import type { Conversation, Message } from '@/types';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Send, Search, MessageSquare, Loader2 } from 'lucide-react';
+import { useAppContext } from '@/contexts/AppContext';
+import { getConversations, getMessages, sendMessage, markMessagesRead, getUserById, getUnreadCountPerConversation } from '@/lib/api';
 
-const sampleConversations: Conversation[] = [];
+interface ConversationDisplay {
+  id: string;
+  participantId: string;
+  participantName: string;
+  participantCompany: string;
+  participantType: string;
+  participantImage?: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  unreadCount: number;
+}
 
-const sampleMessages: Record<string, Message[]> = {};
+interface MessageDisplay {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  content: string;
+  read: boolean;
+  createdAt: string;
+}
 
-const MessagesView: React.FC = () => {
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+interface MessagesViewProps {
+  initialConversationId?: string | null;
+}
+
+const MessagesView: React.FC<MessagesViewProps> = ({ initialConversationId }) => {
+  const { currentUser } = useAppContext();
+  const [conversations, setConversations] = useState<ConversationDisplay[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(initialConversationId || null);
+  const [messages, setMessages] = useState<MessageDisplay[]>([]);
   const [messageInput, setMessageInput] = useState('');
-  const [messages, setMessages] = useState(sampleMessages);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loadingConvos, setLoadingConvos] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const currentUserId = currentUser?.id || '';
 
-  const handleSendMessage = () => {
-    if (!messageInput.trim() || !selectedConversation) return;
+  const loadConversations = useCallback(async () => {
+    if (!currentUserId) return;
+    setLoadingConvos(true);
+    try {
+      const data = await getConversations(currentUserId);
+      if (!data) { setConversations([]); return; }
 
-    const newMessage: Message = {
-      id: `m-${Date.now()}`,
-      conversation_id: selectedConversation,
-      sender_id: 'demo-user-1',
-      sender_name: 'You',
-      content: messageInput,
-      read: true,
-      created_at: new Date().toISOString(),
-    };
+      const resolved: ConversationDisplay[] = [];
+      for (const conv of data) {
+        const otherId = conv.participant_a === currentUserId ? conv.participant_b : conv.participant_a;
+        try {
+          const [user, unread] = await Promise.all([
+            getUserById(otherId),
+            getUnreadCountPerConversation(conv.id, currentUserId),
+          ]);
+          if (!user) continue;
+          resolved.push({
+            id: conv.id,
+            participantId: otherId,
+            participantName: `${user.first_name} ${user.last_name}`,
+            participantCompany: user.company_name || '',
+            participantType: user.user_type || '',
+            participantImage: user.profile_image_url,
+            lastMessage: conv.last_message || '',
+            lastMessageAt: conv.last_message_at || conv.created_at,
+            unreadCount: unread,
+          });
+        } catch {
+          // Skip unresolvable
+        }
+      }
+      setConversations(resolved);
+    } catch (err) {
+      console.warn('Failed to load conversations:', err);
+    } finally {
+      setLoadingConvos(false);
+    }
+  }, [currentUserId]);
 
-    setMessages(prev => ({
-      ...prev,
-      [selectedConversation]: [...(prev[selectedConversation] || []), newMessage],
-    }));
+  useEffect(() => { loadConversations(); }, [loadConversations]);
+
+  // Auto-select initial conversation after loading
+  useEffect(() => {
+    if (initialConversationId && conversations.length > 0) {
+      setSelectedConversation(initialConversationId);
+    }
+  }, [initialConversationId, conversations]);
+
+  // Load messages when conversation selected
+  useEffect(() => {
+    if (!selectedConversation || !currentUserId) return;
+    let cancelled = false;
+    (async () => {
+      setLoadingMessages(true);
+      try {
+        const data = await getMessages(selectedConversation);
+        if (cancelled) return;
+        const mapped: MessageDisplay[] = (data || []).map((m: any) => ({
+          id: m.id,
+          conversationId: m.conversation_id,
+          senderId: m.sender_id,
+          content: m.content,
+          read: m.read,
+          createdAt: m.created_at,
+        }));
+        setMessages(mapped);
+        // Mark as read
+        await markMessagesRead(selectedConversation, currentUserId);
+        // Clear unread count for this conversation locally
+        setConversations(prev =>
+          prev.map(c => c.id === selectedConversation ? { ...c, unreadCount: 0 } : c)
+        );
+      } catch (err) {
+        console.warn('Failed to load messages:', err);
+      } finally {
+        if (!cancelled) setLoadingMessages(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [selectedConversation, currentUserId]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    if (!messageInput.trim() || !selectedConversation || !currentUserId) return;
+    const content = messageInput.trim();
     setMessageInput('');
+
+    // Optimistic update
+    const optimistic: MessageDisplay = {
+      id: `temp-${Date.now()}`,
+      conversationId: selectedConversation,
+      senderId: currentUserId,
+      content,
+      read: true,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, optimistic]);
+
+    // Update conversation last message locally
+    setConversations(prev =>
+      prev.map(c =>
+        c.id === selectedConversation
+          ? { ...c, lastMessage: content, lastMessageAt: new Date().toISOString() }
+          : c
+      )
+    );
+
+    try {
+      const sent = await sendMessage({
+        conversation_id: selectedConversation,
+        sender_id: currentUserId,
+        content,
+      });
+      // Replace optimistic with real
+      setMessages(prev =>
+        prev.map(m => m.id === optimistic.id ? { ...optimistic, id: sent.id } : m)
+      );
+    } catch (err) {
+      console.warn('Failed to send message:', err);
+    }
   };
 
   const getTypeBadge = (type: string) => {
@@ -40,6 +174,8 @@ const MessagesView: React.FC = () => {
         return <span className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-xs">Carrier</span>;
       case 'broker':
         return <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">Broker</span>;
+      case 'advertiser':
+        return <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">Advertiser</span>;
       default:
         return null;
     }
@@ -50,6 +186,7 @@ const MessagesView: React.FC = () => {
     const date = new Date(dateStr);
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'now';
     if (diffMins < 60) return `${diffMins}m`;
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `${diffHours}h`;
@@ -57,13 +194,12 @@ const MessagesView: React.FC = () => {
     return `${diffDays}d`;
   };
 
-  const filteredConversations = sampleConversations.filter(c =>
-    c.participant_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.participant_company.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredConversations = conversations.filter(c =>
+    c.participantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.participantCompany.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const selectedConv = sampleConversations.find(c => c.id === selectedConversation);
-  const currentMessages = selectedConversation ? (messages[selectedConversation] || []) : [];
+  const selectedConv = conversations.find(c => c.id === selectedConversation);
 
   return (
     <section className="page-bg min-h-screen">
@@ -91,35 +227,48 @@ const MessagesView: React.FC = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto">
-                {filteredConversations.map(conv => (
-                  <button
-                    key={conv.id}
-                    onClick={() => setSelectedConversation(conv.id)}
-                    className={`w-full p-3 flex items-start gap-3 hover:bg-gray-50 transition-colors text-left ${
-                      selectedConversation === conv.id ? 'bg-blue-50 border-l-2 border-[#1E3A5F]' : ''
-                    }`}
-                  >
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#1E3A5F] to-[#1E3A5F]/80 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                      {conv.participant_image ? (
-                        <img src={conv.participant_image} alt={conv.participant_name} className="w-10 h-10 rounded-lg object-cover" />
-                      ) : (
-                        conv.participant_name.charAt(0)
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-900 truncate">{conv.participant_name}</span>
-                        <span className="text-xs text-gray-400">{timeAgo(conv.last_message_at)}</span>
+                {loadingConvos ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin" />
+                  </div>
+                ) : filteredConversations.length === 0 ? (
+                  <div className="text-center py-12 px-4">
+                    <MessageSquare className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                    <p className="text-sm text-gray-500">No conversations yet</p>
+                  </div>
+                ) : (
+                  filteredConversations.map(conv => (
+                    <button
+                      key={conv.id}
+                      onClick={() => setSelectedConversation(conv.id)}
+                      className={`w-full p-3 flex items-start gap-3 hover:bg-gray-50 transition-colors text-left ${
+                        selectedConversation === conv.id ? 'bg-blue-50 border-l-2 border-[#1E3A5F]' : ''
+                      }`}
+                    >
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#1E3A5F] to-[#1E3A5F]/80 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden">
+                        {conv.participantImage ? (
+                          <img src={conv.participantImage} alt={conv.participantName} className="w-10 h-10 rounded-lg object-cover" />
+                        ) : (
+                          conv.participantName.charAt(0)
+                        )}
                       </div>
-                      <p className="text-xs text-gray-500 truncate">{conv.last_message}</p>
-                    </div>
-                    {conv.unread_count > 0 && (
-                      <span className="w-5 h-5 bg-[#3B82F6] text-white rounded-full text-xs flex items-center justify-center flex-shrink-0">
-                        {conv.unread_count}
-                      </span>
-                    )}
-                  </button>
-                ))}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-900 truncate">{conv.participantName}</span>
+                          {conv.lastMessageAt && (
+                            <span className="text-xs text-gray-400">{timeAgo(conv.lastMessageAt)}</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 truncate">{conv.lastMessage || 'Start a conversation'}</p>
+                      </div>
+                      {conv.unreadCount > 0 && (
+                        <span className="w-5 h-5 bg-[#3B82F6] text-white rounded-full text-xs flex items-center justify-center flex-shrink-0">
+                          {conv.unreadCount}
+                        </span>
+                      )}
+                    </button>
+                  ))
+                )}
               </div>
             </div>
 
@@ -129,43 +278,57 @@ const MessagesView: React.FC = () => {
                 <>
                   {/* Header */}
                   <div className="p-4 border-b border-gray-100 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#1E3A5F] to-[#1E3A5F]/80 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                      {selectedConv.participant_image ? (
-                        <img src={selectedConv.participant_image} alt={selectedConv.participant_name} className="w-10 h-10 rounded-lg object-cover" />
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#1E3A5F] to-[#1E3A5F]/80 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden">
+                      {selectedConv.participantImage ? (
+                        <img src={selectedConv.participantImage} alt={selectedConv.participantName} className="w-10 h-10 rounded-lg object-cover" />
                       ) : (
-                        selectedConv.participant_name.charAt(0)
+                        selectedConv.participantName.charAt(0)
                       )}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-[#1E3A5F]">{selectedConv.participant_name}</span>
-                        {getTypeBadge(selectedConv.participant_type)}
+                        <span className="font-semibold text-[#1E3A5F]">{selectedConv.participantName}</span>
+                        {getTypeBadge(selectedConv.participantType)}
                       </div>
-                      <p className="text-xs text-gray-500">{selectedConv.participant_company}</p>
+                      <p className="text-xs text-gray-500">{selectedConv.participantCompany}</p>
                     </div>
                   </div>
 
                   {/* Messages */}
                   <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                    {currentMessages.map(msg => (
-                      <div
-                        key={msg.id}
-                        className={`flex ${msg.sender_id === 'demo-user-1' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div
-                          className={`max-w-[70%] px-4 py-2.5 rounded-2xl ${
-                            msg.sender_id === 'demo-user-1'
-                              ? 'bg-[#1E3A5F] text-white rounded-br-md'
-                              : 'bg-gray-100 text-gray-800 rounded-bl-md'
-                          }`}
-                        >
-                          <p className="text-sm">{msg.content}</p>
-                          <p className={`text-xs mt-1 ${msg.sender_id === 'demo-user-1' ? 'text-blue-200' : 'text-gray-400'}`}>
-                            {timeAgo(msg.created_at)}
-                          </p>
+                    {loadingMessages ? (
+                      <div className="flex items-center justify-center h-full">
+                        <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin" />
+                      </div>
+                    ) : messages.length === 0 ? (
+                      <div className="flex items-center justify-center h-full text-center">
+                        <div>
+                          <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                          <p className="text-sm text-gray-500">No messages yet. Say hello!</p>
                         </div>
                       </div>
-                    ))}
+                    ) : (
+                      messages.map(msg => (
+                        <div
+                          key={msg.id}
+                          className={`flex ${msg.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div
+                            className={`max-w-[70%] px-4 py-2.5 rounded-2xl ${
+                              msg.senderId === currentUserId
+                                ? 'bg-[#1E3A5F] text-white rounded-br-md'
+                                : 'bg-gray-100 text-gray-800 rounded-bl-md'
+                            }`}
+                          >
+                            <p className="text-sm">{msg.content}</p>
+                            <p className={`text-xs mt-1 ${msg.senderId === currentUserId ? 'text-blue-200' : 'text-gray-400'}`}>
+                              {timeAgo(msg.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    <div ref={messagesEndRef} />
                   </div>
 
                   {/* Input */}
@@ -193,7 +356,12 @@ const MessagesView: React.FC = () => {
                 <div className="flex-1 flex items-center justify-center text-center">
                   <div>
                     <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-700 mb-2">Connect with carriers to start messaging</h3>
+                    <h3 className="text-lg font-medium text-gray-700 mb-2">
+                      {conversations.length > 0
+                        ? 'Select a conversation'
+                        : 'Connect with others to start messaging'
+                      }
+                    </h3>
                   </div>
                 </div>
               )}

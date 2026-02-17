@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Shield, Users, Handshake, ChevronRight, Briefcase, MapPin, CheckCircle, User } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
 import type { CurrentUser } from '@/contexts/AppContext';
+import { getPlatformUserCounts } from '@/lib/api';
 
 interface HeroProps {
   onGetStarted: () => void;
@@ -71,10 +72,17 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted, onLearnMore, onSearch, onView
     }
   };
 
-  // Count registered users by type
-  const dispatcherCount = registeredUsers.filter(u => u.userType === 'dispatcher').length;
-  const carrierCount = registeredUsers.filter(u => u.userType === 'carrier').length;
-  const brokerCount = registeredUsers.filter(u => u.userType === 'broker').length;
+  // Fetch real platform user counts from Supabase
+  const [platformCounts, setPlatformCounts] = useState({ dispatchers: 0, carriers: 0, brokers: 0 });
+  useEffect(() => {
+    getPlatformUserCounts()
+      .then(counts => setPlatformCounts(counts))
+      .catch(() => { /* keep at 0 */ });
+  }, []);
+
+  const dispatcherCount = platformCounts.dispatchers;
+  const carrierCount = platformCounts.carriers;
+  const brokerCount = platformCounts.brokers;
 
   return (
     <section className="relative" style={{ background: 'linear-gradient(135deg, #0f2027 0%, #1E3A5F 30%, #203a5c 50%, #2c5282 70%, #1E3A5F 100%)' }}>

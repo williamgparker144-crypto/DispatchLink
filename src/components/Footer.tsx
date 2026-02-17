@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, MapPin, Facebook, Linkedin, ExternalLink } from 'lucide-react';
+import { MapPin, Facebook, Linkedin, ExternalLink } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (view: string) => void;
@@ -24,11 +24,10 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
     ],
     company: [
       { label: 'CarrierScout', action: () => onNavigate('carrierscout') },
-      { label: 'Contact', href: 'mailto:support@dispatchlinkpro.com' },
     ],
     legal: [
-      { label: 'Terms of Service', href: 'mailto:support@dispatchlinkpro.com?subject=Terms%20of%20Service%20Request' },
-      { label: 'Privacy Policy', href: 'mailto:support@dispatchlinkpro.com?subject=Privacy%20Policy%20Request' },
+      { label: 'Terms of Service', action: () => onNavigate('terms') },
+      { label: 'Privacy Policy', action: () => onNavigate('privacy') },
     ],
   };
 
@@ -53,21 +52,14 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             
             {/* Contact Info */}
             <div className="space-y-3">
-              <a href="mailto:support@dispatchlinkpro.com" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors text-sm">
-                <Mail className="w-4 h-4" />
-                support@dispatchlinkpro.com
-              </a>
               <div className="flex items-center gap-3 text-gray-400 text-sm">
                 <MapPin className="w-4 h-4" />
-                Dallas, TX 75201
+                Fayetteville, NC
               </div>
             </div>
 
             {/* Social Links */}
             <div className="flex gap-3 mt-6">
-              <a href="mailto:support@dispatchlinkpro.com" title="Email Us" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
-                <Mail className="w-5 h-5" />
-              </a>
               <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn" className="p-2 bg-white/10 rounded-lg hover:bg-[#3B82F6] transition-colors">
                 <Linkedin className="w-5 h-5" />
               </a>
@@ -216,10 +208,10 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
       <div className="bg-[#0f1f33]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-xs text-gray-500 text-center">
-            DispatchLink is a professional networking platform for the trucking industry. We do not act as a broker, carrier, or shipper. 
-            Users are responsible for their own regulatory compliance. Dispatchers arranging transportation for 
-            compensation may need broker authority from the FMCSA. This platform does not provide legal, tax, 
-            or regulatory advice. Consult qualified professionals for specific guidance.
+            DispatchLink is a professional networking platform for the trucking industry. We do not act as a broker, carrier, or shipper.
+            Users are responsible for their own regulatory compliance. Dispatchers operate as agents for carriers under written dispatch agreements
+            and book loads based on the carrier's active FMCSA authority. Brokers must hold their own FMCSA broker authority to arrange
+            transportation on behalf of shippers. This platform does not provide legal, tax, or regulatory advice. Consult qualified professionals for specific guidance.
           </p>
         </div>
       </div>

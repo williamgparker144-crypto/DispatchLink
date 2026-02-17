@@ -26,7 +26,7 @@ const BrokerCard: React.FC<BrokerCardProps> = ({ broker, onViewProfile }) => {
       <div className="relative">
         <div className="h-28 bg-gradient-to-r from-purple-600 to-purple-800" />
         <div className="absolute -bottom-10 left-6">
-          <div className="relative">
+          <div className="relative cursor-pointer" onClick={() => onViewProfile(broker.id)}>
             <div className="w-20 h-20 bg-white rounded-xl shadow-lg flex items-center justify-center border-4 border-white">
               {broker.image ? (
                 <img src={broker.image} alt={broker.company} className="w-full h-full rounded-lg object-cover" />
@@ -47,10 +47,18 @@ const BrokerCard: React.FC<BrokerCardProps> = ({ broker, onViewProfile }) => {
       <div className="pt-12 p-6">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="font-bold text-[#1E3A5F] text-lg group-hover:text-purple-600 transition-colors">
+            <h3
+              className="font-bold text-[#1E3A5F] text-lg group-hover:text-purple-600 transition-colors cursor-pointer hover:underline"
+              onClick={() => onViewProfile(broker.id)}
+            >
               {broker.company}
             </h3>
-            <p className="text-sm text-gray-500">{broker.name}</p>
+            <p
+              className="text-sm text-gray-500 cursor-pointer hover:underline"
+              onClick={() => onViewProfile(broker.id)}
+            >
+              {broker.name}
+            </p>
           </div>
           <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
             <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
@@ -97,7 +105,7 @@ const BrokerCard: React.FC<BrokerCardProps> = ({ broker, onViewProfile }) => {
             View Profile
             <ChevronRight className="w-4 h-4" />
           </button>
-          <ConnectionButton status="none" onConnect={() => {}} size="sm" />
+          <ConnectionButton targetUserId={broker.id} size="sm" />
         </div>
       </div>
     </div>

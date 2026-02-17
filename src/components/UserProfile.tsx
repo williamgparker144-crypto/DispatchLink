@@ -1,15 +1,15 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Camera, Edit3, MapPin, Briefcase, Shield, Users, MessageSquare, Eye, X, Check,
   ImageIcon, Globe, Link2, Palette, Upload, FileText, Heart, Share2, Bookmark,
-  Award, Star, Calendar, Mail, Sparkles, Clock, Plus, Trash2, Loader2, AlertCircle, CheckCircle
+  Award, Star, Calendar, Mail, Sparkles, Clock, Plus, Trash2, Loader2, AlertCircle, CheckCircle, Code, Grid
 } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
 import type { CarrierReference } from '@/contexts/AppContext';
 import { computeVerificationTier, getVerificationBadgeInfo } from '@/lib/verification';
-import { verifyCarrierMC } from '@/lib/fmcsa';
+import { verifyCarrierMC, verifyCarrierDOT } from '@/lib/fmcsa';
 import { compressImage } from '@/lib/imageCompress';
-import { uploadProfileImage, uploadCoverImage, uploadAgreementFile } from '@/lib/api';
+import { uploadProfileImage, uploadCoverImage, uploadAgreementFile, getConnections, getPostsByUser, createPost, deletePost, uploadPostImage, uploadPostDocument, getProfileViewCount } from '@/lib/api';
 import PostCard from './PostCard';
 import type { Post, ViewableUser } from '@/types';
 
@@ -48,7 +48,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
   const [themeModalOpen, setThemeModalOpen] = useState(false);
   const [frameModalOpen, setFrameModalOpen] = useState(false);
   const [avatarFrame, setAvatarFrame] = useState<string>('none');
-  const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'activity'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'activity' | 'gallery' | 'embed'>('posts');
 
   // File upload refs
   const profilePhotoRef = useRef<HTMLInputElement>(null);
@@ -70,6 +70,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
   const [editCarrierScout, setEditCarrierScout] = useState(currentUser?.carrierScoutSubscribed ?? false);
   const [newCarrierName, setNewCarrierName] = useState('');
   const [newCarrierMC, setNewCarrierMC] = useState('');
+  const [carrierIdType, setCarrierIdType] = useState<'mc' | 'dot'>('mc');
   const [carrierVerifying, setCarrierVerifying] = useState(false);
   const [carrierVerifyError, setCarrierVerifyError] = useState('');
   const [carrierVerifySuccess, setCarrierVerifySuccess] = useState('');
@@ -87,11 +88,114 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
   // Cover theme
   const [selectedTheme, setSelectedTheme] = useState(COVER_THEMES[0].gradient);
 
+  // Connection count from Supabase
+  const [connectionCount, setConnectionCount] = useState(0);
+  const [profileViews, setProfileViews] = useState(0);
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const isSupabaseId = !currentUser.id.startsWith('user-') && !currentUser.id.startsWith('seed-');
+    if (!isSupabaseId) return;
+    (async () => {
+      try {
+        const accepted = await getConnections(currentUser.id);
+        setConnectionCount(accepted?.length || 0);
+      } catch { /* keep 0 */ }
+    })();
+    // Fetch profile view count
+    getProfileViewCount(currentUser.id).then(count => setProfileViews(count)).catch(() => {});
+  }, [currentUser?.id]);
+
+  // Gallery
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const galleryUploadRef = useRef<HTMLInputElement>(null);
+
+  // Embed codes
+  const [embedCodes, setEmbedCodes] = useState<{ id: string; label: string; code: string }[]>([]);
+  const [newEmbedLabel, setNewEmbedLabel] = useState('');
+  const [newEmbedCode, setNewEmbedCode] = useState('');
+
+  // Load gallery + embeds from localStorage
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const stored = localStorage.getItem(`dispatchlink_gallery_${currentUser.id}`);
+    if (stored) try { setGalleryImages(JSON.parse(stored)); } catch {}
+    const storedEmbeds = localStorage.getItem(`dispatchlink_embeds_${currentUser.id}`);
+    if (storedEmbeds) try { setEmbedCodes(JSON.parse(storedEmbeds)); } catch {}
+  }, [currentUser?.id]);
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !currentUser?.id) return;
+    setGalleryUploading(true);
+    const newUrls: string[] = [];
+    for (const file of Array.from(files)) {
+      try {
+        const url = await uploadPostImage(currentUser.id, file);
+        if (url) newUrls.push(url);
+      } catch {}
+    }
+    if (newUrls.length > 0) {
+      const updated = [...galleryImages, ...newUrls];
+      setGalleryImages(updated);
+      localStorage.setItem(`dispatchlink_gallery_${currentUser.id}`, JSON.stringify(updated));
+    }
+    setGalleryUploading(false);
+    if (galleryUploadRef.current) galleryUploadRef.current.value = '';
+  };
+
+  const removeGalleryImage = (index: number) => {
+    const updated = galleryImages.filter((_, i) => i !== index);
+    setGalleryImages(updated);
+    if (currentUser?.id) localStorage.setItem(`dispatchlink_gallery_${currentUser.id}`, JSON.stringify(updated));
+  };
+
+  const handleAddEmbed = () => {
+    if (!newEmbedCode.trim() || !currentUser?.id) return;
+    const newEmbed = { id: `embed-${Date.now()}`, label: newEmbedLabel.trim() || 'Untitled', code: newEmbedCode.trim() };
+    const updated = [...embedCodes, newEmbed];
+    setEmbedCodes(updated);
+    localStorage.setItem(`dispatchlink_embeds_${currentUser.id}`, JSON.stringify(updated));
+    setNewEmbedLabel('');
+    setNewEmbedCode('');
+  };
+
+  const removeEmbed = (id: string) => {
+    const updated = embedCodes.filter(e => e.id !== id);
+    setEmbedCodes(updated);
+    if (currentUser?.id) localStorage.setItem(`dispatchlink_embeds_${currentUser.id}`, JSON.stringify(updated));
+  };
+
   // Personal feed
   const [posts, setPosts] = useState<Post[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
   const [newPostContent, setNewPostContent] = useState('');
   const [postImage, setPostImage] = useState<string | null>(null);
-  const [postDoc, setPostDoc] = useState<{ name: string; url: string } | null>(null);
+  const [postImageFile, setPostImageFile] = useState<File | null>(null);
+  const [postDoc, setPostDoc] = useState<{ name: string; url: string; file?: File } | null>(null);
+  const [postSubmitting, setPostSubmitting] = useState(false);
+
+  // Fetch user's posts from Supabase
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const isSupabaseId = !currentUser.id.startsWith('user-') && !currentUser.id.startsWith('seed-');
+    if (!isSupabaseId) {
+      setPostsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getPostsByUser(currentUser.id, currentUser.id);
+        if (!cancelled) setPosts(data);
+      } catch {
+        // Silently fail
+      } finally {
+        if (!cancelled) setPostsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [currentUser?.id]);
 
   if (!currentUser) {
     return (
@@ -156,11 +260,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
     const file = e.target.files?.[0];
     if (!file) return;
     setCoverPhotoFile(file);
+    // Use full-quality preview for cover photos — don't compress
     const reader = new FileReader();
-    reader.onloadend = async () => {
-      const raw = reader.result as string;
-      const compressed = await compressImage(raw);
-      setCoverPreview(compressed);
+    reader.onloadend = () => {
+      setCoverPreview(reader.result as string);
     };
     reader.readAsDataURL(file);
   };
@@ -173,11 +276,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
         const publicUrl = await uploadCoverImage(currentUser!.id, coverPhotoFile);
         updateProfile({ coverImage: publicUrl });
       } catch (err) {
-        console.warn('Cover upload failed, falling back to base64:', err);
-        updateProfile({ coverImage: coverPreview });
+        console.warn('Cover upload failed, compressing for localStorage:', err);
+        // Compress only as last resort for localStorage
+        const compressed = await compressImage(coverPreview);
+        updateProfile({ coverImage: compressed });
       }
     } else {
-      updateProfile({ coverImage: coverPreview });
+      const compressed = await compressImage(coverPreview);
+      updateProfile({ coverImage: compressed });
     }
     setCoverModalOpen(false);
     setCoverPreview(null);
@@ -230,14 +336,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
 
   const handleAddCarrier = async () => {
     if (!newCarrierMC.trim()) {
-      setCarrierVerifyError('Please enter an MC number.');
+      setCarrierVerifyError(`Please enter a ${carrierIdType === 'mc' ? 'MC' : 'USDOT'} number.`);
       return;
     }
-    const mc = newCarrierMC.trim().toUpperCase();
-    const normalizedMC = mc.replace(/[^0-9]/g, '');
+    const input = newCarrierMC.trim().toUpperCase();
+    const normalizedNum = input.replace(/[^0-9]/g, '');
 
     // Check for duplicates
-    if (editCarriers.some(c => c.mcNumber.replace(/[^0-9]/g, '') === normalizedMC)) {
+    if (editCarriers.some(c => c.mcNumber.replace(/[^0-9]/g, '') === normalizedNum)) {
       setCarrierVerifyError('This carrier is already in your list.');
       return;
     }
@@ -247,35 +353,42 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
     setCarrierVerifySuccess('');
 
     try {
-      const result = await verifyCarrierMC(mc);
+      const result = carrierIdType === 'dot'
+        ? await verifyCarrierDOT(input)
+        : await verifyCarrierMC(input);
+
+      const idLabel = carrierIdType === 'dot' ? 'USDOT#' : 'MC#';
+      const idDisplay = carrierIdType === 'dot'
+        ? (result.dotNumber || `DOT${normalizedNum}`)
+        : result.mcNumber;
 
       if (result.found && result.active) {
-        // FMCSA confirmed active — auto-verified
         const carrierName = result.legalName || newCarrierName.trim() || 'Unknown';
         setEditCarriers(prev => [...prev, {
           carrierName,
-          mcNumber: result.mcNumber,
+          mcNumber: idDisplay,
           verified: true,
         }]);
-        setCarrierVerifySuccess(`FMCSA Verified: ${carrierName} (${result.mcNumber}) — Active authority confirmed.`);
+        setCarrierVerifySuccess(`FMCSA Verified: ${carrierName} (${idDisplay}) — Active status confirmed.`);
         setNewCarrierName('');
         setNewCarrierMC('');
       } else if (result.found && !result.active) {
-        // Found but authority is not active — reject
         setCarrierVerifyError(
-          `MC# ${result.mcNumber} (${result.legalName}) was found in FMCSA but does not have active operating authority. Only carriers with active authority can be added.`
+          `${idLabel} ${idDisplay} (${result.legalName}) was found in FMCSA but does not have active status. Only active carriers can be added.`
         );
       } else {
-        // Not found or verification unavailable — allow but require document upload
         const carrierName = newCarrierName.trim();
         if (!carrierName) {
-          setCarrierVerifyError('FMCSA could not verify this MC#. Please enter the carrier name manually and upload your dispatch agreement as proof.');
+          setCarrierVerifyError(`FMCSA could not verify this ${idLabel}. Please enter the carrier name manually and upload your dispatch agreement as proof.`);
           setCarrierVerifying(false);
           return;
         }
+        const fallbackId = carrierIdType === 'dot'
+          ? (normalizedNum ? `DOT${normalizedNum}` : input)
+          : (normalizedNum ? `MC${normalizedNum}` : input);
         setEditCarriers(prev => [...prev, {
           carrierName,
-          mcNumber: normalizedMC ? `MC${normalizedMC}` : mc,
+          mcNumber: fallbackId,
           verified: false,
         }]);
         setCarrierVerifySuccess(
@@ -328,32 +441,74 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
     );
   };
 
-  const handleCreatePost = () => {
+  const handleCreatePost = async () => {
     if (!newPostContent.trim() && !postImage && !postDoc) return;
-    const newPost: Post = {
-      id: `post-${Date.now()}`,
-      author_id: currentUser.id,
-      author_name: currentUser.name,
-      author_company: currentUser.company,
-      author_type: currentUser.userType,
-      author_image: currentUser.image,
-      author_verified: currentUser.verified,
-      content: newPostContent,
-      post_type: 'update',
-      likes_count: 0,
-      comments_count: 0,
-      liked_by_current_user: false,
-      created_at: new Date().toISOString(),
-      image_url: postImage || undefined,
-    };
-    setPosts(prev => [newPost, ...prev]);
-    setNewPostContent('');
-    setPostImage(null);
-    setPostDoc(null);
+    setPostSubmitting(true);
+    try {
+      let imageUrl = postImage || undefined;
+      let docUrl = postDoc?.url || undefined;
+      let docName = postDoc?.name || undefined;
+
+      // Upload image to Supabase Storage if it's a file
+      if (postImageFile) {
+        const uploaded = await uploadPostImage(currentUser.id, postImageFile);
+        imageUrl = uploaded || undefined;
+      }
+      // Upload document to Supabase Storage if it's a file
+      if (postDoc?.file) {
+        const uploaded = await uploadPostDocument(currentUser.id, postDoc.file);
+        docUrl = uploaded || undefined;
+      }
+
+      const saved = await createPost({
+        author_id: currentUser.id,
+        content: newPostContent,
+        post_type: 'update',
+        image_url: imageUrl,
+        document_url: docUrl,
+        document_name: docName,
+      });
+
+      if (saved) {
+        const newPost: Post = {
+          id: saved.id,
+          author_id: currentUser.id,
+          author_name: currentUser.name,
+          author_company: currentUser.company,
+          author_type: currentUser.userType,
+          author_image: currentUser.image,
+          author_verified: currentUser.verified,
+          content: newPostContent,
+          post_type: 'update',
+          likes_count: 0,
+          comments_count: 0,
+          liked_by_current_user: false,
+          created_at: saved.created_at || new Date().toISOString(),
+          image_url: imageUrl,
+          document_url: docUrl,
+          document_name: docName,
+        };
+        setPosts(prev => [newPost, ...prev]);
+      }
+      setNewPostContent('');
+      setPostImage(null);
+      setPostImageFile(null);
+      setPostDoc(null);
+    } catch (err) {
+      console.warn('Failed to create post:', err);
+    } finally {
+      setPostSubmitting(false);
+    }
   };
 
-  const handleDeletePost = (postId: string) => {
-    setPosts(prev => prev.filter(p => p.id !== postId));
+  const handleDeletePost = async (postId: string) => {
+    try {
+      await deletePost(postId);
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    } catch {
+      // Still remove from local state
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    }
   };
 
   const userInitial = currentUser.name?.charAt(0) || '?';
@@ -363,6 +518,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
       case 'dispatcher': return 'Dispatcher';
       case 'carrier': return 'Carrier';
       case 'broker': return 'Broker';
+      case 'advertiser': return 'Advertiser';
       default: return '';
     }
   };
@@ -372,17 +528,21 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
       case 'dispatcher': return 'bg-blue-100 text-blue-700';
       case 'carrier': return 'bg-orange-100 text-orange-700';
       case 'broker': return 'bg-purple-100 text-purple-700';
+      case 'advertiser': return 'bg-amber-100 text-amber-700';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
 
-  // Determine cover background
-  const coverStyle: React.CSSProperties =
-    currentUser.coverImage?.startsWith('data:') || currentUser.coverImage?.startsWith('http')
-      ? { backgroundImage: `url(${currentUser.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-      : currentUser.coverImage?.startsWith('linear-gradient')
-        ? { background: currentUser.coverImage }
-        : { background: 'linear-gradient(135deg, #1E3A5F 0%, #2c5282 50%, #3B82F6 100%)' };
+  // Determine if cover is an uploaded image or a gradient theme
+  const isUploadedCover =
+    currentUser.coverImage?.startsWith('data:') || currentUser.coverImage?.startsWith('http');
+  const isGradientCover = currentUser.coverImage?.startsWith('linear-gradient');
+
+  const coverGradientStyle: React.CSSProperties = isGradientCover
+    ? { background: currentUser.coverImage }
+    : !isUploadedCover
+      ? { background: 'linear-gradient(135deg, #1E3A5F 0%, #2c5282 50%, #3B82F6 100%)' }
+      : {};
 
   return (
     <section className="page-bg min-h-screen pb-12">
@@ -393,24 +553,38 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
       <input ref={postDocRef} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" className="hidden" onChange={handlePostDocSelect} />
 
       {/* Cover Photo */}
-      <div className="h-52 sm:h-64 relative group" style={coverStyle}>
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }} />
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/30 to-transparent" />
+      <div className="h-56 sm:h-72 relative group overflow-hidden" style={!isUploadedCover ? coverGradientStyle : undefined}>
+        {/* Uploaded image — clean, no overlays */}
+        {isUploadedCover && (
+          <img
+            src={currentUser.coverImage}
+            alt="Cover"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+
+        {/* Pattern overlay — gradient themes ONLY */}
+        {!isUploadedCover && (
+          <div className="absolute inset-0 opacity-10" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }} />
+        )}
+
+        {/* Subtle bottom gradient for text readability — lighter for photos */}
+        <div className={`absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t to-transparent ${isUploadedCover ? 'from-black/15' : 'from-black/20'}`} />
 
         {/* Cover photo actions - visible on hover */}
-        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
           <button
             onClick={() => setCoverModalOpen(true)}
-            className="flex items-center gap-2 px-3 py-2 bg-black/50 backdrop-blur-sm text-white rounded-lg text-sm font-medium hover:bg-black/70 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-black/40 backdrop-blur-sm text-white rounded-lg text-sm font-medium hover:bg-black/60 transition-colors"
           >
             <Camera className="w-4 h-4" />
             Edit Cover Photo
           </button>
           <button
             onClick={() => setThemeModalOpen(true)}
-            className="flex items-center gap-2 px-3 py-2 bg-black/50 backdrop-blur-sm text-white rounded-lg text-sm font-medium hover:bg-black/70 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-black/40 backdrop-blur-sm text-white rounded-lg text-sm font-medium hover:bg-black/60 transition-colors"
           >
             <Palette className="w-4 h-4" />
             Theme
@@ -420,7 +594,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
         {/* Always-visible camera icon for mobile - hides when full buttons appear */}
         <button
           onClick={() => setCoverModalOpen(true)}
-          className="absolute bottom-3 right-3 w-9 h-9 bg-black/50 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-all group-hover:opacity-0"
+          className="absolute bottom-3 right-3 w-9 h-9 bg-black/40 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-black/60 transition-all group-hover:opacity-0 z-10"
           title="Edit Cover Photo"
         >
           <Camera className="w-4 h-4" />
@@ -529,7 +703,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
             {/* Stats Row */}
             <div className="border-t border-gray-100 px-6 py-4 grid grid-cols-3 gap-4">
               <button onClick={() => onNavigate('connections')} className="text-center hover:bg-gray-50 rounded-lg py-2 transition-colors">
-                <p className="text-xl font-bold text-[#1E3A5F]">0</p>
+                <p className="text-xl font-bold text-[#1E3A5F]">{connectionCount}</p>
                 <p className="text-xs text-gray-500 font-medium">Connections</p>
               </button>
               <div className="text-center py-2">
@@ -537,7 +711,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                 <p className="text-xs text-gray-500 font-medium">Posts</p>
               </div>
               <div className="text-center py-2">
-                <p className="text-xl font-bold text-[#1E3A5F]">0</p>
+                <p className="text-xl font-bold text-[#1E3A5F]">{profileViews}</p>
                 <p className="text-xs text-gray-500 font-medium">Profile Views</p>
               </div>
             </div>
@@ -570,6 +744,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
             {[
               { id: 'posts' as const, label: 'Posts', icon: <Edit3 className="w-4 h-4" /> },
               { id: 'about' as const, label: 'About', icon: <Users className="w-4 h-4" /> },
+              { id: 'gallery' as const, label: 'Gallery', icon: <Grid className="w-4 h-4" /> },
+              { id: 'embed' as const, label: 'Embed', icon: <Code className="w-4 h-4" /> },
               { id: 'activity' as const, label: 'Activity', icon: <Star className="w-4 h-4" /> },
             ].map(tab => (
               <button
@@ -750,11 +926,180 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
           {/* Activity Tab */}
           {activeTab === 'activity' && (
             <div className="p-6">
-              <div className="text-center py-12">
-                <Star className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <h3 className="text-lg font-semibold text-gray-700 mb-1">Activity will appear here</h3>
-                <p className="text-sm text-gray-400">Your likes, comments, and shares will be tracked here.</p>
+              {postsLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin" />
+                </div>
+              ) : posts.length > 0 ? (
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Recent Activity</h3>
+                  {posts.slice(0, 10).map(post => (
+                    <div key={post.id} className="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
+                      <div className="w-8 h-8 rounded-full bg-[#3B82F6]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Edit3 className="w-4 h-4 text-[#3B82F6]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-800">
+                          You shared {post.post_type === 'looking_for' ? 'a request' : `a${post.post_type === 'update' ? 'n update' : ` ${post.post_type}`}`}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{post.content}</p>
+                        <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
+                          <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                          {post.likes_count > 0 && (
+                            <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {post.likes_count}</span>
+                          )}
+                          {post.comments_count > 0 && (
+                            <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {post.comments_count}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Star className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <h3 className="text-lg font-semibold text-gray-700 mb-1">No activity yet</h3>
+                  <p className="text-sm text-gray-400">Post updates to the feed to see your activity here.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Gallery Tab */}
+          {activeTab === 'gallery' && (
+            <div className="p-6">
+              <input
+                ref={galleryUploadRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleGalleryUpload}
+              />
+
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Photo Gallery</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">Upload images to showcase your work, fleet, or business</p>
+                </div>
+                <button
+                  onClick={() => galleryUploadRef.current?.click()}
+                  disabled={galleryUploading}
+                  className="flex items-center gap-2 px-4 py-2 btn-glossy-primary rounded-lg text-sm transition-all disabled:opacity-50"
+                >
+                  {galleryUploading ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Uploading...</>
+                  ) : (
+                    <><Upload className="w-4 h-4" /> Add Photos</>
+                  )}
+                </button>
               </div>
+
+              {galleryImages.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {galleryImages.map((url, i) => (
+                    <div key={i} className="relative group aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                      <img src={url} alt={`Gallery ${i + 1}`} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
+                      <button
+                        onClick={() => removeGalleryImage(i)}
+                        className="absolute top-2 right-2 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                  <ImageIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <h3 className="text-lg font-semibold text-gray-700 mb-1">No photos yet</h3>
+                  <p className="text-sm text-gray-400 mb-4">Upload photos of your fleet, warehouse, or team</p>
+                  <button
+                    onClick={() => galleryUploadRef.current?.click()}
+                    className="px-5 py-2.5 btn-glossy-primary rounded-lg text-sm transition-all"
+                  >
+                    Upload Your First Photo
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Embed Tab */}
+          {activeTab === 'embed' && (
+            <div className="p-6">
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Embed HTML</h3>
+                <p className="text-xs text-gray-400">Add HTML embed codes to display flyers, logos, banners, or widgets on your profile</p>
+              </div>
+
+              {/* Add embed form */}
+              <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 mb-5">
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Label</label>
+                    <input
+                      type="text"
+                      value={newEmbedLabel}
+                      onChange={(e) => setNewEmbedLabel(e.target.value)}
+                      placeholder="e.g., Company Flyer, Logo Banner"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">HTML Code</label>
+                    <textarea
+                      value={newEmbedCode}
+                      onChange={(e) => setNewEmbedCode(e.target.value)}
+                      placeholder='<img src="https://..." alt="My Flyer" />'
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none bg-white resize-none"
+                    />
+                  </div>
+                  <button
+                    onClick={handleAddEmbed}
+                    disabled={!newEmbedCode.trim()}
+                    className="flex items-center gap-2 px-4 py-2 btn-glossy-primary rounded-lg text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Embed
+                  </button>
+                </div>
+              </div>
+
+              {/* Existing embeds */}
+              {embedCodes.length > 0 ? (
+                <div className="space-y-4">
+                  {embedCodes.map(embed => (
+                    <div key={embed.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+                        <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                          <Code className="w-4 h-4 text-[#8B5CF6]" />
+                          {embed.label}
+                        </span>
+                        <button
+                          onClick={() => removeEmbed(embed.id)}
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div
+                        className="p-4 overflow-auto max-h-[400px] [&>img]:max-w-full [&>img]:h-auto"
+                        dangerouslySetInnerHTML={{ __html: embed.code }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Code className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <h3 className="text-lg font-semibold text-gray-700 mb-1">No embeds yet</h3>
+                  <p className="text-sm text-gray-400">Add HTML code above to display flyers, logos, or banners</p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -827,25 +1172,34 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                 </button>
                 <button
                   onClick={handleCreatePost}
-                  disabled={!newPostContent.trim() && !postImage && !postDoc}
-                  className="ml-auto px-5 py-2 btn-glossy-navy rounded-full text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                  disabled={postSubmitting || (!newPostContent.trim() && !postImage && !postDoc)}
+                  className="ml-auto px-5 py-2 btn-glossy-navy rounded-full text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0 flex items-center gap-2"
                 >
-                  Post
+                  {postSubmitting ? <><Loader2 className="w-3 h-3 animate-spin" /> Posting...</> : 'Post'}
                 </button>
               </div>
             </div>
 
             {/* Personal Feed */}
             <div className="space-y-4">
-              {posts.map(post => (
-                <PostCard key={post.id} post={post} onDelete={handleDeletePost} onViewProfile={onViewProfile} />
-              ))}
-              {posts.length === 0 && (
-                <div className="text-center py-16 bg-white rounded-xl border border-gray-200 shadow-sm">
-                  <Edit3 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-1">No posts yet</h3>
-                  <p className="text-sm text-gray-400">Share your first update with the network above.</p>
+              {postsLoading ? (
+                <div className="flex items-center justify-center py-12 bg-white rounded-xl border border-gray-200 shadow-sm">
+                  <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin mr-2" />
+                  <span className="text-sm text-gray-500">Loading your posts...</span>
                 </div>
+              ) : (
+                <>
+                  {posts.map(post => (
+                    <PostCard key={post.id} post={post} onDelete={handleDeletePost} onViewProfile={onViewProfile} />
+                  ))}
+                  {posts.length === 0 && (
+                    <div className="text-center py-16 bg-white rounded-xl border border-gray-200 shadow-sm">
+                      <Edit3 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <h3 className="text-lg font-semibold text-gray-700 mb-1">No posts yet</h3>
+                      <p className="text-sm text-gray-400">Share your first update with the network above.</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </>
@@ -966,7 +1320,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1">Carriers Worked With</label>
-                      <p className="text-xs text-gray-400 mb-2">Each carrier is verified against FMCSA. Upload your dispatch agreement to confirm the relationship.</p>
+                      <p className="text-xs text-gray-400 mb-2">Verify carriers by MC# (interstate) or USDOT# (intrastate/interstate). Upload your dispatch agreement to confirm the relationship.</p>
 
                       {/* Hidden file input for agreement uploads */}
                       <input
@@ -991,7 +1345,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                                 <span className={`text-xs px-2 py-0.5 rounded ${c.verified ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                                   {c.verified ? 'FMCSA Verified' : 'Pending'}
                                 </span>
-                                <span className="text-xs text-gray-500">{c.mcNumber}</span>
+                                <span className={`text-xs font-medium ${c.mcNumber.startsWith('DOT') ? 'text-purple-600' : 'text-gray-500'}`}>
+                                  {c.mcNumber}
+                                </span>
                                 <button type="button" onClick={() => handleRemoveCarrier(i)} className="text-red-400 hover:text-red-600">
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -1023,6 +1379,32 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                         </div>
                       )}
 
+                      {/* Identifier type toggle */}
+                      <div className="flex items-center gap-1 mb-2 bg-gray-100 rounded-lg p-0.5 w-fit">
+                        <button
+                          type="button"
+                          onClick={() => { setCarrierIdType('mc'); setCarrierVerifyError(''); setCarrierVerifySuccess(''); }}
+                          className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                            carrierIdType === 'mc'
+                              ? 'bg-white text-[#1E3A5F] shadow-sm'
+                              : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          MC#
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setCarrierIdType('dot'); setCarrierVerifyError(''); setCarrierVerifySuccess(''); }}
+                          className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                            carrierIdType === 'dot'
+                              ? 'bg-white text-[#1E3A5F] shadow-sm'
+                              : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          USDOT#
+                        </button>
+                      </div>
+
                       {/* Add carrier form */}
                       <div className="flex gap-2">
                         <input
@@ -1036,7 +1418,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                           type="text"
                           value={newCarrierMC}
                           onChange={(e) => { setNewCarrierMC(e.target.value); setCarrierVerifyError(''); setCarrierVerifySuccess(''); }}
-                          placeholder="MC#"
+                          placeholder={carrierIdType === 'mc' ? 'MC#' : 'USDOT#'}
                           className="w-32 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] outline-none"
                         />
                         <button
@@ -1053,7 +1435,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                       {carrierVerifying && (
                         <div className="mt-2 flex items-center gap-2 text-xs text-blue-600">
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          Verifying MC# with FMCSA SAFER database...
+                          Verifying {carrierIdType === 'mc' ? 'MC#' : 'USDOT#'} with FMCSA SAFER database...
                         </div>
                       )}
                       {carrierVerifyError && (
@@ -1195,7 +1577,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
       {coverModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => { setCoverModalOpen(false); setCoverPreview(null); }} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-[#1E3A5F]">Cover Photo</h2>
@@ -1204,8 +1586,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                 </button>
               </div>
 
-              {/* Cover preview */}
-              <div className="w-full h-32 rounded-xl mb-4 overflow-hidden border border-gray-200">
+              {/* Cover preview — larger, no overlays */}
+              <div className="w-full rounded-xl mb-4 overflow-hidden border border-gray-200 bg-gray-100" style={{ aspectRatio: '3/1' }}>
                 {coverPreview ? (
                   <img src={coverPreview} alt="Cover preview" className="w-full h-full object-cover" />
                 ) : currentUser.coverImage?.startsWith('data:') || currentUser.coverImage?.startsWith('http') ? (
@@ -1236,7 +1618,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
               </div>
 
               <p className="text-xs text-gray-400 mt-4 text-center">
-                Recommended size: 1200 x 400 pixels. Supports JPG, PNG, and WebP.
+                Use a landscape image for best results. Your photo will display at full quality with no filters or overlays. Supports JPG, PNG, and WebP.
               </p>
             </div>
           </div>

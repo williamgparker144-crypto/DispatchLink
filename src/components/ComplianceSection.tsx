@@ -14,8 +14,8 @@ const ComplianceSection: React.FC = () => {
       icon: <Shield className="w-5 h-5" />,
       content: [
         {
-          title: 'Broker Authority Requirements',
-          description: 'Dispatchers operating as brokers must obtain proper broker authority (MC number) from the FMCSA. Our platform provides guidance on obtaining and maintaining broker authority.',
+          title: 'Dispatch & Broker Authority',
+          description: 'Dispatchers act as authorized agents for carriers under a written dispatch agreement that defines services, compensation, and legal terms. Brokers hold FMCSA broker authority (MC number) to arrange transportation of property on behalf of shippers. Our platform helps both roles manage their agreements and authority requirements.',
         },
         {
           title: 'Carrier Authority Verification',
@@ -234,9 +234,10 @@ const ComplianceSection: React.FC = () => {
             <div>
               <h3 className="font-bold text-yellow-800 mb-2">Important Legal Notice</h3>
               <p className="text-sm text-yellow-700 mb-4">
-                DispatchLink Pro is a directory and matching platform. We do not provide legal, tax, or regulatory advice. 
-                Users are responsible for ensuring their own compliance with all applicable federal, state, and local regulations. 
-                Dispatchers who arrange transportation for compensation may need to obtain broker authority from the FMCSA. 
+                DispatchLink Pro is a directory and matching platform. We do not provide legal, tax, or regulatory advice.
+                Users are responsible for ensuring their own compliance with all applicable federal, state, and local regulations.
+                Dispatchers operate as agents for carriers under written dispatch agreements and rely on the carrier's active FMCSA authority (interstate or intrastate).
+                Brokers must hold their own FMCSA broker authority to arrange transportation on behalf of shippers.
                 Consult with a qualified attorney or compliance professional for specific guidance.
               </p>
               <a 

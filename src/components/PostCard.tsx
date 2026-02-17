@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Share2, Shield, Send, MoreHorizontal, ExternalLink, ThumbsUp, Trash2, Flag, Bookmark } from 'lucide-react';
+import { MessageCircle, Share2, Shield, Send, MoreHorizontal, ExternalLink, ThumbsUp, Trash2, Flag, Bookmark, FileText, Download, Loader2, Check } from 'lucide-react';
+import { useAppContext } from '@/contexts/AppContext';
+import { likePost, unlikePost, addComment as addCommentApi, getPostComments } from '@/lib/api';
 import type { Post, PostComment, ViewableUser } from '@/types';
 
 interface PostCardProps {
@@ -33,16 +35,80 @@ const getDomain = (url: string): string => {
   }
 };
 
+// Detect URLs in text (http, https, www, bare domains)
+const URL_REGEX = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.(com|org|net|io|gov|co|us|info|biz|edu)(\/[^\s]*)?)/gi;
+
+const normalizeDetectedUrl = (url: string) =>
+  /^https?:\/\//i.test(url) ? url : `https://${url}`;
+
+// Render post content with clickable links
+const renderContentWithLinks = (text: string) => {
+  const parts: (string | JSX.Element)[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  const regex = new RegExp(URL_REGEX.source, 'gi');
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    const href = normalizeDetectedUrl(match[0]);
+    parts.push(
+      <a
+        key={match.index}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[#3B82F6] hover:underline break-all"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {match[0]}
+      </a>
+    );
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts;
+};
+
 const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onViewProfile }) => {
+  const { currentUser } = useAppContext();
   const [liked, setLiked] = useState(post.liked_by_current_user);
   const [likesCount, setLikesCount] = useState(post.likes_count);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState<PostComment[]>([]);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [imageExpanded, setImageExpanded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [shared, setShared] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Auto-unfurl: if post has a URL in content but no link_url, try to unfurl it
+  const [autoUnfurl, setAutoUnfurl] = useState<{
+    url: string; title: string; description: string; image: string;
+  } | null>(null);
+  const [autoUnfurling, setAutoUnfurling] = useState(false);
+
+  useEffect(() => {
+    if (post.link_url || post.video_url) return; // already has link data
+    const match = post.content.match(URL_REGEX);
+    if (!match) return;
+    const url = normalizeDetectedUrl(match[0]);
+    if (/youtube\.com|youtu\.be/.test(url)) return; // skip YouTube
+    setAutoUnfurling(true);
+    fetch(`/api/unfurl-url?url=${encodeURIComponent(url)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.title || data.image) {
+          setAutoUnfurl({ url, title: data.title || '', description: data.description || '', image: data.image || '' });
+        }
+      })
+      .catch(() => {})
+      .finally(() => setAutoUnfurling(false));
+  }, [post.id]);
 
   // Close menu on click outside
   useEffect(() => {
@@ -55,29 +121,66 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onViewProfile }) =>
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
 
-  const handleLike = () => {
+  // Load comments from Supabase when expanded
+  useEffect(() => {
+    if (showComments && !commentsLoaded) {
+      (async () => {
+        try {
+          const data = await getPostComments(post.id);
+          setComments(data || []);
+        } catch (err) {
+          console.warn('Failed to load comments:', err);
+        } finally {
+          setCommentsLoaded(true);
+        }
+      })();
+    }
+  }, [showComments, commentsLoaded, post.id]);
+
+  const handleLike = async () => {
+    if (!currentUser?.id) return;
+    // Optimistic update
     if (liked) {
       setLikesCount(prev => prev - 1);
+      setLiked(false);
+      try { await unlikePost(post.id, currentUser.id); } catch { setLikesCount(prev => prev + 1); setLiked(true); }
     } else {
       setLikesCount(prev => prev + 1);
+      setLiked(true);
+      try { await likePost(post.id, currentUser.id); } catch { setLikesCount(prev => prev - 1); setLiked(false); }
     }
-    setLiked(!liked);
   };
 
-  const handleAddComment = () => {
-    if (!commentText.trim()) return;
-    const newComment: PostComment = {
-      id: `comment-${Date.now()}`,
+  const handleAddComment = async () => {
+    if (!commentText.trim() || !currentUser?.id) return;
+    const content = commentText.trim();
+    setCommentText('');
+
+    // Optimistic local comment
+    const optimistic: PostComment = {
+      id: `temp-${Date.now()}`,
       post_id: post.id,
-      author_id: 'demo-user-1',
-      author_name: 'You',
-      author_company: '',
-      author_type: 'dispatcher',
-      content: commentText,
+      author_id: currentUser.id,
+      author_name: currentUser.name || 'You',
+      author_company: currentUser.company || '',
+      author_type: currentUser.userType || 'dispatcher',
+      author_image: currentUser.image,
+      content,
       created_at: new Date().toISOString(),
     };
-    setComments(prev => [...prev, newComment]);
-    setCommentText('');
+    setComments(prev => [...prev, optimistic]);
+
+    try {
+      const saved = await addCommentApi({
+        post_id: post.id,
+        author_id: currentUser.id,
+        content,
+      });
+      // Replace optimistic with real
+      setComments(prev => prev.map(c => c.id === optimistic.id ? { ...optimistic, id: saved.id } : c));
+    } catch (err) {
+      console.warn('Failed to add comment:', err);
+    }
   };
 
   const getTypeBadge = (type: string) => {
@@ -88,6 +191,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onViewProfile }) =>
         return <span className="px-2 py-0.5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 text-orange-600 rounded-full text-xs font-semibold border border-orange-200/50">Carrier</span>;
       case 'broker':
         return <span className="px-2 py-0.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-600 rounded-full text-xs font-semibold border border-purple-200/50">Broker</span>;
+      case 'advertiser':
+        return <span className="px-2 py-0.5 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 text-amber-600 rounded-full text-xs font-semibold border border-amber-200/50">Advertiser</span>;
       default:
         return null;
     }
@@ -130,6 +235,44 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onViewProfile }) =>
       image: post.author_image,
       verified: post.author_verified,
     });
+  };
+
+  const handleShare = async () => {
+    const shareText = `${post.author_name}: ${post.content.substring(0, 200)}${post.content.length > 200 ? '...' : ''}`;
+    const shareUrl = post.link_url || window.location.origin;
+
+    // Use native share on mobile if available
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Post by ${post.author_name} on DispatchLink`,
+          text: shareText,
+          url: shareUrl,
+        });
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+        return;
+      } catch {
+        // User cancelled or share failed — fall through to clipboard
+      }
+    }
+
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    } catch {
+      // Last resort: select-copy approach
+      const textarea = document.createElement('textarea');
+      textarea.value = `${shareText}\n\n${shareUrl}`;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    }
   };
 
   const contentTruncated = post.content.length > 280 && !expanded;
@@ -202,7 +345,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onViewProfile }) =>
                     <Flag className="w-4 h-4" />
                     Report post
                   </button>
-                  {onDelete && (
+                  {onDelete && currentUser && currentUser.id === post.author_id && (
                     <>
                       <div className="border-t border-gray-100 my-1" />
                       <button
@@ -226,7 +369,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onViewProfile }) =>
         {/* Content */}
         <div className="px-4 pt-3 pb-2">
           <p className="text-gray-800 text-[15px] leading-[1.65] whitespace-pre-wrap">
-            {contentTruncated ? `${post.content.substring(0, 280)}...` : post.content}
+            {contentTruncated
+              ? renderContentWithLinks(`${post.content.substring(0, 280)}...`)
+              : renderContentWithLinks(post.content)
+            }
           </p>
           {post.content.length > 280 && !expanded && (
             <button onClick={() => setExpanded(true)} className="text-[#3B82F6] hover:text-[#2563EB] text-sm font-semibold mt-1">
@@ -262,34 +408,85 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onViewProfile }) =>
           </div>
         )}
 
-        {/* Link Preview Card */}
+        {/* Link Preview Card — Facebook-style (saved link data) */}
         {post.link_url && !videoId && (
           <a
             href={post.link_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="block mx-4 mt-2 mb-2 rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+            className="block mx-4 mt-2 mb-2 rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow bg-gray-50"
           >
-            <div className="flex">
-              {post.link_image && (
-                <div className="w-32 sm:w-48 flex-shrink-0 bg-gray-100">
-                  <img src={post.link_image} alt="" className="w-full h-full object-cover" />
-                </div>
+            {post.link_image && (
+              <div className="w-full h-48 sm:h-56 bg-gray-200 overflow-hidden">
+                <img src={post.link_image} alt="" className="w-full h-full object-cover" />
+              </div>
+            )}
+            <div className="p-3">
+              <p className="text-[11px] text-gray-400 uppercase tracking-wide font-medium">{getDomain(post.link_url)}</p>
+              {post.link_title && (
+                <p className="font-semibold text-gray-900 text-[15px] mt-1 line-clamp-2 leading-snug">{post.link_title}</p>
               )}
-              <div className="flex-1 p-3 min-w-0">
-                <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">{getDomain(post.link_url)}</p>
-                {post.link_title && (
-                  <p className="font-semibold text-gray-900 text-sm mt-1 line-clamp-2">{post.link_title}</p>
-                )}
-                {post.link_description && (
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{post.link_description}</p>
-                )}
-              </div>
-              <div className="flex items-center pr-3">
-                <ExternalLink className="w-4 h-4 text-gray-400" />
-              </div>
+              {post.link_description && (
+                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{post.link_description}</p>
+              )}
+              {!post.link_title && !post.link_description && (
+                <p className="text-sm text-blue-600 mt-1 truncate">{post.link_url}</p>
+              )}
             </div>
           </a>
+        )}
+
+        {/* Auto-unfurled link preview — for posts with URLs in text but no saved link_url */}
+        {!post.link_url && !videoId && autoUnfurl && (
+          <a
+            href={autoUnfurl.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block mx-4 mt-2 mb-2 rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow bg-gray-50"
+          >
+            {autoUnfurl.image && (
+              <div className="w-full h-48 sm:h-56 bg-gray-200 overflow-hidden">
+                <img src={autoUnfurl.image} alt="" className="w-full h-full object-cover" />
+              </div>
+            )}
+            <div className="p-3">
+              <p className="text-[11px] text-gray-400 uppercase tracking-wide font-medium">{getDomain(autoUnfurl.url)}</p>
+              {autoUnfurl.title && (
+                <p className="font-semibold text-gray-900 text-[15px] mt-1 line-clamp-2 leading-snug">{autoUnfurl.title}</p>
+              )}
+              {autoUnfurl.description && (
+                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{autoUnfurl.description}</p>
+              )}
+            </div>
+          </a>
+        )}
+        {!post.link_url && !videoId && autoUnfurling && (
+          <div className="mx-4 mt-2 mb-2 rounded-xl border border-gray-200 bg-gray-50 p-3 flex items-center gap-2 text-xs text-gray-400">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading link preview...
+          </div>
+        )}
+
+        {/* Document Attachment */}
+        {post.document_url && (
+          <div className="mx-4 mt-2 mb-2">
+            <a
+              href={post.document_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-3 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200/60 rounded-xl hover:shadow-md transition-shadow"
+            >
+              <div className="p-2 bg-amber-100 rounded-lg flex-shrink-0">
+                <FileText className="w-5 h-5 text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-800 text-sm truncate">
+                  {post.document_name || 'Attached Document'}
+                </p>
+                <p className="text-xs text-gray-400">Click to view or download</p>
+              </div>
+              <Download className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            </a>
+          </div>
         )}
 
         {/* Engagement Stats */}
@@ -332,9 +529,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onViewProfile }) =>
               <span className="hidden sm:inline">Comment</span>
             </button>
 
-            <button className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 rounded-lg transition-all">
-              <Share2 className="w-5 h-5" />
-              <span className="hidden sm:inline">Share</span>
+            <button
+              onClick={handleShare}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold rounded-lg transition-all ${
+                shared ? 'text-[#10B981]' : 'text-gray-500 hover:bg-gray-50'
+              }`}
+            >
+              {shared ? <Check className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+              <span className="hidden sm:inline">{shared ? 'Copied!' : 'Share'}</span>
             </button>
           </div>
         </div>
@@ -345,8 +547,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onViewProfile }) =>
             {/* Comment input */}
             <div className="flex gap-2 pt-3">
               <div className="w-8 h-8 rounded-full p-[1.5px] bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] flex-shrink-0">
-                <div className="w-full h-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] rounded-full flex items-center justify-center text-white text-xs font-bold">
-                  Y
+                <div className="w-full h-full bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] rounded-full flex items-center justify-center text-white text-xs font-bold overflow-hidden">
+                  {currentUser?.image ? (
+                    <img src={currentUser.image} alt="" className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    currentUser?.name?.charAt(0) || 'Y'
+                  )}
                 </div>
               </div>
               <div className="flex-1 flex gap-2">

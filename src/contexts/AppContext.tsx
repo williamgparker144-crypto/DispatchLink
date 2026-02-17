@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { allSeedUsers } from '@/lib/seedData';
 import { saveSession, loadSession, clearSession, cacheRegisteredUsers, loadCachedUsers } from '@/lib/session';
-import { getUserById, getCarrierReferences, updateUser, updateDispatcherProfile, syncCarrierReferences } from '@/lib/api';
+import { getUserById, getUserByAuthId, getCarrierReferences, updateUser, updateDispatcherProfile, updateAdvertiserProfile, syncCarrierReferences, getPendingConnectionRequests, getUnreadMessagesCount, getConnectionFeedNotifications } from '@/lib/api';
 import { dbUserToCurrentUser, currentUserToDbFields } from '@/lib/mappers';
+import { onAuthStateChange, signOutAuth } from '@/lib/auth';
 
 export interface CarrierReference {
   carrierName: string;
@@ -19,7 +20,7 @@ export interface CurrentUser {
   name: string;
   email: string;
   company: string;
-  userType: 'dispatcher' | 'carrier' | 'broker';
+  userType: 'dispatcher' | 'carrier' | 'broker' | 'advertiser';
   image?: string;
   coverImage?: string;
   bio?: string;
@@ -32,6 +33,18 @@ export interface CurrentUser {
   carrierScoutSubscribed?: boolean;
   mcNumber?: string;
   dotNumber?: string;
+  // Advertiser-specific
+  businessName?: string;
+  businessWebsite?: string;
+  industry?: string;
+}
+
+export interface PendingAuthResult {
+  authId: string;
+  email?: string;
+  phone?: string;
+  name?: string;
+  image?: string;
 }
 
 interface AppContextType {
@@ -45,8 +58,13 @@ interface AppContextType {
   setUnreadMessages: (count: number) => void;
   pendingConnections: number;
   setPendingConnections: (count: number) => void;
+  feedNotifications: number;
+  setFeedNotifications: (count: number) => void;
   registeredUsers: CurrentUser[];
   registerUser: (user: CurrentUser) => void;
+  pendingAuthResult: PendingAuthResult | null;
+  setPendingAuthResult: (result: PendingAuthResult | null) => void;
+  clearPendingAuthResult: () => void;
 }
 
 const defaultAppContext: AppContextType = {
@@ -60,8 +78,13 @@ const defaultAppContext: AppContextType = {
   setUnreadMessages: () => {},
   pendingConnections: 0,
   setPendingConnections: () => {},
+  feedNotifications: 0,
+  setFeedNotifications: () => {},
   registeredUsers: [],
   registerUser: () => {},
+  pendingAuthResult: null,
+  setPendingAuthResult: () => {},
+  clearPendingAuthResult: () => {},
 };
 
 const AppContext = createContext<AppContextType>(defaultAppContext);
@@ -73,6 +96,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(() => loadSession());
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [pendingConnections, setPendingConnections] = useState(0);
+  const [feedNotifications, setFeedNotifications] = useState(0);
   const [registeredUsers, setRegisteredUsers] = useState<CurrentUser[]>(() => {
     const cached = loadCachedUsers();
     // Filter out old seed/demo users from any cached data
@@ -89,6 +113,55 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     return base;
   });
+
+  const [pendingAuthResult, setPendingAuthResult] = useState<PendingAuthResult | null>(null);
+  const clearPendingAuthResult = useCallback(() => setPendingAuthResult(null), []);
+
+  // Supabase Auth state listener — bridges auth.users → public.users
+  useEffect(() => {
+    const { data: { subscription } } = onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const authUser = session.user;
+        try {
+          const dbUser = await getUserByAuthId(authUser.id);
+          if (dbUser) {
+            // Existing user — load and set
+            let carrierRefs;
+            if (dbUser.user_type === 'dispatcher') {
+              carrierRefs = await getCarrierReferences(dbUser.id);
+            }
+            const mapped = dbUserToCurrentUser(dbUser, carrierRefs);
+            setCurrentUser(mapped);
+            registerUser(mapped);
+          } else {
+            // Check if this is a deleted account re-appearing via stale auth token
+            // vs a genuinely new OAuth/phone sign-up
+            // Only show signup prompt if there's no existing session being cleared
+            const existingSession = loadSession();
+            if (existingSession) {
+              // User was deleted — clear everything and sign out
+              clearSession();
+              setCurrentUser(null);
+              signOutAuth().catch(() => {});
+            } else {
+              // Genuinely new user — need to collect user type
+              setPendingAuthResult({
+                authId: authUser.id,
+                email: authUser.email,
+                phone: authUser.phone,
+                name: authUser.user_metadata?.full_name,
+                image: authUser.user_metadata?.avatar_url,
+              });
+            }
+          }
+        } catch (err) {
+          console.warn('Auth state change handler error:', err);
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Persist currentUser to localStorage
   useEffect(() => {
@@ -111,7 +184,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const syncProfileToSupabase = useCallback(async (userId: string, updates: Partial<CurrentUser>) => {
     if (!isSupabaseId(userId)) return;
     try {
-      const { userFields, dispatcherFields } = currentUserToDbFields(updates);
+      const { userFields, dispatcherFields, advertiserFields } = currentUserToDbFields(updates);
       if (Object.keys(userFields).length > 0) {
         await updateUser(userId, userFields);
       }
@@ -120,6 +193,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       if (updates.carriersWorkedWith !== undefined) {
         await syncCarrierReferences(userId, updates.carriersWorkedWith);
+      }
+      if (Object.keys(advertiserFields).length > 0) {
+        await updateAdvertiserProfile(userId, advertiserFields);
       }
     } catch (err) {
       console.warn('Supabase sync failed (will retry on next save):', err);
@@ -137,7 +213,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     (async () => {
       try {
         const dbUser = await getUserById(session.id);
-        if (!dbUser) return; // User deleted? Keep localStorage version
+        if (!dbUser) {
+          // User was deleted — clear local state
+          clearSession();
+          setCurrentUser(null);
+          setRegisteredUsers(prev => prev.filter(u => u.id !== session.id));
+          return;
+        }
         let carrierRefs;
         if (dbUser.user_type === 'dispatcher') {
           carrierRefs = await getCarrierReferences(dbUser.id);
@@ -152,6 +234,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     })();
   }, []);
+
+  // Poll for pending connections + unread messages
+  useEffect(() => {
+    if (!currentUser?.id || !isSupabaseId(currentUser.id)) return;
+
+    const fetchCounts = async () => {
+      try {
+        // Get last-seen feed timestamp from localStorage
+        const lastSeen = localStorage.getItem('dispatchlink_feed_last_seen') || new Date(0).toISOString();
+
+        const [pendingReqs, unreadCount, feedPosts] = await Promise.all([
+          getPendingConnectionRequests(currentUser.id),
+          getUnreadMessagesCount(currentUser.id),
+          getConnectionFeedNotifications(currentUser.id, lastSeen).catch(() => []),
+        ]);
+        setPendingConnections(pendingReqs?.length || 0);
+        setUnreadMessages(unreadCount);
+        setFeedNotifications(feedPosts.length);
+      } catch {
+        // Silently fail — counts stay at previous values
+      }
+    };
+
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, [currentUser?.id]);
 
   const toggleSidebar = () => {
     setSidebarOpen(prev => !prev);
@@ -184,6 +293,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const logout = useCallback(() => {
     clearSession();
     setCurrentUser(null);
+    setPendingAuthResult(null);
+    // Also sign out of Supabase Auth (fire-and-forget)
+    signOutAuth().catch(() => {});
   }, []);
 
   return (
@@ -199,8 +311,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setUnreadMessages,
         pendingConnections,
         setPendingConnections,
+        feedNotifications,
+        setFeedNotifications,
         registeredUsers,
         registerUser,
+        pendingAuthResult,
+        setPendingAuthResult,
+        clearPendingAuthResult,
       }}
     >
       {children}

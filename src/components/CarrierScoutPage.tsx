@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Rocket,
   Mail,
@@ -14,27 +14,77 @@ import {
   Building,
   ChevronDown,
   ArrowRight,
+  Gift,
+  Clock,
+  Star,
+  Eye,
+  EyeOff,
+  Loader2,
 } from 'lucide-react';
 import { subscribeToMailchimp } from '@/lib/mailchimp';
+import { useAppContext } from '@/contexts/AppContext';
+
+interface WaitlistSignup {
+  id: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  company?: string;
+  user_type?: string;
+  source?: string;
+  created_at: string;
+}
 
 const CarrierScoutPage: React.FC = () => {
+  const { currentUser } = useAppContext();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  // Admin waitlist viewer
+  const [showWaitlist, setShowWaitlist] = useState(false);
+  const [waitlistSignups, setWaitlistSignups] = useState<WaitlistSignup[]>([]);
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
+  const isAdmin = currentUser?.email === 'dispatch@techspatch-logistics.com' || currentUser?.email === 'admin@dispatchlinkpro.vip';
+
+  const fetchWaitlist = async () => {
+    setWaitlistLoading(true);
+    try {
+      const res = await fetch('/api/waitlist-signups');
+      const data = await res.json();
+      setWaitlistSignups(data.signups || []);
+    } catch {
+      // Silent fail
+    } finally {
+      setWaitlistLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showWaitlist && isAdmin) fetchWaitlist();
+  }, [showWaitlist]);
 
   const handleWaitlistSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
       setSubmitted(true);
-      subscribeToMailchimp({ email, source: 'waitlist' });
+      const nameParts = currentUser?.name?.split(' ') || [];
+      subscribeToMailchimp({
+        email,
+        source: 'waitlist',
+        firstName: nameParts[0] || undefined,
+        lastName: nameParts.slice(1).join(' ') || undefined,
+        company: currentUser?.company || undefined,
+        userType: currentUser?.userType || undefined,
+      });
     }
   };
 
   const capabilities = [
     {
       icon: Globe,
-      title: 'Unified Load Board',
-      desc: 'Aggregate loads from every major board into one intelligent feed. Stop switching between platforms and never miss high-value freight.',
+      title: 'AI Carrier Discovery',
+      desc: 'Automated FMCSA SAFER extraction with intelligent filtering. Discover verified carriers instantly without manual searches across multiple databases.',
     },
     {
       icon: TrendingUp,
@@ -68,33 +118,39 @@ const CarrierScoutPage: React.FC = () => {
       icon: Users,
       role: 'Dispatchers',
       color: 'from-[#3B82F6] to-[#60A5FA]',
+      badge: '14-Day Free Trial',
       points: [
-        'Access every load board from one dashboard',
+        'AI Carrier Discovery Agent with automated FMCSA SAFER extraction',
         'AI-powered rate recommendations per lane',
         'Manage all carrier MC# permissions centrally',
         'Automated rate confirmations and BOLs',
+        '14-day free trial for full platform access',
       ],
     },
     {
       icon: Truck,
       role: 'Carriers',
       color: 'from-[#1E3A5F] to-[#1E3A5F]/80',
+      badge: 'Free for Carriers',
       points: [
         'Get matched to freight that fits your equipment',
         'Real-time market rate visibility per lane',
         'Verified profile with FMCSA authority data',
         'Digital onboarding packets and compliance tracking',
+        'Free enhanced workflow -- no credit card required',
       ],
     },
     {
       icon: Building,
       role: 'Brokers',
       color: 'from-emerald-600 to-emerald-700',
+      badge: '30-Day Free Subscription',
       points: [
         'Instantly find verified, available capacity',
         'Trust scores and carrier performance history',
         'Streamlined carrier onboarding with auto-verify',
         'Rate intelligence to price loads competitively',
+        'Free 30-day subscription to get started',
       ],
     },
   ];
@@ -111,6 +167,10 @@ const CarrierScoutPage: React.FC = () => {
     {
       q: 'What will CarrierScout cost?',
       a: 'CarrierScout will offer a free tier with core features and premium tiers for advanced capabilities like AI rate intelligence and multi-board aggregation. Early waitlist members will receive special launch pricing.',
+    },
+    {
+      q: 'What are the trial and incentive options?',
+      a: 'Brokers receive a free 30-day subscription with full access before any payment is required. Dispatchers get a 14-day free trial of all premium features. Carriers receive free enhanced workflow features permanently -- no credit card required for any role to get started.',
     },
     {
       q: 'How is CarrierScout different from existing load boards?',
@@ -187,6 +247,89 @@ const CarrierScoutPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Admin Waitlist Panel */}
+      {isAdmin && (
+        <section className="py-6 page-bg">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+              <button
+                onClick={() => setShowWaitlist(!showWaitlist)}
+                className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] rounded-xl flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-bold text-[#1E3A5F]">Waitlist Signups</h3>
+                    <p className="text-xs text-gray-500">View who has signed up for CarrierScout</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {waitlistSignups.length > 0 && (
+                    <span className="px-2.5 py-1 bg-[#3B82F6] text-white text-xs font-bold rounded-full">
+                      {waitlistSignups.length}
+                    </span>
+                  )}
+                  {showWaitlist ? <EyeOff className="w-5 h-5 text-gray-400" /> : <Eye className="w-5 h-5 text-gray-400" />}
+                </div>
+              </button>
+
+              {showWaitlist && (
+                <div className="border-t border-gray-100 px-6 py-4">
+                  {waitlistLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin mr-2" />
+                      <span className="text-sm text-gray-500">Loading signups...</span>
+                    </div>
+                  ) : waitlistSignups.length > 0 ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-semibold text-gray-700">{waitlistSignups.length} total signup{waitlistSignups.length !== 1 ? 's' : ''}</p>
+                        <button
+                          onClick={fetchWaitlist}
+                          className="text-xs text-[#3B82F6] hover:underline font-medium"
+                        >
+                          Refresh
+                        </button>
+                      </div>
+                      <div className="max-h-[400px] overflow-y-auto space-y-2">
+                        {waitlistSignups.map(signup => (
+                          <div key={signup.id} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 border border-gray-100">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-8 h-8 bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                {signup.email.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-800 truncate">{signup.email}</p>
+                                <div className="flex items-center gap-2 text-xs text-gray-400">
+                                  {signup.first_name && <span>{signup.first_name} {signup.last_name || ''}</span>}
+                                  {signup.company && <span>· {signup.company}</span>}
+                                  {signup.source && <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-medium">{signup.source}</span>}
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-xs text-gray-400 flex-shrink-0 ml-3">
+                              {new Date(signup.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Mail className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">No signups yet</p>
+                      <p className="text-xs text-gray-400 mt-1">New signups from the waitlist form will appear here</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Problem Statement */}
       <section className="py-16 page-bg">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -255,6 +398,11 @@ const CarrierScoutPage: React.FC = () => {
                 <div className={`bg-gradient-to-r ${p.color} p-6 text-white text-center`}>
                   <p.icon className="w-10 h-10 mx-auto mb-3" />
                   <h3 className="text-xl font-bold">{p.role}</h3>
+                  {p.badge && (
+                    <span className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-white/20 rounded-full text-xs font-semibold">
+                      <Gift className="w-3 h-3" /> {p.badge}
+                    </span>
+                  )}
                 </div>
                 <div className="p-6">
                   <ul className="space-y-3">
@@ -268,6 +416,92 @@ const CarrierScoutPage: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Incentives Section */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full mb-4">
+              <Gift className="w-4 h-4" />
+              <span className="text-sm font-semibold">Launch Incentives</span>
+            </div>
+            <h2 className="text-3xl font-extrabold text-[#1E3A5F] mb-3">
+              Get started for free
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Every role gets a free on-ramp to CarrierScout. No credit card required.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Dispatchers */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow">
+              <div className="bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] p-6 text-white text-center">
+                <Clock className="w-10 h-10 mx-auto mb-2" />
+                <h3 className="text-xl font-bold">Dispatchers</h3>
+                <p className="text-blue-100 text-sm mt-1">14-Day Free Trial</p>
+              </div>
+              <div className="p-6">
+                <div className="text-center mb-4">
+                  <span className="text-4xl font-extrabold text-[#1E3A5F]">14</span>
+                  <span className="text-lg font-semibold text-gray-500 ml-1">days free</span>
+                </div>
+                <ul className="space-y-3 text-sm text-gray-700">
+                  <li className="flex items-start gap-2"><ArrowRight className="w-4 h-4 text-[#3B82F6] flex-shrink-0 mt-0.5" /> AI rate intelligence and lane analytics</li>
+                  <li className="flex items-start gap-2"><ArrowRight className="w-4 h-4 text-[#3B82F6] flex-shrink-0 mt-0.5" /> Unified load board access</li>
+                  <li className="flex items-start gap-2"><ArrowRight className="w-4 h-4 text-[#3B82F6] flex-shrink-0 mt-0.5" /> Workflow automation tools</li>
+                  <li className="flex items-start gap-2"><ArrowRight className="w-4 h-4 text-[#3B82F6] flex-shrink-0 mt-0.5" /> Centralized MC# permission management</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Carriers */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-emerald-200 hover:shadow-xl transition-shadow relative">
+              <div className="absolute top-0 left-0 right-0 bg-emerald-500 text-white text-center text-xs font-bold py-1">
+                BEST VALUE
+              </div>
+              <div className="bg-gradient-to-r from-[#1E3A5F] to-[#2B4F7E] p-6 text-white text-center mt-5">
+                <Star className="w-10 h-10 mx-auto mb-2" />
+                <h3 className="text-xl font-bold">Carriers</h3>
+                <p className="text-blue-200 text-sm mt-1">Free Enhanced Workflow</p>
+              </div>
+              <div className="p-6">
+                <div className="text-center mb-4">
+                  <span className="text-4xl font-extrabold text-emerald-600">FREE</span>
+                  <span className="text-lg font-semibold text-gray-500 ml-1">forever</span>
+                </div>
+                <ul className="space-y-3 text-sm text-gray-700">
+                  <li className="flex items-start gap-2"><ArrowRight className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" /> Matched to high-value freight</li>
+                  <li className="flex items-start gap-2"><ArrowRight className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" /> Real-time market data</li>
+                  <li className="flex items-start gap-2"><ArrowRight className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" /> Compliance tracking</li>
+                  <li className="flex items-start gap-2"><ArrowRight className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" /> DispatchLink profile carries over</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Brokers */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow">
+              <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-6 text-white text-center">
+                <Building className="w-10 h-10 mx-auto mb-2" />
+                <h3 className="text-xl font-bold">Brokers</h3>
+                <p className="text-emerald-100 text-sm mt-1">30-Day Free Subscription</p>
+              </div>
+              <div className="p-6">
+                <div className="text-center mb-4">
+                  <span className="text-4xl font-extrabold text-[#1E3A5F]">30</span>
+                  <span className="text-lg font-semibold text-gray-500 ml-1">days free</span>
+                </div>
+                <ul className="space-y-3 text-sm text-gray-700">
+                  <li className="flex items-start gap-2"><ArrowRight className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" /> Verified carrier capacity access</li>
+                  <li className="flex items-start gap-2"><ArrowRight className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" /> Performance history and trust scores</li>
+                  <li className="flex items-start gap-2"><ArrowRight className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" /> Streamlined carrier onboarding</li>
+                  <li className="flex items-start gap-2"><ArrowRight className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" /> Competitive rate intelligence</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </section>
