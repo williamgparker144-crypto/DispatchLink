@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, SlidersHorizontal, Grid, List, X, MapPin, Loader2 } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { Search, SlidersHorizontal, Grid, List, X, MapPin, Loader2, RefreshCw, WifiOff } from 'lucide-react';
 import CarrierCard from './CarrierCard';
 import CarrierScoutUpgradeCTA from './CarrierScoutUpgradeCTA';
 import { getUsersByType } from '@/lib/api';
@@ -35,45 +35,53 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
   useEffect(() => { setSearchQuery(initialSearchQuery); }, [initialSearchQuery]);
   const [carriers, setCarriers] = useState<CarrierItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
 
-  // Fetch carriers from Supabase on mount
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const data = await getUsersByType('carrier');
-        if (!cancelled && data) {
-          const mapped: CarrierItem[] = data.map((row: any) => {
-            const profile = Array.isArray(row.carrier_profiles)
-              ? row.carrier_profiles[0]
-              : row.carrier_profiles;
-            return {
-              id: row.id,
-              name: `${row.first_name} ${row.last_name}`,
-              company: row.company_name || `${row.first_name} ${row.last_name}`,
-              image: row.profile_image_url || '',
-              rating: 0,
-              reviews: 0,
-              dotNumber: profile?.dot_number || '',
-              mcNumber: profile?.mc_number || '',
-              fleetSize: profile?.fleet_size || 1,
-              equipmentTypes: profile?.equipment_types || [],
-              regions: profile?.operating_regions || [],
-              verified: row.verified || false,
-              insuranceVerified: false,
-            };
-          });
-          setCarriers(mapped);
-        }
-      } catch (err) {
-        console.warn('Failed to fetch carriers from Supabase:', err);
-      } finally {
-        if (!cancelled) setLoading(false);
+  // Fetch carriers from Supabase
+  const fetchCarriers = useCallback(async (signal?: { cancelled: boolean }) => {
+    setLoading(true);
+    setFetchError(false);
+    try {
+      const data = await getUsersByType('carrier');
+      if (signal?.cancelled) return;
+      if (data) {
+        const mapped: CarrierItem[] = data.map((row: any) => {
+          const profile = Array.isArray(row.carrier_profiles)
+            ? row.carrier_profiles[0]
+            : row.carrier_profiles;
+          return {
+            id: row.id,
+            name: `${row.first_name} ${row.last_name}`,
+            company: row.company_name || `${row.first_name} ${row.last_name}`,
+            image: row.profile_image_url || '',
+            rating: 0,
+            reviews: 0,
+            dotNumber: profile?.dot_number || '',
+            mcNumber: profile?.mc_number || '',
+            fleetSize: profile?.fleet_size || 1,
+            equipmentTypes: profile?.equipment_types || [],
+            regions: profile?.operating_regions || [],
+            verified: row.verified || false,
+            insuranceVerified: false,
+          };
+        });
+        setCarriers(mapped);
       }
-    })();
-    return () => { cancelled = true; };
+    } catch (err) {
+      console.warn('Failed to fetch carriers from Supabase:', err);
+      if (!signal?.cancelled) setFetchError(true);
+    } finally {
+      if (!signal?.cancelled) setLoading(false);
+    }
   }, []);
+
+  // Fetch on mount
+  useEffect(() => {
+    const signal = { cancelled: false };
+    fetchCarriers(signal);
+    return () => { signal.cancelled = true; };
+  }, [fetchCarriers]);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'rating' | 'fleetSize' | 'reviews'>('rating');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -315,26 +323,51 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
               <Loader2 className="w-4 h-4 animate-spin" />
               Loading carriers...
             </span>
+          ) : fetchError ? (
+            <span className="text-amber-600">Could not load carriers from server</span>
           ) : (
             `Showing ${filteredCarriers.length} carrier${filteredCarriers.length !== 1 ? 's' : ''}`
           )}
         </div>
 
+        {/* Fetch Error State */}
+        {!loading && fetchError && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <WifiOff className="w-8 h-8 text-amber-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Unable to Load Carriers</h3>
+            <p className="text-gray-500 mb-4 max-w-md mx-auto">
+              This can happen due to a slow connection or browser privacy settings.
+              Please try again.
+            </p>
+            <button
+              onClick={() => fetchCarriers()}
+              className="px-5 py-2.5 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors inline-flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* Carrier Grid */}
-        <div className={`grid gap-6 ${
-          viewMode === 'grid' 
-            ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-            : 'grid-cols-1'
-        }`}>
-          {filteredCarriers.map((carrier) => (
-            <CarrierCard
-              key={carrier.id}
-              carrier={carrier}
-              onViewProfile={onViewProfile}
-              onRequestPermission={onRequestPermission}
-            />
-          ))}
-        </div>
+        {!fetchError && (
+          <div className={`grid gap-6 ${
+            viewMode === 'grid'
+              ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+              : 'grid-cols-1'
+          }`}>
+            {filteredCarriers.map((carrier) => (
+              <CarrierCard
+                key={carrier.id}
+                carrier={carrier}
+                onViewProfile={onViewProfile}
+                onRequestPermission={onRequestPermission}
+              />
+            ))}
+          </div>
+        )}
 
         {/* CarrierScout CTA */}
         <div className="mt-8">
@@ -345,7 +378,7 @@ const CarrierDirectory: React.FC<CarrierDirectoryProps> = ({ onViewProfile, onRe
         </div>
 
         {/* No Results */}
-        {!loading && filteredCarriers.length === 0 && (
+        {!loading && !fetchError && filteredCarriers.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="w-8 h-8 text-gray-400" />

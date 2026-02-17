@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Search, SlidersHorizontal, Grid, List, X, Loader2 } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { Search, SlidersHorizontal, Grid, List, X, Loader2, RefreshCw, WifiOff } from 'lucide-react';
 import DispatcherCard from './DispatcherCard';
 import { useAppContext, type CurrentUser } from '@/contexts/AppContext';
 import { computeVerificationTier, crossReferenceCarriers } from '@/lib/verification';
@@ -20,25 +20,33 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
   useEffect(() => { setSearchQuery(initialSearchQuery); }, [initialSearchQuery]);
   const [supabaseUsers, setSupabaseUsers] = useState<CurrentUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
-  // Fetch dispatchers from Supabase on mount
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const data = await getUsersByType('dispatcher');
-        if (!cancelled && data) {
-          const mapped = data.map((row: any) => dbUserToCurrentUser(row));
-          setSupabaseUsers(mapped);
-        }
-      } catch (err) {
-        console.warn('Failed to fetch dispatchers from Supabase:', err);
-      } finally {
-        if (!cancelled) setLoading(false);
+  // Fetch dispatchers from Supabase
+  const fetchDispatchers = useCallback(async (signal?: { cancelled: boolean }) => {
+    setLoading(true);
+    setFetchError(false);
+    try {
+      const data = await getUsersByType('dispatcher');
+      if (signal?.cancelled) return;
+      if (data) {
+        const mapped = data.map((row: any) => dbUserToCurrentUser(row));
+        setSupabaseUsers(mapped);
       }
-    })();
-    return () => { cancelled = true; };
+    } catch (err) {
+      console.warn('Failed to fetch dispatchers from Supabase:', err);
+      if (!signal?.cancelled) setFetchError(true);
+    } finally {
+      if (!signal?.cancelled) setLoading(false);
+    }
   }, []);
+
+  // Fetch on mount
+  useEffect(() => {
+    const signal = { cancelled: false };
+    fetchDispatchers(signal);
+    return () => { signal.cancelled = true; };
+  }, [fetchDispatchers]);
 
   // Merge Supabase users with local registeredUsers (Supabase takes priority, dedup by ID)
   const allDispatchers = useMemo(() => {
@@ -386,29 +394,54 @@ const DispatcherDirectory: React.FC<DispatcherDirectoryProps> = ({ onViewProfile
               <Loader2 className="w-4 h-4 animate-spin" />
               Loading dispatchers...
             </span>
+          ) : fetchError ? (
+            <span className="text-amber-600">Could not load dispatchers from server</span>
           ) : (
             `Showing ${filteredDispatchers.length} dispatcher${filteredDispatchers.length !== 1 ? 's' : ''}`
           )}
         </div>
 
+        {/* Fetch Error State */}
+        {!loading && fetchError && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <WifiOff className="w-8 h-8 text-amber-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Unable to Load Dispatchers</h3>
+            <p className="text-gray-500 mb-4 max-w-md mx-auto">
+              This can happen due to a slow connection or browser privacy settings.
+              Please try again.
+            </p>
+            <button
+              onClick={() => fetchDispatchers()}
+              className="px-5 py-2.5 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors inline-flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* Dispatcher Grid */}
-        <div className={`grid gap-6 ${
-          viewMode === 'grid'
-            ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-            : 'grid-cols-1'
-        }`}>
-          {filteredDispatchers.map((dispatcher) => (
-            <DispatcherCard
-              key={dispatcher.id}
-              dispatcher={dispatcher}
-              onViewProfile={onViewProfile}
-              onContact={onContact}
-            />
-          ))}
-        </div>
+        {!fetchError && (
+          <div className={`grid gap-6 ${
+            viewMode === 'grid'
+              ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+              : 'grid-cols-1'
+          }`}>
+            {filteredDispatchers.map((dispatcher) => (
+              <DispatcherCard
+                key={dispatcher.id}
+                dispatcher={dispatcher}
+                onViewProfile={onViewProfile}
+                onContact={onContact}
+              />
+            ))}
+          </div>
+        )}
 
         {/* No Results */}
-        {!loading && filteredDispatchers.length === 0 && (
+        {!loading && !fetchError && filteredDispatchers.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="w-8 h-8 text-gray-400" />

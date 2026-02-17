@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, SlidersHorizontal, Grid, List, X, MapPin, Loader2 } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { Search, SlidersHorizontal, Grid, List, X, MapPin, Loader2, RefreshCw, WifiOff } from 'lucide-react';
 import BrokerCard from './BrokerCard';
 import CarrierScoutIncentiveBanner from './CarrierScoutIncentiveBanner';
 import { getUsersByType } from '@/lib/api';
@@ -32,42 +32,50 @@ const BrokerDirectory: React.FC<BrokerDirectoryProps> = ({ initialSearchQuery = 
   useEffect(() => { setSearchQuery(initialSearchQuery); }, [initialSearchQuery]);
   const [brokers, setBrokers] = useState<BrokerItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
-  // Fetch brokers from Supabase on mount
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const data = await getUsersByType('broker');
-        if (!cancelled && data) {
-          const mapped: BrokerItem[] = data.map((row: any) => {
-            const profile = Array.isArray(row.broker_profiles)
-              ? row.broker_profiles[0]
-              : row.broker_profiles;
-            return {
-              id: row.id,
-              name: `${row.first_name} ${row.last_name}`,
-              company: row.company_name || `${row.first_name} ${row.last_name}`,
-              image: row.profile_image_url || undefined,
-              rating: 0,
-              reviews: 0,
-              mcNumber: profile?.mc_number || '',
-              specialties: profile?.specialties || [],
-              regions: profile?.operating_regions || [],
-              verified: row.verified || false,
-              yearsInBusiness: 0,
-            };
-          });
-          setBrokers(mapped);
-        }
-      } catch (err) {
-        console.warn('Failed to fetch brokers from Supabase:', err);
-      } finally {
-        if (!cancelled) setLoading(false);
+  // Fetch brokers from Supabase
+  const fetchBrokers = useCallback(async (signal?: { cancelled: boolean }) => {
+    setLoading(true);
+    setFetchError(false);
+    try {
+      const data = await getUsersByType('broker');
+      if (signal?.cancelled) return;
+      if (data) {
+        const mapped: BrokerItem[] = data.map((row: any) => {
+          const profile = Array.isArray(row.broker_profiles)
+            ? row.broker_profiles[0]
+            : row.broker_profiles;
+          return {
+            id: row.id,
+            name: `${row.first_name} ${row.last_name}`,
+            company: row.company_name || `${row.first_name} ${row.last_name}`,
+            image: row.profile_image_url || undefined,
+            rating: 0,
+            reviews: 0,
+            mcNumber: profile?.mc_number || '',
+            specialties: profile?.specialties || [],
+            regions: profile?.operating_regions || [],
+            verified: row.verified || false,
+            yearsInBusiness: 0,
+          };
+        });
+        setBrokers(mapped);
       }
-    })();
-    return () => { cancelled = true; };
+    } catch (err) {
+      console.warn('Failed to fetch brokers from Supabase:', err);
+      if (!signal?.cancelled) setFetchError(true);
+    } finally {
+      if (!signal?.cancelled) setLoading(false);
+    }
   }, []);
+
+  // Fetch on mount
+  useEffect(() => {
+    const signal = { cancelled: false };
+    fetchBrokers(signal);
+    return () => { signal.cancelled = true; };
+  }, [fetchBrokers]);
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'rating' | 'yearsInBusiness' | 'reviews'>('rating');
@@ -286,26 +294,51 @@ const BrokerDirectory: React.FC<BrokerDirectoryProps> = ({ initialSearchQuery = 
               <Loader2 className="w-4 h-4 animate-spin" />
               Loading brokers...
             </span>
+          ) : fetchError ? (
+            <span className="text-amber-600">Could not load brokers from server</span>
           ) : (
             `Showing ${filteredBrokers.length} broker${filteredBrokers.length !== 1 ? 's' : ''}`
           )}
         </div>
 
-        <div className={`grid gap-6 ${
-          viewMode === 'grid'
-            ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-            : 'grid-cols-1'
-        }`}>
-          {filteredBrokers.map((broker) => (
-            <BrokerCard
-              key={broker.id}
-              broker={broker}
-              onViewProfile={(id) => onViewProfile?.(id)}
-            />
-          ))}
-        </div>
+        {/* Fetch Error State */}
+        {!loading && fetchError && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <WifiOff className="w-8 h-8 text-amber-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Unable to Load Brokers</h3>
+            <p className="text-gray-500 mb-4 max-w-md mx-auto">
+              This can happen due to a slow connection or browser privacy settings.
+              Please try again.
+            </p>
+            <button
+              onClick={() => fetchBrokers()}
+              className="px-5 py-2.5 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-[#2563EB] transition-colors inline-flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </button>
+          </div>
+        )}
 
-        {!loading && filteredBrokers.length === 0 && (
+        {!fetchError && (
+          <div className={`grid gap-6 ${
+            viewMode === 'grid'
+              ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+              : 'grid-cols-1'
+          }`}>
+            {filteredBrokers.map((broker) => (
+              <BrokerCard
+                key={broker.id}
+                broker={broker}
+                onViewProfile={(id) => onViewProfile?.(id)}
+              />
+            ))}
+          </div>
+        )}
+
+        {!loading && !fetchError && filteredBrokers.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="w-8 h-8 text-gray-400" />

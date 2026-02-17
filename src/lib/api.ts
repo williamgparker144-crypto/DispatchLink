@@ -842,22 +842,36 @@ export async function getPlatformUserCounts(): Promise<{ dispatchers: number; ca
 }
 
 // Fetch users of a given type with pagination (for browse network)
+// Helper: race a promise against a timeout (prevents infinite hangs on Safari/slow networks)
+function withTimeout<T>(promise: Promise<T>, ms: number, label?: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Request timed out after ${ms}ms${label ? ` (${label})` : ''}`)), ms)
+    ),
+  ]);
+}
+
 export async function getUsersByTypePaginated(
   userType: 'dispatcher' | 'carrier' | 'broker',
   limit: number,
   offset: number
 ) {
-  const { data, error, count } = await supabase
-    .from('users')
-    .select(`
-      *,
-      dispatcher_profiles(*),
-      carrier_profiles(*),
-      broker_profiles(*)
-    `, { count: 'exact' })
-    .eq('user_type', userType)
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+  const { data, error, count } = await withTimeout(
+    supabase
+      .from('users')
+      .select(`
+        *,
+        dispatcher_profiles(*),
+        carrier_profiles(*),
+        broker_profiles(*)
+      `, { count: 'exact' })
+      .eq('user_type', userType)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1),
+    12000,
+    `getUsersByTypePaginated:${userType}`
+  );
 
   if (error) throw error;
   return { data: data || [], total: count ?? 0 };
@@ -865,17 +879,21 @@ export async function getUsersByTypePaginated(
 
 // Fetch all users of a given type (for directory listings)
 export async function getUsersByType(userType: 'dispatcher' | 'carrier' | 'broker' | 'advertiser') {
-  const { data, error } = await supabase
-    .from('users')
-    .select(`
-      *,
-      dispatcher_profiles(*),
-      carrier_profiles(*),
-      broker_profiles(*),
-      advertiser_profiles(*)
-    `)
-    .eq('user_type', userType)
-    .order('created_at', { ascending: false });
+  const { data, error } = await withTimeout(
+    supabase
+      .from('users')
+      .select(`
+        *,
+        dispatcher_profiles(*),
+        carrier_profiles(*),
+        broker_profiles(*),
+        advertiser_profiles(*)
+      `)
+      .eq('user_type', userType)
+      .order('created_at', { ascending: false }),
+    12000,
+    `getUsersByType:${userType}`
+  );
 
   if (error) throw error;
   return data;
