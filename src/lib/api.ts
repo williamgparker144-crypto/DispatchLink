@@ -844,12 +844,14 @@ export async function getPlatformUserCounts(): Promise<{ dispatchers: number; ca
 // Fetch users of a given type with pagination (for browse network)
 // Helper: race a promise against a timeout (prevents infinite hangs on Safari/slow networks)
 function withTimeout<T>(promise: Promise<T>, ms: number, label?: string): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`Request timed out after ${ms}ms${label ? ` (${label})` : ''}`)), ms)
-    ),
-  ]);
+  let timeoutId: ReturnType<typeof setTimeout>;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(
+      () => reject(new Error(`Request timed out after ${ms}ms${label ? ` (${label})` : ''}`)),
+      ms
+    );
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
 }
 
 export async function getUsersByTypePaginated(
