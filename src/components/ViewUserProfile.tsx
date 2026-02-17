@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, MapPin, Briefcase, Shield, Globe, Users, MessageSquare, Award, Calendar, Clock, Sparkles, Loader2, Edit3, Eye } from 'lucide-react';
+import { ArrowLeft, MapPin, Briefcase, Shield, Globe, Users, MessageSquare, Award, Calendar, Clock, Sparkles, Loader2, Edit3, Eye, ExternalLink, ImageIcon, X } from 'lucide-react';
 import ConnectionButton from './ConnectionButton';
 import PostCard from './PostCard';
 import { computeVerificationTier, getVerificationBadgeInfo } from '@/lib/verification';
-import { getConnectionStatus, sendConnectionRequest, acceptConnection, rejectConnection, getOrCreateConversation, getPostsByUser, getUserSettings, recordProfileView, getProfileViewCount } from '@/lib/api';
+import { getConnectionStatus, sendConnectionRequest, acceptConnection, rejectConnection, getOrCreateConversation, getPostsByUser, getUserSettings, recordProfileView, getProfileViewCount, getGalleryImages } from '@/lib/api';
 import type { ViewableUser, Post } from '@/types';
 
 const normalizeUrl = (url: string) => url.match(/^https?:\/\//) ? url : `https://${url}`;
@@ -23,6 +23,8 @@ const ViewUserProfile: React.FC<ViewUserProfileProps> = ({ user, onBack, onNavig
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [profileViews, setProfileViews] = useState<number>(0);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [galleryLightboxUrl, setGalleryLightboxUrl] = useState<string | null>(null);
   const [privacySettings, setPrivacySettings] = useState<Record<string, boolean>>({
     show_email: false, show_phone: false, show_location: true, show_bio: true,
     show_website: true, show_experience: true, show_specialties: true, show_carriers: true,
@@ -62,6 +64,14 @@ const ViewUserProfile: React.FC<ViewUserProfileProps> = ({ user, onBack, onNavig
     })();
     return () => { cancelled = true; };
   }, [user.id, currentUserId]);
+
+  // Load gallery images for the viewed user from Supabase
+  useEffect(() => {
+    if (!user.id) return;
+    const isSupabaseId = !user.id.startsWith('user-') && !user.id.startsWith('seed-');
+    if (!isSupabaseId) return;
+    getGalleryImages(user.id).then(urls => setGalleryImages(urls)).catch(() => {});
+  }, [user.id]);
 
   // Record profile view + fetch view count
   useEffect(() => {
@@ -373,12 +383,29 @@ const ViewUserProfile: React.FC<ViewUserProfileProps> = ({ user, onBack, onNavig
                   {user.carriersWorkedWith && user.carriersWorkedWith.length > 0 && privacySettings.show_carriers !== false && (
                     <div className="flex items-start gap-3 text-sm">
                       <span className="text-gray-500 w-24 pt-0.5">Carriers</span>
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         {user.carriersWorkedWith.map((c, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <span className="text-gray-800">{c.carrierName}</span>
-                            <span className="text-xs text-gray-400">{c.mcNumber}</span>
-                            {c.verified && <Shield className="w-3 h-3 text-emerald-500" />}
+                          <div
+                            key={i}
+                            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-gray-50 hover:bg-blue-50 cursor-pointer transition-colors group"
+                            onClick={() => {
+                              const mcNum = c.mcNumber.replace(/[^0-9]/g, '');
+                              const isDot = c.mcNumber.toUpperCase().startsWith('DOT');
+                              window.open(
+                                isDot
+                                  ? `https://safer.fmcsa.dot.gov/query.asp?searchtype=ANY&query_type=queryCarrierSnapshot&query_param=USDOT&query_string=${mcNum}`
+                                  : `https://safer.fmcsa.dot.gov/query.asp?searchtype=ANY&query_type=queryCarrierSnapshot&query_param=MC_MX&query_string=${mcNum}`,
+                                '_blank'
+                              );
+                            }}
+                          >
+                            <Briefcase className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#3B82F6]" />
+                            <span className="text-gray-800 group-hover:text-[#3B82F6] font-medium">{c.carrierName}</span>
+                            <span className={`text-xs px-1.5 py-0.5 rounded ${c.mcNumber.toUpperCase().startsWith('DOT') ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-500'}`}>
+                              {c.mcNumber}
+                            </span>
+                            {c.verified && <Shield className="w-3.5 h-3.5 text-emerald-500" />}
+                            <ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-[#3B82F6] ml-auto" />
                           </div>
                         ))}
                       </div>
@@ -429,6 +456,35 @@ const ViewUserProfile: React.FC<ViewUserProfileProps> = ({ user, onBack, onNavig
           </div>
         </div>
 
+        {/* Gallery Section */}
+        {galleryImages.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-200 mb-5 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100">
+              <h3 className="font-semibold text-[#1E3A5F] flex items-center gap-2">
+                <ImageIcon className="w-4 h-4" />
+                Gallery
+                <span className="text-xs text-gray-400 font-normal">({galleryImages.length})</span>
+              </h3>
+            </div>
+            <div className="p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {galleryImages.map((url, i) => (
+                  <div
+                    key={i}
+                    className="relative group aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50 cursor-pointer"
+                    onClick={() => setGalleryLightboxUrl(url)}
+                  >
+                    <img src={url} alt={`Gallery ${i + 1}`} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                      <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Posts Section */}
         <div className="bg-white rounded-xl border border-gray-200 mb-5 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
@@ -461,6 +517,27 @@ const ViewUserProfile: React.FC<ViewUserProfileProps> = ({ user, onBack, onNavig
           </div>
         </div>
       </div>
+
+      {/* Gallery Lightbox */}
+      {galleryLightboxUrl && (
+        <div
+          className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 cursor-pointer backdrop-blur-sm"
+          onClick={() => setGalleryLightboxUrl(null)}
+        >
+          <button
+            className="absolute top-4 right-4 w-10 h-10 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-black/80 transition-colors z-10"
+            onClick={() => setGalleryLightboxUrl(null)}
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <img
+            src={galleryLightboxUrl}
+            alt="Gallery photo"
+            className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </section>
   );
 };

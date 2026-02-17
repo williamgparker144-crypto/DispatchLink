@@ -1511,6 +1511,28 @@ export async function getProfileViewCount(userId: string): Promise<number> {
   return count || 0;
 }
 
+// ── Gallery Images ────────────────────────────────────────────
+
+// Save gallery image URLs to user record
+export async function saveGalleryImages(userId: string, urls: string[]) {
+  const { error } = await supabase
+    .from('users')
+    .update({ gallery_images: urls })
+    .eq('id', userId);
+  if (error) console.warn('Failed to save gallery images:', error);
+}
+
+// Get gallery image URLs for a user
+export async function getGalleryImages(userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('users')
+    .select('gallery_images')
+    .eq('id', userId)
+    .single();
+  if (error || !data) return [];
+  return data.gallery_images || [];
+}
+
 // Upload agreement file to agreements bucket
 export async function uploadAgreementFile(userId: string, carrierMC: string, file: File) {
   const ext = file.name.split('.').pop() || 'pdf';

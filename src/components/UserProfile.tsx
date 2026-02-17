@@ -2,14 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   Camera, Edit3, MapPin, Briefcase, Shield, Users, MessageSquare, Eye, X, Check,
   ImageIcon, Globe, Link2, Palette, Upload, FileText, Heart, Share2, Bookmark,
-  Award, Star, Calendar, Mail, Sparkles, Clock, Plus, Trash2, Loader2, AlertCircle, CheckCircle, Code, Grid
+  Award, Star, Calendar, Mail, Sparkles, Clock, Plus, Trash2, Loader2, AlertCircle, CheckCircle, Code, Grid, ExternalLink
 } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
 import type { CarrierReference } from '@/contexts/AppContext';
 import { computeVerificationTier, getVerificationBadgeInfo } from '@/lib/verification';
 import { verifyCarrierMC, verifyCarrierDOT } from '@/lib/fmcsa';
 import { compressImage } from '@/lib/imageCompress';
-import { uploadProfileImage, uploadCoverImage, uploadAgreementFile, getConnections, getPostsByUser, createPost, deletePost, uploadPostImage, uploadPostDocument, getProfileViewCount } from '@/lib/api';
+import { uploadProfileImage, uploadCoverImage, uploadAgreementFile, getConnections, getPostsByUser, createPost, deletePost, uploadPostImage, uploadPostDocument, getProfileViewCount, saveGalleryImages, getGalleryImages } from '@/lib/api';
 import PostCard from './PostCard';
 import type { Post, ViewableUser } from '@/types';
 
@@ -108,6 +108,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
   // Gallery
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [galleryUploading, setGalleryUploading] = useState(false);
+  const [galleryLightboxUrl, setGalleryLightboxUrl] = useState<string | null>(null);
   const galleryUploadRef = useRef<HTMLInputElement>(null);
 
   // Embed codes
@@ -115,11 +116,35 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
   const [newEmbedLabel, setNewEmbedLabel] = useState('');
   const [newEmbedCode, setNewEmbedCode] = useState('');
 
-  // Load gallery + embeds from localStorage
+  // Load gallery + embeds from Supabase (with localStorage fallback)
   useEffect(() => {
     if (!currentUser?.id) return;
-    const stored = localStorage.getItem(`dispatchlink_gallery_${currentUser.id}`);
-    if (stored) try { setGalleryImages(JSON.parse(stored)); } catch {}
+    const isSupabaseId = !currentUser.id.startsWith('user-') && !currentUser.id.startsWith('seed-');
+    // Load gallery from Supabase first, fall back to localStorage
+    if (isSupabaseId) {
+      getGalleryImages(currentUser.id).then(urls => {
+        if (urls.length > 0) {
+          setGalleryImages(urls);
+          localStorage.setItem(`dispatchlink_gallery_${currentUser.id}`, JSON.stringify(urls));
+        } else {
+          // Fall back to localStorage (migrates existing local data)
+          const stored = localStorage.getItem(`dispatchlink_gallery_${currentUser.id}`);
+          if (stored) {
+            try {
+              const parsed = JSON.parse(stored);
+              setGalleryImages(parsed);
+              if (parsed.length > 0) saveGalleryImages(currentUser.id, parsed); // migrate to DB
+            } catch {}
+          }
+        }
+      }).catch(() => {
+        const stored = localStorage.getItem(`dispatchlink_gallery_${currentUser.id}`);
+        if (stored) try { setGalleryImages(JSON.parse(stored)); } catch {}
+      });
+    } else {
+      const stored = localStorage.getItem(`dispatchlink_gallery_${currentUser.id}`);
+      if (stored) try { setGalleryImages(JSON.parse(stored)); } catch {}
+    }
     const storedEmbeds = localStorage.getItem(`dispatchlink_embeds_${currentUser.id}`);
     if (storedEmbeds) try { setEmbedCodes(JSON.parse(storedEmbeds)); } catch {}
   }, [currentUser?.id]);
@@ -139,6 +164,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
       const updated = [...galleryImages, ...newUrls];
       setGalleryImages(updated);
       localStorage.setItem(`dispatchlink_gallery_${currentUser.id}`, JSON.stringify(updated));
+      saveGalleryImages(currentUser.id, updated); // persist to Supabase
     }
     setGalleryUploading(false);
     if (galleryUploadRef.current) galleryUploadRef.current.value = '';
@@ -147,7 +173,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
   const removeGalleryImage = (index: number) => {
     const updated = galleryImages.filter((_, i) => i !== index);
     setGalleryImages(updated);
-    if (currentUser?.id) localStorage.setItem(`dispatchlink_gallery_${currentUser.id}`, JSON.stringify(updated));
+    if (currentUser?.id) {
+      localStorage.setItem(`dispatchlink_gallery_${currentUser.id}`, JSON.stringify(updated));
+      saveGalleryImages(currentUser.id, updated);
+    }
   };
 
   const handleAddEmbed = () => {
@@ -851,12 +880,29 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
                     {currentUser.carriersWorkedWith && currentUser.carriersWorkedWith.length > 0 && (
                       <div className="flex items-start gap-3 text-sm">
                         <span className="text-gray-500 w-24 pt-0.5">Carriers</span>
-                        <div className="space-y-1">
+                        <div className="space-y-1.5">
                           {currentUser.carriersWorkedWith.map((c, i) => (
-                            <div key={i} className="flex items-center gap-2">
-                              <span className="text-gray-800">{c.carrierName}</span>
-                              <span className="text-xs text-gray-400">{c.mcNumber}</span>
-                              {c.verified && <Shield className="w-3 h-3 text-emerald-500" />}
+                            <div
+                              key={i}
+                              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-gray-50 hover:bg-blue-50 cursor-pointer transition-colors group"
+                              onClick={() => {
+                                const mcNum = c.mcNumber.replace(/[^0-9]/g, '');
+                                const isDot = c.mcNumber.toUpperCase().startsWith('DOT');
+                                window.open(
+                                  isDot
+                                    ? `https://safer.fmcsa.dot.gov/query.asp?searchtype=ANY&query_type=queryCarrierSnapshot&query_param=USDOT&query_string=${mcNum}`
+                                    : `https://safer.fmcsa.dot.gov/query.asp?searchtype=ANY&query_type=queryCarrierSnapshot&query_param=MC_MX&query_string=${mcNum}`,
+                                  '_blank'
+                                );
+                              }}
+                            >
+                              <Briefcase className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#3B82F6]" />
+                              <span className="text-gray-800 group-hover:text-[#3B82F6] font-medium">{c.carrierName}</span>
+                              <span className={`text-xs px-1.5 py-0.5 rounded ${c.mcNumber.toUpperCase().startsWith('DOT') ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-500'}`}>
+                                {c.mcNumber}
+                              </span>
+                              {c.verified && <Shield className="w-3.5 h-3.5 text-emerald-500" />}
+                              <ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-[#3B82F6] ml-auto" />
                             </div>
                           ))}
                         </div>
@@ -999,11 +1045,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
               {galleryImages.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {galleryImages.map((url, i) => (
-                    <div key={i} className="relative group aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                    <div key={i} className="relative group aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50 cursor-pointer" onClick={() => setGalleryLightboxUrl(url)}>
                       <img src={url} alt={`Gallery ${i + 1}`} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                        <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
                       <button
-                        onClick={() => removeGalleryImage(i)}
+                        onClick={(e) => { e.stopPropagation(); removeGalleryImage(i); }}
                         className="absolute top-2 right-2 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1733,6 +1781,26 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate, onViewProfile }) 
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {/* Gallery Lightbox */}
+      {galleryLightboxUrl && (
+        <div
+          className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 cursor-pointer backdrop-blur-sm"
+          onClick={() => setGalleryLightboxUrl(null)}
+        >
+          <button
+            className="absolute top-4 right-4 w-10 h-10 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-black/80 transition-colors z-10"
+            onClick={() => setGalleryLightboxUrl(null)}
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <img
+            src={galleryLightboxUrl}
+            alt="Gallery photo"
+            className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </section>
