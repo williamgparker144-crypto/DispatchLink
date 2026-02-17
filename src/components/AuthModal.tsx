@@ -290,22 +290,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode, pen
           const fullUser = await getUserByEmail(formData.email);
           newUser = dbUserToCurrentUser(fullUser!);
         } catch (supaErr: any) {
-          // If Supabase is unreachable, fall back to local-only user
+          // Always surface database errors — never silently create local-only users
           if (supaErr?.message?.includes('already exists')) throw supaErr;
-          console.warn('Supabase unavailable, creating local-only user:', supaErr);
-          newUser = {
-            id: `user-${Date.now()}`,
-            name: `${formData.firstName} ${formData.lastName}`,
-            email: formData.email,
-            company: formData.companyName,
-            userType,
-            verified: false,
-            yearsExperience: undefined as number | undefined,
-            specialties: [] as string[],
-            carriersWorkedWith: [] as { carrierName: string; mcNumber: string; verified: boolean }[],
-            carrierScoutSubscribed: false,
-            ...(userType === 'carrier' ? { mcNumber: formData.mcNumber, dotNumber: formData.dotNumber } : {}),
-          };
+          console.error('Signup failed:', supaErr);
+          throw new Error('Signup could not be completed. Please check your connection and try again.');
         }
         setCurrentUser(newUser);
         registerUser(newUser);
@@ -343,16 +331,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode, pen
           loginUser = dbUserToCurrentUser(dbUser, carrierRefs);
         } catch (supaErr: any) {
           if (supaErr?.message?.includes('No account found')) throw supaErr;
-          // Supabase down — try cached session
-          console.warn('Supabase unavailable during login, using fallback:', supaErr);
-          loginUser = {
-            id: `user-${Date.now()}`,
-            name: formData.email.split('@')[0],
-            email: formData.email,
-            company: '',
-            userType: 'dispatcher' as const,
-            verified: false,
-          };
+          console.error('Login failed:', supaErr);
+          throw new Error('Login could not be completed. Please check your connection and try again.');
         }
         setCurrentUser(loginUser);
         registerUser(loginUser);
