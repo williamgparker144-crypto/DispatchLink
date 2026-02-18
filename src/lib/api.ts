@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, supabaseUrl, supabaseKey } from './supabase';
 
 // DOT/MC Verification
 export async function verifyDotMc(dotNumber?: string, mcNumber?: string) {
@@ -829,19 +829,46 @@ export async function markMessagesRead(conversationId: string, userId: string) {
 
 // Get platform user counts by type (lightweight — count only, no data)
 export async function getPlatformUserCounts(): Promise<{ dispatchers: number; carriers: number; brokers: number }> {
-  const [d, c, b] = await Promise.all([
-    supabase.from('users').select('id', { count: 'exact', head: true }).eq('user_type', 'dispatcher'),
-    supabase.from('users').select('id', { count: 'exact', head: true }).eq('user_type', 'carrier'),
-    supabase.from('users').select('id', { count: 'exact', head: true }).eq('user_type', 'broker'),
-  ]);
-  return {
-    dispatchers: d.count ?? 0,
-    carriers: c.count ?? 0,
-    brokers: b.count ?? 0,
-  };
-}
+  // Try Supabase client first
+  try {
+    const [d, c, b] = await withTimeout(
+      Promise.all([
+        supabase.from('users').select('id', { count: 'exact', head: true }).eq('user_type', 'dispatcher'),
+        supabase.from('users').select('id', { count: 'exact', head: true }).eq('user_type', 'carrier'),
+        supabase.from('users').select('id', { count: 'exact', head: true }).eq('user_type', 'broker'),
+      ]),
+      12000,
+      'getPlatformUserCounts'
+    );
+    const counts = { dispatchers: d.count ?? 0, carriers: c.count ?? 0, brokers: b.count ?? 0 };
+    if (counts.dispatchers > 0 || counts.carriers > 0 || counts.brokers > 0) return counts;
+  } catch (err) {
+    console.warn('Supabase client failed for user counts, trying direct REST:', err);
+  }
 
-// Fetch users of a given type with pagination (for browse network)
+  // Fallback: direct REST API
+  try {
+    if (!supabaseUrl || !supabaseKey) return { dispatchers: 0, carriers: 0, brokers: 0 };
+    const headers: Record<string, string> = {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Prefer': 'count=exact',
+    };
+    const base = `${supabaseUrl}/rest/v1/users?select=id`;
+    const [dResp, cResp, bResp] = await Promise.all([
+      fetch(`${base}&user_type=eq.dispatcher`, { headers, method: 'HEAD' }),
+      fetch(`${base}&user_type=eq.carrier`, { headers, method: 'HEAD' }),
+      fetch(`${base}&user_type=eq.broker`, { headers, method: 'HEAD' }),
+    ]);
+    return {
+      dispatchers: parseInt(dResp.headers.get('content-range')?.split('/')[1] || '0', 10),
+      carriers: parseInt(cResp.headers.get('content-range')?.split('/')[1] || '0', 10),
+      brokers: parseInt(bResp.headers.get('content-range')?.split('/')[1] || '0', 10),
+    };
+  } catch {
+    return { dispatchers: 0, carriers: 0, brokers: 0 };
+  }
+}
 // Helper: race a promise against a timeout (prevents infinite hangs on Safari/slow networks)
 function withTimeout<T>(promise: Promise<T>, ms: number, label?: string): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout>;
@@ -859,46 +886,112 @@ export async function getUsersByTypePaginated(
   limit: number,
   offset: number
 ) {
-  const { data, error, count } = await withTimeout(
-    supabase
-      .from('users')
-      .select(`
-        *,
-        dispatcher_profiles(*),
-        carrier_profiles(*),
-        broker_profiles(*)
-      `, { count: 'exact' })
-      .eq('user_type', userType)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1),
-    12000,
-    `getUsersByTypePaginated:${userType}`
-  );
+  // Try Supabase client first
+  try {
+    const { data, error, count } = await withTimeout(
+      supabase
+        .from('users')
+        .select(`
+          *,
+          dispatcher_profiles(*),
+          carrier_profiles(*),
+          broker_profiles(*)
+        `, { count: 'exact' })
+        .eq('user_type', userType)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1),
+      12000,
+      `getUsersByTypePaginated:${userType}`
+    );
 
-  if (error) throw error;
-  return { data: data || [], total: count ?? 0 };
+    if (error) throw error;
+    return { data: data || [], total: count ?? 0 };
+  } catch (clientErr) {
+    console.warn(`Supabase client paginated failed for ${userType}, trying direct REST:`, clientErr);
+  }
+
+  // Fallback: direct REST API call
+  try {
+    if (!supabaseUrl || !supabaseKey) return { data: [], total: 0 };
+    const selectCols = '*,dispatcher_profiles(*),carrier_profiles(*),broker_profiles(*)';
+    const url = `${supabaseUrl}/rest/v1/users?select=${encodeURIComponent(selectCols)}&user_type=eq.${userType}&order=created_at.desc&offset=${offset}&limit=${limit}`;
+    const resp = await withTimeout(
+      fetch(url, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Accept': 'application/json',
+          'Prefer': 'count=exact',
+        },
+      }),
+      12000,
+      `fetchUsersPaginatedREST:${userType}`
+    );
+    if (!resp.ok) throw new Error(`REST API ${resp.status}`);
+    const total = parseInt(resp.headers.get('content-range')?.split('/')[1] || '0', 10);
+    const data = await resp.json();
+    return { data: data || [], total };
+  } catch (restErr) {
+    console.warn(`Direct REST paginated also failed for ${userType}:`, restErr);
+    return { data: [], total: 0 };
+  }
+}
+
+// Direct REST API fallback for Safari/browsers where Supabase client fails
+async function fetchUsersDirectREST(userType: string): Promise<any[] | null> {
+  if (!supabaseUrl || !supabaseKey) return null;
+  const selectCols = '*,dispatcher_profiles(*),carrier_profiles(*),broker_profiles(*),advertiser_profiles(*)';
+  const url = `${supabaseUrl}/rest/v1/users?select=${encodeURIComponent(selectCols)}&user_type=eq.${userType}&order=created_at.desc`;
+  const resp = await fetch(url, {
+    headers: {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Accept': 'application/json',
+    },
+  });
+  if (!resp.ok) throw new Error(`REST API ${resp.status}`);
+  return resp.json();
 }
 
 // Fetch all users of a given type (for directory listings)
 export async function getUsersByType(userType: 'dispatcher' | 'carrier' | 'broker' | 'advertiser') {
-  const { data, error } = await withTimeout(
-    supabase
-      .from('users')
-      .select(`
-        *,
-        dispatcher_profiles(*),
-        carrier_profiles(*),
-        broker_profiles(*),
-        advertiser_profiles(*)
-      `)
-      .eq('user_type', userType)
-      .order('created_at', { ascending: false }),
-    12000,
-    `getUsersByType:${userType}`
-  );
+  // Try Supabase client first
+  try {
+    const { data, error } = await withTimeout(
+      supabase
+        .from('users')
+        .select(`
+          *,
+          dispatcher_profiles(*),
+          carrier_profiles(*),
+          broker_profiles(*),
+          advertiser_profiles(*)
+        `)
+        .eq('user_type', userType)
+        .order('created_at', { ascending: false }),
+      12000,
+      `getUsersByType:${userType}`
+    );
 
-  if (error) throw error;
-  return data;
+    if (error) throw error;
+    if (data && data.length > 0) return data;
+  } catch (clientErr) {
+    console.warn(`Supabase client failed for ${userType}, trying direct REST:`, clientErr);
+  }
+
+  // Fallback: direct REST API call (bypasses Supabase JS client issues on Safari)
+  try {
+    const restData = await withTimeout(
+      fetchUsersDirectREST(userType),
+      12000,
+      `fetchUsersDirectREST:${userType}`
+    );
+    if (restData) return restData;
+  } catch (restErr) {
+    console.warn(`Direct REST also failed for ${userType}:`, restErr);
+  }
+
+  return [];
 }
 
 // Brokers
