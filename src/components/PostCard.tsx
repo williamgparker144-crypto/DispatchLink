@@ -388,7 +388,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onViewProfile }) =>
             <img
               src={post.image_url}
               alt="Post attachment"
-              className="w-full max-h-[400px] object-cover"
+              className="w-full max-h-[600px] object-contain"
             />
           </div>
         )}
