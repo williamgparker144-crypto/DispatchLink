@@ -35,6 +35,7 @@ import CarrierScoutWelcomeModal from './CarrierScoutWelcomeModal';
 import AdvertiserDashboard from './AdvertiserDashboard';
 import PrivacyPolicyPage from './PrivacyPolicyPage';
 import TermsOfServicePage from './TermsOfServicePage';
+import Dispatch101Page from './Dispatch101Page';
 import { useAppContext } from '@/contexts/AppContext';
 import { computeVerificationTier, crossReferenceCarriers } from '@/lib/verification';
 import { getUserById, getOrCreateConversation } from '@/lib/api';
@@ -486,6 +487,8 @@ const AppLayout: React.FC = () => {
         );
       case 'carrierscout':
         return <CarrierScoutPage />;
+      case 'dispatch-101':
+        return <Dispatch101Page onNavigate={handleNavigate} />;
       case 'privacy':
         return <PrivacyPolicyPage />;
       case 'terms':

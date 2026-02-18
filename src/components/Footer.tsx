@@ -20,6 +20,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
       { label: 'Compliance Guide', action: () => onNavigate('compliance') },
       { label: 'Carrier Packets', action: () => onNavigate('packets') },
       { label: 'FMCSA Resources', href: 'https://www.fmcsa.dot.gov' },
+      { label: 'Dispatch 101', action: () => onNavigate('dispatch-101') },
       { label: 'Advertise', action: () => onNavigate('advertising') },
     ],
     company: [

@@ -169,6 +169,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, currentVie
     { id: 'carriers', label: 'Find Carriers' },
     { id: 'brokers', label: 'Brokers' },
     { id: 'verify', label: 'Verify DOT/MC' },
+    { id: 'dispatch-101', label: 'Dispatch 101' },
     { id: 'carrierscout', label: 'CarrierScout' },
   ];
 
