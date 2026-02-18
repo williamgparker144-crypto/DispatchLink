@@ -43,7 +43,7 @@ interface ConnectionsListProps {
 }
 
 const ConnectionsList: React.FC<ConnectionsListProps> = ({ onViewProfile }) => {
-  const { currentUser } = useAppContext();
+  const { currentUser, onlineUserIds } = useAppContext();
   const [activeTab, setActiveTab] = useState<'find' | 'connections' | 'pending' | 'sent'>('find');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -293,7 +293,9 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({ onViewProfile }) => {
             )}
           </div>
         </div>
-        <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-[#10B981] border-2 border-white rounded-full"></div>
+        {onlineUserIds.has(entry.userId) && (
+          <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-[#10B981] border-2 border-white rounded-full"></div>
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
@@ -338,6 +340,9 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({ onViewProfile }) => {
             )}
           </div>
         </div>
+        {onlineUserIds.has(result.id) && (
+          <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-[#10B981] border-2 border-white rounded-full"></div>
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">

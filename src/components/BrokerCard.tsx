@@ -1,6 +1,7 @@
 import React from 'react';
 import { Star, MapPin, Shield, ChevronRight, Briefcase, Clock } from 'lucide-react';
 import ConnectionButton from './ConnectionButton';
+import { useAppContext } from '@/contexts/AppContext';
 
 interface BrokerCardProps {
   broker: {
@@ -20,6 +21,8 @@ interface BrokerCardProps {
 }
 
 const BrokerCard: React.FC<BrokerCardProps> = ({ broker, onViewProfile }) => {
+  const { onlineUserIds } = useAppContext();
+  const isOnline = onlineUserIds.has(broker.id);
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all group">
       {/* Header */}
@@ -34,6 +37,9 @@ const BrokerCard: React.FC<BrokerCardProps> = ({ broker, onViewProfile }) => {
                 <span className="text-2xl font-bold text-purple-600">{broker.company.charAt(0)}</span>
               )}
             </div>
+            {isOnline && (
+              <span className="absolute top-0 right-0 block w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white" title="Online" />
+            )}
             {broker.verified && (
               <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
                 <Shield className="w-3 h-3 text-white" />

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Star, Clock, Shield, MessageCircle, ChevronRight, Sparkles } from 'lucide-react';
 import { getVerificationBadgeInfo, type VerificationTier } from '@/lib/verification';
+import { useAppContext } from '@/contexts/AppContext';
 
 interface DispatcherCardProps {
   dispatcher: {
@@ -21,6 +22,8 @@ interface DispatcherCardProps {
 }
 
 const DispatcherCard: React.FC<DispatcherCardProps> = ({ dispatcher, onViewProfile, onContact }) => {
+  const { onlineUserIds } = useAppContext();
+  const isOnline = onlineUserIds.has(dispatcher.id);
   const initials = dispatcher.name
     .split(' ')
     .map(n => n.charAt(0))
@@ -48,6 +51,9 @@ const DispatcherCard: React.FC<DispatcherCardProps> = ({ dispatcher, onViewProfi
               <div className="w-20 h-20 rounded-xl border-4 border-white shadow-lg bg-gradient-to-br from-[#1E3A5F] to-[#3B82F6] flex items-center justify-center">
                 <span className="text-white font-bold text-xl">{initials}</span>
               </div>
+            )}
+            {isOnline && (
+              <span className="absolute top-0 right-0 block w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white" title="Online" />
             )}
             {(tier === 'carrierscout_verified' || tier === 'experience_verified') && (
               <div className={`absolute -bottom-1 -right-1 rounded-full p-1 ${

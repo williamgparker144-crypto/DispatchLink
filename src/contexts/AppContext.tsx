@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { allSeedUsers } from '@/lib/seedData';
 import { saveSession, loadSession, clearSession, cacheRegisteredUsers, loadCachedUsers } from '@/lib/session';
-import { getUserById, getUserByAuthId, getCarrierReferences, updateUser, updateDispatcherProfile, updateAdvertiserProfile, syncCarrierReferences, getPendingConnectionRequests, getUnreadMessagesCount, getConnectionFeedNotifications } from '@/lib/api';
+import { getUserById, getUserByAuthId, getCarrierReferences, updateUser, updateDispatcherProfile, updateAdvertiserProfile, syncCarrierReferences, getPendingConnectionRequests, getUnreadMessagesCount, getConnectionFeedNotifications, updatePresence, getOnlineUserIds } from '@/lib/api';
 import { dbUserToCurrentUser, currentUserToDbFields } from '@/lib/mappers';
 import { onAuthStateChange, signOutAuth } from '@/lib/auth';
 
@@ -65,6 +65,7 @@ interface AppContextType {
   pendingAuthResult: PendingAuthResult | null;
   setPendingAuthResult: (result: PendingAuthResult | null) => void;
   clearPendingAuthResult: () => void;
+  onlineUserIds: Set<string>;
 }
 
 const defaultAppContext: AppContextType = {
@@ -85,6 +86,7 @@ const defaultAppContext: AppContextType = {
   pendingAuthResult: null,
   setPendingAuthResult: () => {},
   clearPendingAuthResult: () => {},
+  onlineUserIds: new Set<string>(),
 };
 
 const AppContext = createContext<AppContextType>(defaultAppContext);
@@ -176,6 +178,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     cacheRegisteredUsers(registeredUsers);
   }, [registeredUsers]);
+
+  // ── Online Presence ──────────────────────────────────────
+  const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
+
+  // Heartbeat: update last_seen_at every 2 minutes while logged in
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const isReal = !currentUser.id.startsWith('user-') && !currentUser.id.startsWith('seed-');
+    if (!isReal) return;
+
+    // Send heartbeat immediately on mount, then every 2 minutes
+    updatePresence(currentUser.id);
+    const heartbeat = setInterval(() => updatePresence(currentUser.id), 2 * 60 * 1000);
+    return () => clearInterval(heartbeat);
+  }, [currentUser?.id]);
+
+  // Fetch online user IDs every 60 seconds
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => {
+      const ids = await getOnlineUserIds(5);
+      if (active) setOnlineUserIds(ids);
+    };
+    refresh();
+    const interval = setInterval(refresh, 60 * 1000);
+    return () => { active = false; clearInterval(interval); };
+  }, []);
 
   // Helper: check if a user ID is a real Supabase UUID (not local-only)
   const isSupabaseId = (id: string) => !id.startsWith('user-') && !id.startsWith('seed-');
@@ -318,6 +347,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         pendingAuthResult,
         setPendingAuthResult,
         clearPendingAuthResult,
+        onlineUserIds,
       }}
     >
       {children}

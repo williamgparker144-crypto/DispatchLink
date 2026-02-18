@@ -1,5 +1,52 @@
 import { supabase, supabaseUrl, supabaseKey } from './supabase';
 
+// ── Presence ──────────────────────────────────────────────
+
+// Update the current user's last_seen_at timestamp (heartbeat)
+export async function updatePresence(userId: string) {
+  if (!userId || userId.startsWith('user-') || userId.startsWith('seed-')) return;
+  try {
+    await supabase
+      .from('users')
+      .update({ last_seen_at: new Date().toISOString() })
+      .eq('id', userId);
+  } catch {
+    // Silent — presence is best-effort
+  }
+}
+
+// Get IDs of users who were active within the last N minutes (default 5)
+export async function getOnlineUserIds(minutesAgo = 5): Promise<Set<string>> {
+  const cutoff = new Date(Date.now() - minutesAgo * 60 * 1000).toISOString();
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .gte('last_seen_at', cutoff);
+
+    if (error) throw error;
+    return new Set((data || []).map((u: { id: string }) => u.id));
+  } catch (err) {
+    // Fallback: direct REST
+    try {
+      if (!supabaseUrl || !supabaseKey) return new Set();
+      const url = `${supabaseUrl}/rest/v1/users?select=id&last_seen_at=gte.${cutoff}`;
+      const resp = await fetch(url, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Accept': 'application/json',
+        },
+      });
+      if (!resp.ok) return new Set();
+      const data = await resp.json();
+      return new Set((data || []).map((u: { id: string }) => u.id));
+    } catch {
+      return new Set();
+    }
+  }
+}
+
 // DOT/MC Verification
 export async function verifyDotMc(dotNumber?: string, mcNumber?: string) {
   const { data, error } = await supabase.functions.invoke('verify-dot-mc', {

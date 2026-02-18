@@ -1,6 +1,7 @@
 import React from 'react';
 import { Star, MapPin, Truck, Shield, Users, ChevronRight, FileCheck, UserPlus } from 'lucide-react';
 import ConnectionButton from './ConnectionButton';
+import { useAppContext } from '@/contexts/AppContext';
 
 interface CarrierCardProps {
   carrier: {
@@ -23,6 +24,8 @@ interface CarrierCardProps {
 }
 
 const CarrierCard: React.FC<CarrierCardProps> = ({ carrier, onViewProfile, onRequestPermission }) => {
+  const { onlineUserIds } = useAppContext();
+  const isOnline = onlineUserIds.has(carrier.id);
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all group">
       {/* Header */}
@@ -35,6 +38,9 @@ const CarrierCard: React.FC<CarrierCardProps> = ({ carrier, onViewProfile, onReq
               alt={carrier.company}
               className="w-20 h-20 rounded-xl object-cover border-4 border-white shadow-lg"
             />
+            {isOnline && (
+              <span className="absolute top-0 right-0 block w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white" title="Online" />
+            )}
             {carrier.verified && (
               <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
                 <Shield className="w-3 h-3 text-white" />

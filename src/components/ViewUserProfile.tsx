@@ -3,6 +3,7 @@ import { ArrowLeft, MapPin, Briefcase, Shield, Globe, Users, MessageSquare, Awar
 import ConnectionButton from './ConnectionButton';
 import PostCard from './PostCard';
 import { computeVerificationTier, getVerificationBadgeInfo } from '@/lib/verification';
+import { useAppContext } from '@/contexts/AppContext';
 import { getConnectionStatus, sendConnectionRequest, acceptConnection, rejectConnection, getOrCreateConversation, getPostsByUser, getUserSettings, recordProfileView, getProfileViewCount, getGalleryImages } from '@/lib/api';
 import type { ViewableUser, Post } from '@/types';
 
@@ -17,6 +18,8 @@ interface ViewUserProfileProps {
 }
 
 const ViewUserProfile: React.FC<ViewUserProfileProps> = ({ user, onBack, onNavigate, currentUserId, onOpenConversation }) => {
+  const { onlineUserIds } = useAppContext();
+  const isOnline = onlineUserIds.has(user.id);
   const userInitial = user.name?.charAt(0) || '?';
   const [connectionStatus, setConnectionStatus] = useState<'none' | 'pending_sent' | 'pending_received' | 'connected'>('none');
   const [connectionId, setConnectionId] = useState<string | null>(null);
@@ -220,7 +223,9 @@ const ViewUserProfile: React.FC<ViewUserProfileProps> = ({ user, onBack, onNavig
                   <span className="text-white font-bold text-5xl">{userInitial}</span>
                 )}
               </div>
-              <div className="absolute bottom-2 right-2 w-5 h-5 bg-[#10B981] border-[3px] border-white rounded-full z-10"></div>
+              {isOnline && (
+                <div className="absolute bottom-2 right-2 w-5 h-5 bg-[#10B981] border-[3px] border-white rounded-full z-10"></div>
+              )}
             </div>
           </div>
 
